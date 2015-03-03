@@ -19,10 +19,14 @@ LIBS += -L/usr/local/lib \
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    contour.cpp \
-    edge.cpp
+    bloodvessels.cpp \
+    image.cpp
 
 HEADERS  += mainwindow.h \
-    imagemodes.h
+    bloodvessels.h \
+    image.h
 
 FORMS    += mainwindow.ui
+
+DISTFILES += \
+    README.md

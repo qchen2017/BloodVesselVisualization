@@ -3,10 +3,12 @@
 
 #include <QMainWindow>
 #include <QGraphicsScene>
+#include <QListWidgetItem>
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/core/core.hpp"
-#include "imagemodes.h"
+#include "image.h"
+#include "bloodvessels.h"
 
 using namespace cv;
 
@@ -27,6 +29,11 @@ public:
     bool check_imageOpened();
 
     Mat setContours();
+
+
+public slots:
+    void mousePressEvent(QMouseEvent *event);
+
 private slots:
     void errorMsg();
 
@@ -42,26 +49,42 @@ private slots:
 
     void on_actionZoom_Out_triggered();
 
-
-
     void on_threshold_horizontalSlider_valueChanged(int value);
 
     void on_imageMode_comboBox_activated(const QString &arg1);
 
+    void on_bloodVesselsTips_radioButton_toggled(bool checked);
+
+    void on_displayBloodVesselTips_radioButton_toggled(bool checked);
+
+    void on_imageFiles_listWidget_itemClicked(QListWidgetItem *item);
+
+    void on_displayOrigImage_pushButton_clicked();
+
+    void on_pushButton_3_clicked();
+
+    void on_tipDetect_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 
+    QStringList imagePaths;
     QString imagePath;
     QPixmap image;
     QImage *imageObject;
     QGraphicsScene *scene;
 
-    Contour *contour;
-    Edge *edge;
+    Image *imagePtr;
+    BloodVessels *bloodVesselObject;
+
 
     Mat src, dst;
+    QVector<Mat> src_images;
+
     int threshold_val;
     float scaleFactor;
+
+    bool mouseEnabled;
 };
 
 #endif // MAINWINDOW_H
