@@ -129,15 +129,6 @@ Mat Image::removeOuterVessel(Mat imageIn)
 
 }
 
-Mat Image::detectWhiteSpots(Mat imageIn)
-{
-    Mat imageOut = imageIn;
-
-
-
-}
-
-
 Mat Image::setContour(Mat src, int thresh_val)
 {
      Mat src_gray;
@@ -168,31 +159,35 @@ Mat Image::setEdge(Mat src, int thresh_val)
     blur(src_gray, edge, Size(3, 3));
     Canny(edge, edge, thresh_val, thresh_val*3, 3);
 
+    namedWindow("Edge", WINDOW_NORMAL);
+    namedWindow("controlWin",WINDOW_NORMAL);
+    //imshow("Edge", edge);
+
     return edge;
 }
 
 Mat Image::setSkeleton(Mat img, int thresh_val)
 {
-    Mat src = cv::imread("/Users/trishamariefuntanilla/Downloads/test.jpg");
+    //Mat src = cv::imread("/Users/trishamariefuntanilla/Downloads/test.jpg");
 
     Mat bw;
-    cvtColor(src, bw, COLOR_BGR2GRAY);
+    cvtColor(img, bw, COLOR_BGR2GRAY);
     threshold(bw, bw, 133, 255, cv::THRESH_BINARY);
 
     imshow ("bw", bw);
 
     thinning(bw);
 
-    imshow("src", src);
+    imshow("src", img);
     imshow("dst", bw);
     waitKey(0);
 
-//    Mat dst;
-//    cvtColor(src, dst, cv::COLOR_BGR2GRAY);
-//    threshold(dst, dst, thresh_val, 255, cv::THRESH_BINARY);
-//    thinning(dst);
+    Mat dst;
+    cvtColor(img, dst, cv::COLOR_BGR2GRAY);
+    threshold(dst, dst, thresh_val, 255, cv::THRESH_BINARY);
+    thinning(dst);
 //    return dst;
-    return src;
+    return img;
 }
 
 void Image::thinningIteration(Mat &im, int iter)

@@ -20,8 +20,6 @@ public:
     Mat setImageView(Mat imageIn, int thresh_val, string mode);
     Mat setBackground(Mat imageIn);
     Mat removeOuterVessel(Mat imageIn);
-    Mat detectWhiteSpots(Mat imageIn);
-
 
 private:
     Mat setContour(Mat src, int thresh_val);

@@ -14,10 +14,11 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+
+    edgeWin = new Edge(this);
+
     ui->setupUi(this);
     ui->threshold_lineEdit->setText("0");
-    //ui->graphicsView->installEventFilter();
-
 
     imagePtr = new Image();
     bloodVesselObject = new BloodVessels();
@@ -25,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
     threshold_val = 0;
     scaleFactor = 1.15;
 
+    // use for testing blood vessel tips detection
     mouseEnabled = false;
 }
 
@@ -78,15 +80,7 @@ void MainWindow::on_actionOpen_triggered()
         }
     }
 
-//    imagePath = QFileDialog::getOpenFileName(this, tr("Open Image"), "",
-//                                                    tr("Images (*.png *.xpm *.jpg)"));
-//    if (imagePath == NULL) {
-//        errorMsg();
-//        return;
-//    }
-
-//     //set source image
-//    src = imread(imagePath.toStdString());
+    // resize image for graphicsView window
     cv::resize(src, src, cv::Size2i(src.cols/3, src.rows/3));
 
     //set graphic view
@@ -125,7 +119,7 @@ void MainWindow::on_actionFit_to_Window_triggered()
 
     ui->graphicsView->fitInView(scene->itemsBoundingRect(), Qt::KeepAspectRatioByExpanding);
     ui->graphicsView->setAlignment(Qt::AlignCenter);
-}
+} // fit to window
 
 void MainWindow::on_actionActual_Size_triggered()
 {
@@ -134,7 +128,10 @@ void MainWindow::on_actionActual_Size_triggered()
         return;
     }
 
-}
+    // need to open window that will show actual size
+} // actual size
+
+// need better zoom functions
 
 void MainWindow::on_actionZoom_In__triggered()
 {
@@ -144,7 +141,7 @@ void MainWindow::on_actionZoom_In__triggered()
     }
 
     ui->graphicsView->scale(scaleFactor, scaleFactor);
-}
+} // zoom in
 
 void MainWindow::on_actionZoom_Out_triggered()
 {
@@ -154,7 +151,7 @@ void MainWindow::on_actionZoom_Out_triggered()
     }
 
     ui->graphicsView->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
-}
+} // zoom out
 
 /**********************************************************************************/
 /**********************************************************************************/
@@ -269,33 +266,33 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
     }
 }
 
-void MainWindow::on_bloodVesselsTips_radioButton_toggled(bool checked)
-{
-    int index = ui->imageFiles_listWidget->currentRow();
-    imagePath = imagePaths.at(index);
+//void MainWindow::on_bloodVesselsTips_radioButton_toggled(bool checked)
+//{
+//    int index = ui->imageFiles_listWidget->currentRow();
+//    imagePath = imagePaths.at(index);
 
-    if (checked) {
-        src = imread(imagePath.toStdString());
-        cv::threshold(src, dst, threshold_val, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
-        mouseEnabled = true;
-    }
-    else {
-        mouseEnabled = false;
-        return;
-    }
-}
+//    if (checked) {
+//        src = imread(imagePath.toStdString());
+//        cv::threshold(src, dst, threshold_val, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
+//        mouseEnabled = true;
+//    }
+//    else {
+//        mouseEnabled = false;
+//        return;
+//    }
+//}
 
-void MainWindow::on_displayBloodVesselTips_radioButton_toggled(bool checked)
-{
-    int index = ui->imageFiles_listWidget->currentRow();
-    imagePath = imagePaths.at(index);
+//void MainWindow::on_displayBloodVesselTips_radioButton_toggled(bool checked)
+//{
+//    int index = ui->imageFiles_listWidget->currentRow();
+//    imagePath = imagePaths.at(index);
 
-    if (checked && !bloodVesselObject->isEmpty()) {
-        src = imread(imagePath.toStdString());
-        dst = bloodVesselObject->displayTips(src);
-        updateView(dst);
-    }
-}
+//    if (checked && !bloodVesselObject->isEmpty()) {
+//        src = imread(imagePath.toStdString());
+//        dst = bloodVesselObject->displayTips(src);
+//        updateView(dst);
+//    }
+//}
 
 void MainWindow::on_imageFiles_listWidget_itemClicked(QListWidgetItem *item)
 {
@@ -333,13 +330,15 @@ void MainWindow::on_displayOrigImage_pushButton_clicked()
     imshow(imagePath.toStdString(), src);
 }
 
-void MainWindow::on_pushButton_3_clicked()
+void MainWindow::on_preProcessed_pushButton_clicked()
 {
     int index = ui->imageFiles_listWidget->currentRow();
     imagePath = imagePaths.at(index);
 
     int old_thresh = threshold_val;
 
+    // some tips for testing and comparison
+    // comment out for actual tip detection
     if (index == 0) {
         bloodVesselObject->testTips();
         threshold_val = 178;
@@ -368,8 +367,6 @@ void MainWindow::on_pushButton_3_clicked()
         dst = imagePtr->removeOuterVessel(dst);
     }
     // some tips for testing and comparison
-
-
     bloodVesselObject->displayTips(dst);
     cv::resize(dst, dst, cv::Size2i(dst.cols/4, dst.rows/4));
     namedWindow(imagePath.toStdString(), WINDOW_NORMAL);
@@ -385,6 +382,7 @@ void MainWindow::on_tipDetect_pushButton_clicked()
     imagePath = imagePaths.at(index);
 
     // some tips for testing and comparison
+    // comment out for actual tip detection
     if (index == 0) {
         bloodVesselObject->testTips();
         threshold_val = 185;
@@ -413,4 +411,37 @@ void MainWindow::on_tipDetect_pushButton_clicked()
         dst = imagePtr->setImageView(src, threshold_val, "edge");
         updateView(dst);
     }
+}
+
+void MainWindow::on_animate_pushButton_clicked()
+{
+
+}
+
+void MainWindow::on_edgeButton_clicked()
+{
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    }// error
+
+//    int index = ui->imageFiles_listWidget->currentRow();
+//    imagePath = imagePaths.at(index);
+//    src = imread(imagePath.toStdString());
+
+    //show edge window
+    Mat imageOut = edgeWin->detectTips(src);
+    edgeWin->show();
+
+    for (int i = 0; i < imageOut.rows; i++) {
+        for (int j = 0; j < imageOut.cols; j++) {
+            Vec3b color = imageOut.at<Vec3b>(Point(i,j));
+            QVector3D colorVal(color[0], color[1], color[2]);
+            if (colorVal == QVector3D(255, 255, 255)) {
+                bloodVesselObject->saveTipPoint((qreal) i, (qreal) j);
+            }
+        }
+    }
+
+    bloodVesselObject->displayTips(src);
 }

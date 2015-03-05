@@ -1,241 +1,121 @@
-#include "bloodvessels.h"
-#include <QVector3D>
-#include <QDebug>
-#include <iostream>
+#include "edge.h"
+#include "ui_edge.h"
 
-using namespace std;
+using namespace cv;
 
-BloodVessels::BloodVessels()
+Edge::Edge(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::Edge)
 {
+    ui->setupUi(this);
+    setFixedSize(size().width(), size().height());
 
+    //setup vary slider
+    ui->vary_lineEdit->setText("0");
+    ui->varySlider->setRange(0, 255);
+    ui->varySlider->setSingleStep(1);
+    ui->varySlider->setTickPosition(ui->varySlider->TicksBelow);
+    ui->varySlider->setTickInterval(5);
+}//constructor
+
+Edge::~Edge()
+{
+    delete ui;
 }
 
-BloodVessels::~BloodVessels()
+void Edge::changeEvent(QEvent *e)
 {
-
-}
-
-Mat BloodVessels::identifyTip(Mat src, float x, float y)
-{
-    Point dot = Point(x, y);
-    int thickness = -1;
-    int lineType = 8;
-
-     circle(src,
-            dot,
-            25.0,
-            Scalar(0, 0, 255),
-            thickness,
-            lineType);
-
-     return src;
-}
-
-bool BloodVessels::isEmpty()
-{
-    if (bloodVesselsTips.size() == 0) {
-        return true;
+    QMainWindow::changeEvent(e);
+    switch (e->type()) {
+    case QEvent::LanguageChange:
+        ui->retranslateUi(this);
+        break;
+    default:
+        break;
     }
-    return false;
-}
+}// change window
 
-void BloodVessels::saveTipPoint(qreal x, qreal y)
+void Edge::setImageView(Mat imageIn)
 {
-    bloodVesselsTips.push_back(QVector2D(x, y));
-    //qDebug() << QVector2D(x, y);
-}
+    this->src = imageIn;
+    Mat imageOut = setEdge();
+    updateView(imageOut);
 
-Mat BloodVessels::displayTips(Mat src)
+    //endp(imageOut, dst);
+    //updateView(dst);
+
+}// set image View
+
+/* -------------------------------------------------------------------------------------------- */
+
+/* update funtion */
+void Edge::updateThreshold()
 {
-    Mat imageOut = src;
-    int thickness = -1;
-    int lineType = 8;
 
-    for (int i = 0; i < bloodVesselsTips.size(); i++) {
-        float x = (float) bloodVesselsTips[i].x();
-        float y = (float) bloodVesselsTips[i].y();
-        Point dot = Point(x, y);
-        circle(src,
-               dot,
-               25.0,
-               Scalar(0, 0, 255),
-               thickness,
-               lineType);
-    }
-
-    return imageOut;
 }
 
-Mat BloodVessels::detectTips(Mat imageIn)
+Mat Edge::detectTips(Mat imageIn)
 {
-    Mat imageOut = imageIn;
-    int thickness = -1;
-    int lineType = 8;
+    this->src = imageIn;
+    Mat edge;
 
-    for (int y = 0; y < 300; y++) {
-        int x = 0;
-        Vec3b color = imageOut.at<Vec3b>(Point(x,y));
-        QVector3D colorVal(color[0], color[1], color[2]);
+    //gray scale
+    cvtColor(src, src_gray, cv::COLOR_BGR2GRAY);
+    blur(src_gray, edge, Size(3,3));
+    Canny(edge, edge, 100, 100*3, 3);
 
-        // from the left side
-        while ((colorVal != QVector3D(255, 255, 255)) && ((x < 300) || y < 500)) {
-            x++; // continue moving across the columns
-            color = imageOut.at<Vec3b>(Point(x,y));
-            colorVal.setX(color[0]);
-            colorVal.setY(color[1]);
-            colorVal.setZ(color[2]);
-        }
+    endp(edge, dst);
 
-        Point dot = Point(x, y);
-        circle(imageOut,
-               dot,
-               25.0,
-               Scalar(0, 0, 255),
-               thickness,
-               lineType);
+    updateView(dst);
 
-        // from the right side
-        x = imageIn.cols;
-        color = imageOut.at<Vec3b>(Point(x,y));
-        colorVal.setX(color[0]);
-        colorVal.setY(color[1]);
-        colorVal.setZ(color[2]);
-        while ((colorVal != QVector3D(255, 255, 255)) && ((x > imageIn.cols - 300) || (y < 500))) {
-            x--;
-            color = imageOut.at<Vec3b>(Point(x,y));
-            colorVal.setX(color[0]);
-            colorVal.setY(color[1]);
-            colorVal.setZ(color[2]);
-        }
+    return dst;
 
-        dot = Point(x, y);
-        circle(imageOut,
-               dot,
-               25.0,
-               Scalar(0, 0, 255),
-               thickness,
-               lineType);
+}// update threshold
 
-    }
+void Edge::updateView(Mat imageOut)
+{
+    /* convert Mat to QImage
+     display on graphicsView */
+    QImage img((uchar*)imageOut.data, imageOut.cols, imageOut.rows, QImage::Format_Indexed8);
+    image = QPixmap::fromImage(img);
+    scene = new QGraphicsScene(this);
+    scene->addPixmap(image);
+    scene->setSceneRect(0, 0, image.width(), image.height());
+    ui->graphicsView->setScene(scene);
+}// update graphic view
 
-    return imageOut;
-}
+Mat Edge::setEdge()
+{
+    Mat edge;
 
-//void BloodVessels::detectROI(Mat imageIn)
+    //gray scale
+    cvtColor(src, src_gray, cv::COLOR_BGR2GRAY);
+    blur(src_gray, edge, Size(3,3));
+    Canny(edge, edge, thresh, thresh*3, 3);
+    return edge;
+
+}// edge detection function
+
+/* -------------------------------------------------------------------------------------------- */
+
+/* UI */
+//void Edge::on_closeButton_clicked()
 //{
-//    Mat src_gray;
+//    close();
+//}// exit
 
-//    cvtColor(imageIn, src_gray, cv::COLOR_BGR2GRAY );
-
-//    GaussianBlur( src_gray, src_gray, cv::Size(9, 9), 2, 2 );
-
-//    vector<Vec3f> circles;
-
-//    HoughCircles(src_gray, circles, HOUGH_GRADIENT,
-//                 2,   // accumulator resolution (size of the image / 2)
-//                 5,  // minimum distance between two circles
-//                 100, // Canny high threshold
-//                 100, // minimum number of votes
-//                 0, 1000); // min and max radius
-
-//    cout << circles.size() << endl;
-//    cout << "end of test" << endl;
-
-//    vector<cv::Vec3f>::
-//            const_iterator itc= circles.begin();
-
-//    while (itc!=circles.end()) {
-
-//        cv::circle(src_gray,
-//                   cv::Point((*itc)[0], (*itc)[1]), // circle centre
-//                (*itc)[2],       // circle radius
-//                cv::Scalar(255), // color
-//                2);              // thickness
-
-//        ++itc;
-//    }
-//    namedWindow("image", WINDOW_AUTOSIZE);
-//    imshow("image",src_gray);
-
-//    //return src_gray;
-
-
-//} // detect region of interest
-
-//void BloodVessels::detectSeedPoints(Mat src)
-//{
-//    enhance(src);
-//    detectCenter(src);
-//}
-
-//void BloodVessels::enhance(Mat src)
-//{
-//    // convert to gray scale
-//    Mat src_gray;
-//    cvtColor(src, src_gray, cv::COLOR_BGR2GRAY);
-//    equalizeHist(src_gray, src_gray);
-//    //blur(src_gray, src_gray, Size(3,3));
-//    //threshold(src_gray, src_gray, thresh_val, 255, cv::THRESH_BINARY_INV);
-
-
-//    namedWindow("Gray image", WINDOW_NORMAL);
-//    resizeWindow("Gray image", 300, 300);
-//    imshow("Gray image", src_gray);
-
-//}
-
-//void BloodVessels::detectCenter(Mat src)
-//{
-
-//}
-
-
-// Hard coded tips used for testing and comparison
-void BloodVessels::testTips()
+void Edge::on_varySlider_valueChanged(int value)
 {
-    bloodVesselsTips.clear();
-
-    bloodVesselsTips.push_back(QVector2D(1345.94, 364.606));
-    bloodVesselsTips.push_back(QVector2D(659.394, 577.939));
-    bloodVesselsTips.push_back(QVector2D(1024, 1776.48));
-    bloodVesselsTips.push_back(QVector2D(643.879, 1454.55));
-    bloodVesselsTips.push_back(QVector2D(1442.91, 1625.21));
-    bloodVesselsTips.push_back(QVector2D(1803.64, 1276.12));
-    bloodVesselsTips.push_back(QVector2D(1621.33, 1567.03));
-    bloodVesselsTips.push_back(QVector2D(411.152, 977.455));
-    bloodVesselsTips.push_back(QVector2D(411.152, 1268.36));
-    bloodVesselsTips.push_back(QVector2D(857.212, 1838.55));
-    bloodVesselsTips.push_back(QVector2D(756.364, 1664));
-    bloodVesselsTips.push_back(QVector2D(1788.12, 694.303));
-}
-
-void BloodVessels::testTips2()
-{
-    bloodVesselsTips.clear();
-
-    bloodVesselsTips.push_back(QVector2D(1338.18, 174.545));
-    bloodVesselsTips.push_back(QVector2D(814.545, 104.727));
-    bloodVesselsTips.push_back(QVector2D(876.606, 387.879));
-    bloodVesselsTips.push_back(QVector2D(190.061, 1105.45));
-    bloodVesselsTips.push_back(QVector2D(310.303, 1493.33));
-    bloodVesselsTips.push_back(QVector2D(430.545, 1629.09));
-    bloodVesselsTips.push_back(QVector2D(1004.61, 1916.12));
-    bloodVesselsTips.push_back(QVector2D(1551.52, 1985.94));
-    bloodVesselsTips.push_back(QVector2D(1869.58, 1307.15));
-    bloodVesselsTips.push_back(QVector2D(1768.73, 1757.09));
-    bloodVesselsTips.push_back(QVector2D(667.151, 1881.21));
-    bloodVesselsTips.push_back(QVector2D(477.091, 911.515));
-    bloodVesselsTips.push_back(QVector2D(1900.61, 1124.85));
-    bloodVesselsTips.push_back(QVector2D(1989.82, 911.515));
-    bloodVesselsTips.push_back(QVector2D(1997.58, 1047.27));
-    bloodVesselsTips.push_back(QVector2D(2183.76, 1330.42));
-    bloodVesselsTips.push_back(QVector2D(1978.18, 1388.61));
-}
+    thresh = value;
+    ui->vary_lineEdit->setText(QString::number(value));
+    Mat imageOut = setEdge();
+    updateView(imageOut);
+}// vary slider
 
 //-----------------------------------------------------------------------------------------------------
 // LUT for skeletonization
 //-----------------------------------------------------------------------------------------------------
-void BloodVessels::GetLutSkel(Mat& Lut)
+void Edge::GetLutSkel(Mat& Lut)
 {
     Lut=Mat(8,512,CV_16UC1);
     static int lut1[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,1,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,1,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
@@ -263,7 +143,7 @@ void BloodVessels::GetLutSkel(Mat& Lut)
 //-----------------------------------------------------------------------------------------------------
 // http://matlab.exponenta.ru/imageprocess/book3/13/applylut.php
 //-----------------------------------------------------------------------------------------------------
-void BloodVessels::applylut_1(Mat &src,Mat &dst)
+void Edge::applylut_1(Mat &src,Mat &dst)
 {
     static int lut_endpoints[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,1,1,1,1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,1,1,0,1,1,1,1,0};
 
@@ -296,7 +176,7 @@ void BloodVessels::applylut_1(Mat &src,Mat &dst)
 //-----------------------------------------------------------------------------------------------------
 // http://matlab.exponenta.ru/imageprocess/book3/13/applylut.php
 //-----------------------------------------------------------------------------------------------------
-void BloodVessels::applylut_8(Mat &src,Mat &dst,Mat& lut)
+void Edge::applylut_8(Mat &src,Mat &dst,Mat& lut)
 {
     Mat k(3,3,CV_16UC1);
 
@@ -328,12 +208,12 @@ void BloodVessels::applylut_8(Mat &src,Mat &dst,Mat& lut)
 //-----------------------------------------------------------------------------------------------------
 // LUT Skeletonizer
 //-----------------------------------------------------------------------------------------------------
-void BloodVessels::skel(Mat &src,Mat &dst)
+void Edge::skel(Mat &src,Mat &dst)
 {
     Mat lut;
     GetLutSkel(lut);
     dst=src.clone();
-    // Преобразуем в последовательномть 0 и 1.
+
     cv::threshold(dst,dst,0,1,THRESH_BINARY);
 
     int last_pc=INT_MAX;
@@ -343,24 +223,20 @@ void BloodVessels::skel(Mat &src,Mat &dst)
         applylut_8(dst,dst,lut);
     }
 
-    // Чтобы было видно на экране
     dst=dst*255;
 }
 
 //-----------------------------------------------------------------------------------------------------
 // LUT endpoints
 //-----------------------------------------------------------------------------------------------------
-void BloodVessels::endp(Mat &src,Mat &dst)
+void Edge::endp(Mat &src,Mat &dst)
 {
     dst=src.clone();
-    // Преобразуем в последовательномть 0 и 1.
     cv::threshold(dst,dst,0,1,THRESH_BINARY);
 
     applylut_1(dst,dst);
-
-    // Чтобы было видно на экране
     dst=dst*255;
+
+    updateView(dst);
+
 }
-
-
-

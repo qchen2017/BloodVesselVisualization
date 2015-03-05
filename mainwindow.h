@@ -9,6 +9,7 @@
 #include "opencv2/core/core.hpp"
 #include "image.h"
 #include "bloodvessels.h"
+#include "edge.h"
 
 using namespace cv;
 
@@ -53,17 +54,21 @@ private slots:
 
     void on_imageMode_comboBox_activated(const QString &arg1);
 
-    void on_bloodVesselsTips_radioButton_toggled(bool checked);
+    //void on_bloodVesselsTips_radioButton_toggled(bool checked);
 
-    void on_displayBloodVesselTips_radioButton_toggled(bool checked);
+    //void on_displayBloodVesselTips_radioButton_toggled(bool checked);
 
     void on_imageFiles_listWidget_itemClicked(QListWidgetItem *item);
 
     void on_displayOrigImage_pushButton_clicked();
 
-    void on_pushButton_3_clicked();
+    void on_preProcessed_pushButton_clicked();
 
     void on_tipDetect_pushButton_clicked();
+
+    void on_animate_pushButton_clicked();
+
+    void on_edgeButton_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -85,6 +90,8 @@ private:
     float scaleFactor;
 
     bool mouseEnabled;
+
+    Edge *edgeWin;
 };
 
 #endif // MAINWINDOW_H

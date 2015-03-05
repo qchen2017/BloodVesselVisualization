@@ -20,13 +20,16 @@ LIBS += -L/usr/local/lib \
 SOURCES += main.cpp\
         mainwindow.cpp \
     bloodvessels.cpp \
-    image.cpp
+    image.cpp \
+    edge.cpp
 
 HEADERS  += mainwindow.h \
     bloodvessels.h \
-    image.h
+    image.h \
+    edge.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    edge.ui
 
 DISTFILES += \
     README.md
