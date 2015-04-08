@@ -56,6 +56,9 @@ private slots:
     void on_animate_pushButton_clicked();
 
 private:
+
+    void writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips_map);
+
     Ui::MainWindow *ui;
 
     QStringList imagePaths;

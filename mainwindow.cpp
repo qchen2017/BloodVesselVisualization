@@ -8,6 +8,7 @@
 #include <QVector2D>
 #include <QVector>
 #include <unordered_map>
+#include <sstream>
 
 using namespace cv;
 using namespace std;
@@ -356,10 +357,36 @@ void MainWindow::on_tipDetect_pushButton_clicked()
     edgeWin->detectTips(src_resize, tips_map, imagePath.toStdString());
 
     // prints out vector of coordinates for debugging purposes
-    QVector<QVector2D> pts;
-    pts = tips_map[imagePath.toStdString()];
-    qDebug() << pts;
+    // QVector<QVector2D> pts;
+    // pts = tips_map[imagePath.toStdString()];
+    // qDebug() << pts;
 
+    writeTipsToFile(tips_map);
+
+}
+
+void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips_map)
+{
+    // prompt user for file name and location
+    QString outfile = QFileDialog::getSaveFileName(this, "Save");
+
+    // write tips coordinates to file
+    QFile file(outfile);
+    if (file.open(QIODevice::WriteOnly)) {
+        QTextStream stream(&file);
+        for(auto it = tips_map.begin(); it != tips_map.end(); ++it){
+            string temp = it->first;
+            QString imgname = QString::fromStdString(temp);
+            stream << imgname << endl;
+            QVector<QVector2D> pts = tips_map[temp];
+            for (int i = 0; i < pts.size(); i++) {
+                QVector2D pt = pts.at(i);
+                stream << pt.x() << "," << pt.y() << endl;
+            }
+        }
+    }
+
+    file.close();
 }
 
 void MainWindow::on_animate_pushButton_clicked()
