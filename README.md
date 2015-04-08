@@ -1,6 +1,6 @@
 Notes: 
 
-1. Codes not updated - I'm cleaning up the code I have right now.
+1. Codes are now commented and cleaned up.
 
 2. We should have different directories like src for source codes, exe for the .exe file, etc. 
 
