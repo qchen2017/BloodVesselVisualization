@@ -5,7 +5,9 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDebug>
-#include <iostream>
+#include <QVector2D>
+#include <QVector>
+#include <unordered_map>
 
 using namespace cv;
 using namespace std;
@@ -336,6 +338,10 @@ void MainWindow::updateView(Mat imageOut)
 
 void MainWindow::on_tipDetect_pushButton_clicked()
 {
+    // String holds the name of the image
+    // vector of QVector2D holds the x and y coordinates of the tips in the image
+    unordered_map<string, QVector<QVector2D> > tips_map;
+
     if(!check_imageOpened()){
         errorMsg();
         return;
@@ -347,7 +353,12 @@ void MainWindow::on_tipDetect_pushButton_clicked()
     cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
 
     // detect tips
-    edgeWin->detectTips(src_resize);
+    edgeWin->detectTips(src_resize, tips_map, imagePath.toStdString());
+
+    // prints out vector of coordinates for debugging purposes
+    QVector<QVector2D> pts;
+    pts = tips_map[imagePath.toStdString()];
+    qDebug() << pts;
 
 }
 

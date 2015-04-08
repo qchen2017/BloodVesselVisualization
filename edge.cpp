@@ -2,6 +2,7 @@
 #include "ui_edge.h"
 
 #include <iostream>
+#include <QVector2D>
 #include <QVector3D>
 #include <QDebug>
 
@@ -95,7 +96,7 @@ void Edge::on_varySlider_valueChanged(int value)
  ************************************ BLOOD VESSELS' TIPS DETECTION **********************************
 *****************************************************************************************************/
 
-Mat Edge::detectTips(Mat imageIn)
+Mat Edge::detectTips(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName)
 {
     this->src = imageIn;
 
@@ -106,7 +107,7 @@ Mat Edge::detectTips(Mat imageIn)
     Canny(edge, edge, 135, 135*3, 3);
 
     // determine endpoints after thinning
-    endp(edge, dst);
+    endp(edge, dst, tips_map, imgName);
 
     updateView(dst);
 
@@ -359,12 +360,13 @@ void Edge::skel(Mat &src,Mat &dst)
     }
 
     dst=dst*255;
+    imshow("skel", dst);
 }
 
 //-----------------------------------------------------------------------------------------------------
 // LUT endpoints
 //-----------------------------------------------------------------------------------------------------
-void Edge::endp(Mat &imageIn,Mat &imageOut)
+void Edge::endp(Mat &imageIn, Mat &imageOut, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName)
 {
     imageOut=imageIn.clone();
     cv::threshold(imageOut,imageOut,0,1,THRESH_BINARY);
@@ -372,7 +374,26 @@ void Edge::endp(Mat &imageIn,Mat &imageOut)
     applylut_1(imageOut,imageOut);
     imageOut = imageOut*255;
 
-    imshow("img", dst); // display tips in a separate window
-    updateView(dst);
+    imshow("Blood Vessel Tips", imageOut); // display tips in a separate window
+    getTipsCoords(imageOut, tips_map, imgName);
+    // skel(imageIn, imageOut);
+}
 
+void Edge::getTipsCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName)
+{
+    QVector2D pt;
+    QVector<QVector2D> pts;
+    for (int x = 0; x < imageIn.cols; x++) {
+        for (int y = 0; y < imageIn.rows; y++) {
+            int color = imageIn.at<int>(Point(x,y)); // get pixel color
+            // if pixel is white, then it is a tip
+            if (color == 255) {
+                pt.setX(x);
+                pt.setY(y);
+                pts.push_back(pt);
+            }
+        }
+    }
+
+    tips_map[imgName] = pts;
 }

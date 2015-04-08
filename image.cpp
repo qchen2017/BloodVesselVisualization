@@ -36,14 +36,17 @@ Mat Image::setContour(Mat src, int thresh_val)
     return drawing;
 }
 
+/*********************************************************************************************************************
+The following codes are obtained from http://opencv-code.com/quick-tips/implementation-of-guo-hall-thinning-algorithm/
+**********************************************************************************************************************/
+
+
 void Image::thinningIteration(Mat &im, int iter)
 {
     Mat marker = Mat::zeros(im.size(), CV_8UC1);
 
-    for (int i = 1; i < im.rows-1; i++)
-    {
-        for (int j = 1; j < im.cols-1; j++)
-        {
+    for (int i = 1; i < im.rows-1; i++) {
+        for (int j = 1; j < im.cols-1; j++) {
             uchar p2 = im.at<uchar>(i-1, j);
             uchar p3 = im.at<uchar>(i-1, j+1);
             uchar p4 = im.at<uchar>(i, j+1);
@@ -61,8 +64,9 @@ void Image::thinningIteration(Mat &im, int iter)
             int m1 = iter == 0 ? (p2 * p4 * p6) : (p2 * p4 * p8);
             int m2 = iter == 0 ? (p4 * p6 * p8) : (p2 * p6 * p8);
 
-            if (A == 1 && (B >= 2 && B <= 6) && m1 == 0 && m2 == 0)
+            if (A == 1 && (B >= 2 && B <= 6) && m1 == 0 && m2 == 0) {
                 marker.at<uchar>(i,j) = 1;
+            }
         }
     }
 

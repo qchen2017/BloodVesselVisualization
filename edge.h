@@ -4,11 +4,14 @@
 #include <QWidget>
 #include <QMainWindow>
 #include <QGraphicsScene>
+#include <QVector>
+#include <unordered_map>
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/core/core.hpp"
 
 using namespace cv;
+using namespace std;
 
 namespace Ui {
 class Edge;
@@ -23,7 +26,7 @@ public:
     ~Edge();
 
     void setImageView(Mat imageOut); // set up image for edge mode
-    Mat detectTips(Mat imageIn); // set up image for tips detection
+    Mat detectTips(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName); // set up image for tips detection
 
 protected:
     void changeEvent(QEvent *e);
@@ -43,7 +46,10 @@ private:
     void applylut_1(Mat &imageIn, Mat &imageOut);
     void applylut_8(Mat &src, Mat &dst, Mat &lut);
     void skel(Mat &src, Mat &dst);
-    void endp(Mat &imageIn, Mat &imageOut);
+    void endp(Mat &imageIn, Mat &imageOut, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName);
+
+    // functions for getting tips coordinate
+    void getTipsCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName);
 
     QPixmap image;
     QImage *imageObject;
