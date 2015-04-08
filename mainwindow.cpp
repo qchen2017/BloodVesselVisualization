@@ -80,9 +80,6 @@ void MainWindow::on_actionOpen_triggered()
         }
     }
 
-    // resize image for graphicsView window
-    cv::resize(src, src, cv::Size2i(src.cols/3, src.rows/3));
-
     //set graphic view
     imageObject = new QImage();
     imageObject->load(imagePaths.at(0));
@@ -156,7 +153,39 @@ void MainWindow::on_actionZoom_Out_triggered()
 /**********************************************************************************/
 /**********************************************************************************/
 
-/* User interface controls */
+/* Main User Interface Functionalities */
+
+void MainWindow::on_imageFiles_listWidget_itemClicked(QListWidgetItem *item)
+{
+    item->setSelected(true);
+    int index = ui->imageFiles_listWidget->currentRow();
+    imagePath = imagePaths.at(index);
+
+    src = imread(imagePath.toStdString());
+    if (ui->imageMode_comboBox->currentText() == "Normal") {
+        dst = imread(imagePath.toStdString());
+        if (threshold_val != 0) {
+            cv::threshold(src, dst, threshold_val, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
+        }
+        updateView(dst);
+    }
+    else if (ui->imageMode_comboBox->currentText() == "Contour") {
+        cv::threshold(src, dst, threshold_val, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
+        dst = imagePtr->setImageView(src, threshold_val, "contour");
+        updateView(dst);
+    }
+}
+
+void MainWindow::on_displayOrigImage_pushButton_clicked()
+{
+    int index = ui->imageFiles_listWidget->currentRow();
+    imagePath = imagePaths.at(index);
+
+    src = imread(imagePath.toStdString());
+    cv::resize(src, src, cv::Size2i(src.cols/4, src.rows/4));
+    namedWindow(imagePath.toStdString(), WINDOW_NORMAL);
+    imshow(imagePath.toStdString(), src);
+}
 
 void MainWindow::on_threshold_horizontalSlider_valueChanged(int value)
 {
@@ -184,12 +213,6 @@ void MainWindow::on_threshold_horizontalSlider_valueChanged(int value)
         Mat contourOut = imagePtr->setImageView(src, threshold_val, "contour");
         updateView(contourOut);
     }
-    else if (ui->imageMode_comboBox->currentText() == "Edge") {
-        Mat edgeOut = imagePtr->setImageView(src, threshold_val, "edge");
-        updateView(edgeOut);
-    }
-
-
 }
 
 void MainWindow::on_imageMode_comboBox_activated(const QString &arg1)
@@ -203,7 +226,7 @@ void MainWindow::on_imageMode_comboBox_activated(const QString &arg1)
         return;
     }// error
 
-    if (arg1 == "Original") {
+    if (arg1 == "Normal") {
         dst = imread(imagePath.toStdString());
         if (threshold_val > 0) {
             cv::threshold(src, dst, threshold_val, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
@@ -216,16 +239,24 @@ void MainWindow::on_imageMode_comboBox_activated(const QString &arg1)
         dst = imagePtr->setImageView(src, threshold_val, "contour");
         updateView(dst);
     }
-    else if (arg1 == "Edge") {
-        src = imread(imagePath.toStdString());
-        dst = imagePtr->setImageView(src, threshold_val, "edge");
-        updateView(dst);
-    }
-    else if (arg1 == "Skeleton") {
-        src = imread(imagePath.toStdString());
-        dst = imagePtr->setImageView(src, threshold_val, "skeleton");
-        updateView(dst);
-    }
+}
+
+void MainWindow::on_edgeButton_clicked()
+{
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    }// error
+
+    int index = ui->imageFiles_listWidget->currentRow();
+    imagePath = imagePaths.at(index);
+    src = imread(imagePath.toStdString());
+    cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
+
+    //show edge window
+    edgeWin->setImageView(src_resize);
+    edgeWin->show();
+
 
 }
 
@@ -250,21 +281,26 @@ void MainWindow::updateView(Mat imageOut)
 
 }// update graphic view
 
-void MainWindow::mousePressEvent(QMouseEvent *event)
-{
-    if (mouseEnabled) {
-        QPoint  local_pt = ui->graphicsView->mapFromGlobal(event->globalPos());
-        QPointF img_coord_pt = ui->graphicsView->mapToScene(local_pt);
 
-        qreal x_coord = img_coord_pt.x();
-        qreal y_coord = img_coord_pt.y();
+/**********************************************************************************/
+/********************* Functions for Debugging Tips Detection *********************/
+/**********************************************************************************/
 
-        bloodVesselObject->saveTipPoint(x_coord, y_coord);
+//void MainWindow::mousePressEvent(QMouseEvent *event)
+//{
+//    if (mouseEnabled) {
+//        QPoint  local_pt = ui->graphicsView->mapFromGlobal(event->globalPos());
+//        QPointF img_coord_pt = ui->graphicsView->mapToScene(local_pt);
 
-        dst = bloodVesselObject->identifyTip(src, (float) x_coord, (float) y_coord);
-        updateView(dst);
-    }
-}
+//        qreal x_coord = img_coord_pt.x();
+//        qreal y_coord = img_coord_pt.y();
+//        qDebug() << x_coord << y_coord;
+//        bloodVesselObject->saveTipPoint(x_coord, y_coord);
+
+//        dst = bloodVesselObject->identifyTip(src, (float) x_coord, (float) y_coord);
+//        updateView(dst);
+//    }
+//}
 
 //void MainWindow::on_bloodVesselsTips_radioButton_toggled(bool checked)
 //{
@@ -294,123 +330,25 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 //    }
 //}
 
-void MainWindow::on_imageFiles_listWidget_itemClicked(QListWidgetItem *item)
-{
-    item->setSelected(true);
-    int index = ui->imageFiles_listWidget->currentRow();
-    imagePath = imagePaths.at(index);
-
-    src = imread(imagePath.toStdString());
-    if (ui->imageMode_comboBox->currentText() == "Original") {
-        dst = imread(imagePath.toStdString());
-        if (threshold_val > 0) {
-            cv::threshold(src, dst, threshold_val, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
-        }
-        updateView(dst);
-    }
-    else if (ui->imageMode_comboBox->currentText() == "Contour") {
-        cv::threshold(src, dst, threshold_val, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
-        dst = imagePtr->setImageView(src, threshold_val, "contour");
-        updateView(dst);
-    }
-    else if (ui->imageMode_comboBox->currentText() == "Edge") {
-        dst = imagePtr->setImageView(src, threshold_val, "edge");
-        updateView(dst);
-    }
-}
-
-void MainWindow::on_displayOrigImage_pushButton_clicked()
-{
-    int index = ui->imageFiles_listWidget->currentRow();
-    imagePath = imagePaths.at(index);
-
-    src = imread(imagePath.toStdString());
-    cv::resize(src, src, cv::Size2i(src.cols/4, src.rows/4));
-    namedWindow(imagePath.toStdString(), WINDOW_NORMAL);
-    imshow(imagePath.toStdString(), src);
-}
-
-void MainWindow::on_preProcessed_pushButton_clicked()
-{
-    int index = ui->imageFiles_listWidget->currentRow();
-    imagePath = imagePaths.at(index);
-
-    int old_thresh = threshold_val;
-
-    // some tips for testing and comparison
-    // comment out for actual tip detection
-    if (index == 0) {
-        bloodVesselObject->testTips();
-        threshold_val = 178;
-    }
-    else {
-        bloodVesselObject->testTips2();
-        threshold_val = 132;
-    }
-
-    src = imread(imagePath.toStdString());
-    cv::threshold(src, dst, threshold_val, 255, cv::THRESH_BINARY_INV);
-
-//    updateView(dst);
-
-//    Mat src_gray;
-//    Mat img_bw;
-
-//    cv::cvtColor(src, src_gray, cv::COLOR_BGR2GRAY);
-//    adaptiveThreshold(src_gray, img_bw, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY_INV, 53, 1);
-
-    dilate(dst, dst, Mat(), Point(-1, -1), 3, 1, 2);
-    erode(dst, dst, Mat(), Point(-1, -1), 5, 1, 2);
-    dst = imagePtr->setBackground(dst);
-
-    if (index == 1) { // doesn't seem to work for first image for some reason
-        dst = imagePtr->removeOuterVessel(dst);
-    }
-    // some tips for testing and comparison
-    bloodVesselObject->displayTips(dst);
-    cv::resize(dst, dst, cv::Size2i(dst.cols/4, dst.rows/4));
-    namedWindow(imagePath.toStdString(), WINDOW_NORMAL);
-    imshow(imagePath.toStdString(), dst);
-
-    threshold_val = old_thresh;
-
-}
+/**********************************************************************************/
+/************************ Main Application Functionalities ************************/
+/**********************************************************************************/
 
 void MainWindow::on_tipDetect_pushButton_clicked()
 {
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    }// error
+
     int index = ui->imageFiles_listWidget->currentRow();
     imagePath = imagePaths.at(index);
-
-    // some tips for testing and comparison
-    // comment out for actual tip detection
-    if (index == 0) {
-        bloodVesselObject->testTips();
-        threshold_val = 185;
-    }
-    else {
-        bloodVesselObject->testTips2();
-        threshold_val = 132;
-    }
-
     src = imread(imagePath.toStdString());
-    if (ui->imageMode_comboBox->currentText() == "Original") {
-        dst = imread(imagePath.toStdString());
-        if (threshold_val > 0) {
-            cv::threshold(src, dst, threshold_val, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
-        }
-        bloodVesselObject->displayTips(dst);
-        updateView(dst);
-    }
-    else if (ui->imageMode_comboBox->currentText() == "Contour") {
-        cv::threshold(src, dst, threshold_val, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
-        dst = imagePtr->setImageView(src, threshold_val, "contour");
-        bloodVesselObject->displayTips(dst);
-        updateView(dst);
-    }
-    else if (ui->imageMode_comboBox->currentText() == "Edge") {
-        dst = imagePtr->setImageView(src, threshold_val, "edge");
-        updateView(dst);
-    }
+    cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
+
+    // detect tips
+    edgeWin->detectTips(src_resize);
+
 }
 
 void MainWindow::on_animate_pushButton_clicked()
@@ -418,30 +356,4 @@ void MainWindow::on_animate_pushButton_clicked()
 
 }
 
-void MainWindow::on_edgeButton_clicked()
-{
-    if(!check_imageOpened()){
-        errorMsg();
-        return;
-    }// error
 
-//    int index = ui->imageFiles_listWidget->currentRow();
-//    imagePath = imagePaths.at(index);
-//    src = imread(imagePath.toStdString());
-
-    //show edge window
-    Mat imageOut = edgeWin->detectTips(src);
-    edgeWin->show();
-
-    for (int i = 0; i < imageOut.rows; i++) {
-        for (int j = 0; j < imageOut.cols; j++) {
-            Vec3b color = imageOut.at<Vec3b>(Point(i,j));
-            QVector3D colorVal(color[0], color[1], color[2]);
-            if (colorVal == QVector3D(255, 255, 255)) {
-                bloodVesselObject->saveTipPoint((qreal) i, (qreal) j);
-            }
-        }
-    }
-
-    bloodVesselObject->displayTips(src);
-}

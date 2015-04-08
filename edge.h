@@ -22,15 +22,8 @@ public:
     Edge(QWidget *parent = 0);
     ~Edge();
 
-    void setImageView(Mat imageOut);
-    void updateThreshold();
-    Mat detectTips(Mat imageIn);
-
-    void GetLutSkel(Mat &Lut);
-    void applylut_1(Mat &src, Mat &dst);
-    void applylut_8(Mat &src, Mat &dst, Mat &lut);
-    void skel(Mat &src, Mat &dst);
-    void endp(Mat &src, Mat &dst);
+    void setImageView(Mat imageOut); // set up image for edge mode
+    Mat detectTips(Mat imageIn); // set up image for tips detection
 
 protected:
     void changeEvent(QEvent *e);
@@ -41,8 +34,16 @@ private slots:
 private:
     Ui::Edge *ui;
 
-    void updateView(Mat imageOut);
+    // functions for edge mode
     Mat setEdge();
+    void updateView(Mat imageOut);
+
+    // functions for tips detection
+    void GetLutSkel(Mat &Lut);
+    void applylut_1(Mat &imageIn, Mat &imageOut);
+    void applylut_8(Mat &src, Mat &dst, Mat &lut);
+    void skel(Mat &src, Mat &dst);
+    void endp(Mat &imageIn, Mat &imageOut);
 
     QPixmap image;
     QImage *imageObject;

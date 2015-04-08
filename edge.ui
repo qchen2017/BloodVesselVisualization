@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>638</width>
-    <height>600</height>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,16 +17,16 @@
    <widget class="QGraphicsView" name="graphicsView">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>39</y>
-      <width>600</width>
-      <height>591</height>
+      <x>0</x>
+      <y>40</y>
+      <width>638</width>
+      <height>621</height>
      </rect>
     </property>
    </widget>
    <widget class="QSlider" name="varySlider">
     <property name="enabled">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
     <property name="geometry">
      <rect>

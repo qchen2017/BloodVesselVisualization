@@ -17,17 +17,15 @@ public:
     Image() {}
     ~Image() {}
 
-    Mat setImageView(Mat imageIn, int thresh_val, string mode);
-    Mat setBackground(Mat imageIn);
-    Mat removeOuterVessel(Mat imageIn);
+    Mat setImageView(Mat imageIn, int thresh_val, string mode); // set up image for changing modes
 
 private:
-    Mat setContour(Mat src, int thresh_val);
-    Mat setEdge(Mat src, int thresh_val);
-    Mat setSkeleton(Mat img, int thresh_val);
+    Mat setContour(Mat src, int thresh_val); // contour mode
 
-    void thinningIteration(Mat &im, int iter);
+    // skeleton mode - currently not implemented on the ui
     void thinning(Mat &im);
+    void thinningIteration(Mat &im, int iter);
+
 };
 
 #endif // Image_H
