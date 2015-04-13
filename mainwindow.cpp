@@ -348,18 +348,19 @@ void MainWindow::on_tipDetect_pushButton_clicked()
         return;
     }// error
 
-    int index = ui->imageFiles_listWidget->currentRow();
-    imagePath = imagePaths.at(index);
-    src = imread(imagePath.toStdString());
-    cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
+    for (int i = 0; i < imagePaths.size(); i++) {
+        imagePath = imagePaths.at(i);
+        src = imread(imagePath.toStdString());
+        cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
 
-    // detect tips
-    edgeWin->detectTips(src_resize, tips_map, imagePath.toStdString());
+        // detect tips
+        edgeWin->detectTips(src_resize, tips_map, imagePath.toStdString());
 
-    // prints out vector of coordinates for debugging purposes
-    // QVector<QVector2D> pts;
-    // pts = tips_map[imagePath.toStdString()];
-    // qDebug() << pts;
+        // prints out vector of coordinates for debugging purposes
+        // QVector<QVector2D> pts;
+        // pts = tips_map[imagePath.toStdString()];
+        // qDebug() << pts;
+    }
 
     writeTipsToFile(tips_map);
 
@@ -374,14 +375,15 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
     QFile file(outfile);
     if (file.open(QIODevice::WriteOnly)) {
         QTextStream stream(&file);
+        // iterate through tips_map to get the tips' coordinates for each image
         for(auto it = tips_map.begin(); it != tips_map.end(); ++it){
-            string temp = it->first;
+            string temp = it->first; // image path name
             QString imgname = QString::fromStdString(temp);
-            stream << imgname << endl;
-            QVector<QVector2D> pts = tips_map[temp];
+            stream << imgname << endl; // write image path name
+            QVector<QVector2D> pts = tips_map[temp]; // coordinates associated with image
             for (int i = 0; i < pts.size(); i++) {
                 QVector2D pt = pts.at(i);
-                stream << pt.x() << "," << pt.y() << endl;
+                stream << pt.x() << "," << pt.y() << endl; // write all coordinates to file
             }
         }
     }
@@ -389,9 +391,47 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
     file.close();
 }
 
-void MainWindow::on_animate_pushButton_clicked()
+void MainWindow::on_branchGraph_clicked()
 {
+    QVector<QVector2D> graph_pts;
 
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    }// error
+
+    for (int i = 0; i < imagePaths.size(); i++) {
+        imagePath = imagePaths.at(i);
+        src = imread(imagePath.toStdString());
+        cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
+        edgeWin->branchGraph(src_resize, dst, graph_pts);
+    }
+
+    Mat img(image.width(), image.height(), CV_8UC3, Scalar(0, 0, 0));
+    img.setTo(cv::Scalar(0, 0, 0));
+
+    Vec3b color = 255;
+    QVector2D pt;
+    int x, y;
+
+    for (int i = 0; i < graph_pts.size(); i++) {
+        pt = graph_pts.at(i);
+        x = pt.x();
+        y = pt.y();
+        img.at<Vec3b>(Point(x,y)) = color;
+    }
+
+    imshow("Graph", img);
 }
 
+void MainWindow::on_animate_pushButton_clicked()
+{
+    for (int i = 0; i < imagePaths.size(); i++) {
+        imagePath = imagePaths.at(i);
+        src = imread(imagePath.toStdString());
+        cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
+        imshow("Sequence", src_resize);
+        waitKey(75);
+    }
+}
 

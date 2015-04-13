@@ -53,6 +53,7 @@ private slots:
 
     /* Main App Function */
     void on_tipDetect_pushButton_clicked();
+    void on_branchGraph_clicked();
     void on_animate_pushButton_clicked();
 
 private:

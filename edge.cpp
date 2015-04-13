@@ -113,7 +113,39 @@ Mat Edge::detectTips(Mat imageIn, unordered_map<string, QVector<QVector2D> > &ti
 
     return dst;
 
-}// update threshold
+}
+
+void Edge::branchGraph(Mat imageIn, Mat imageOut, QVector<QVector2D> &graph_pts)
+{
+    this->src = imageIn;
+
+    // thin the blood vessels
+    Mat edge;
+    cvtColor(src, src_gray, cv::COLOR_BGR2GRAY);
+    blur(src_gray, edge, Size(3,3));
+    Canny(edge, edge, 135, 135*3, 3);
+
+    imageOut = edge.clone();
+    cv::threshold(imageOut, imageOut, 0, 1, THRESH_BINARY);
+
+    applylut_1(imageOut,imageOut);
+    imageOut = imageOut*255;
+
+    skel(edge, imageOut);
+
+    QVector2D pt;
+    for (int x = 0; x < imageOut.cols; x++) {
+        for (int y = 0; y < imageOut.rows; y++) {
+            int color = imageOut.at<int>(Point(x,y));
+            if (color == 255) {
+                pt.setX(x);
+                pt.setY(y);
+                graph_pts.push_back(pt);
+            }
+        }
+    }
+
+}
 
 /*****************************************************************************************************
  ************ The following codes are obtained from stackoverflow.com question #:22058485 ************
@@ -315,27 +347,27 @@ void Edge::applylut_1(Mat &imageIn,Mat &imageOut)
 //-----------------------------------------------------------------------------------------------------
 // http://matlab.exponenta.ru/imageprocess/book3/13/applylut.php
 //-----------------------------------------------------------------------------------------------------
-void Edge::applylut_8(Mat &src,Mat &dst,Mat& lut)
+void Edge::applylut_8(Mat &src, Mat &dst, Mat &lut)
 {
-    Mat k(3,3,CV_16UC1);
+    Mat k(3, 3, CV_16UC1);
 
-    k.at<unsigned short>(0,0)=256;
-    k.at<unsigned short>(1,0)=128;
-    k.at<unsigned short>(2,0)=64;
-    k.at<unsigned short>(0,1)=32;
-    k.at<unsigned short>(1,1)=16;
-    k.at<unsigned short>(2,1)=8;
-    k.at<unsigned short>(0,2)=4;
-    k.at<unsigned short>(1,2)=2;
-    k.at<unsigned short>(2,2)=1;
+    k.at<unsigned short>(0, 0) = 256;
+    k.at<unsigned short>(1, 0) = 128;
+    k.at<unsigned short>(2, 0) = 64;
+    k.at<unsigned short>(0, 1) = 32;
+    k.at<unsigned short>(1, 1) = 16;
+    k.at<unsigned short>(2, 1) = 8;
+    k.at<unsigned short>(0, 2) = 4;
+    k.at<unsigned short>(1, 2) = 2;
+    k.at<unsigned short>(2, 2) = 1;
 
     dst=src.clone();
 
-    for(int I=7;I>=0;I--) {
-        filter2D(dst,dst,CV_16UC1,k);
-        for(int i=0;i<dst.rows;i++) {
-            for (int j=1;j<dst.cols;j++) {
-                dst.at<unsigned short>(i,j)=lut.at<unsigned short>(I,dst.at<unsigned short>(i,j));
+    for(int I = 7; I >= 0; I--) {
+        filter2D(dst, dst, CV_16UC1, k);
+        for(int i = 0; i < dst.rows; i++) {
+            for (int j = 1; j < dst.cols; j++) {
+                dst.at<unsigned short>(i, j) = lut.at<unsigned short>(I, dst.at<unsigned short>(i, j));
             }
         }
     }
@@ -345,21 +377,21 @@ void Edge::applylut_8(Mat &src,Mat &dst,Mat& lut)
 //-----------------------------------------------------------------------------------------------------
 // LUT Skeletonizer
 //-----------------------------------------------------------------------------------------------------
-void Edge::skel(Mat &src,Mat &dst)
+void Edge::skel(Mat &src, Mat &dst)
 {
     Mat lut;
     GetLutSkel(lut);
-    dst=src.clone();
+    dst = src.clone();
 
-    cv::threshold(dst,dst,0,1,THRESH_BINARY);
+    cv::threshold(dst, dst, 0, 1, THRESH_BINARY);
 
-    int last_pc=INT_MAX;
-    for(int pc=countNonZero(dst);pc<last_pc;pc=countNonZero(dst)) {
-        last_pc=pc;
-        applylut_8(dst,dst,lut);
+    int last_pc = INT_MAX;
+    for (int pc = countNonZero(dst); pc<last_pc; pc = countNonZero(dst)) {
+        last_pc = pc;
+        applylut_8(dst, dst, lut);
     }
 
-    dst=dst*255;
+    dst = dst * 255;
     imshow("skel", dst);
 }
 
@@ -374,9 +406,9 @@ void Edge::endp(Mat &imageIn, Mat &imageOut, unordered_map<string, QVector<QVect
     applylut_1(imageOut,imageOut);
     imageOut = imageOut*255;
 
-    imshow("Blood Vessel Tips", imageOut); // display tips in a separate window
+    //imshow("Blood Vessel Tips", imageOut); // display tips in a separate window
     getTipsCoords(imageOut, tips_map, imgName);
-    // skel(imageIn, imageOut);
+    skel(imageIn, imageOut);
 }
 
 void Edge::getTipsCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName)

@@ -28,7 +28,7 @@
     <property name="geometry">
      <rect>
       <x>670</x>
-      <y>250</y>
+      <y>100</y>
       <width>81</width>
       <height>20</height>
      </rect>
@@ -41,7 +41,7 @@
     <property name="geometry">
      <rect>
       <x>740</x>
-      <y>250</y>
+      <y>100</y>
       <width>281</width>
       <height>22</height>
      </rect>
@@ -56,9 +56,9 @@
    <widget class="QComboBox" name="imageMode_comboBox">
     <property name="geometry">
      <rect>
-      <x>960</x>
-      <y>200</y>
-      <width>111</width>
+      <x>950</x>
+      <y>40</y>
+      <width>121</width>
       <height>31</height>
      </rect>
     </property>
@@ -82,8 +82,8 @@
    <widget class="QLabel" name="imageMode_label">
     <property name="geometry">
      <rect>
-      <x>870</x>
-      <y>200</y>
+      <x>860</x>
+      <y>40</y>
       <width>91</width>
       <height>31</height>
      </rect>
@@ -99,7 +99,7 @@
     <property name="geometry">
      <rect>
       <x>1030</x>
-      <y>250</y>
+      <y>100</y>
       <width>41</width>
       <height>21</height>
      </rect>
@@ -111,18 +111,18 @@
    <widget class="QListWidget" name="imageFiles_listWidget">
     <property name="geometry">
      <rect>
-      <x>670</x>
-      <y>50</y>
-      <width>401</width>
-      <height>131</height>
+      <x>660</x>
+      <y>310</y>
+      <width>411</width>
+      <height>311</height>
      </rect>
     </property>
    </widget>
    <widget class="QLabel" name="imageFiles_label">
     <property name="geometry">
      <rect>
-      <x>830</x>
-      <y>20</y>
+      <x>820</x>
+      <y>270</y>
       <width>81</width>
       <height>16</height>
      </rect>
@@ -136,12 +136,12 @@
    </widget>
    <widget class="QPushButton" name="animate_pushButton">
     <property name="enabled">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
     <property name="geometry">
      <rect>
-      <x>660</x>
-      <y>440</y>
+      <x>870</x>
+      <y>200</y>
       <width>200</width>
       <height>34</height>
      </rect>
@@ -157,7 +157,7 @@
     <property name="geometry">
      <rect>
       <x>660</x>
-      <y>290</y>
+      <y>150</y>
       <width>200</width>
       <height>34</height>
      </rect>
@@ -169,8 +169,8 @@
    <widget class="QPushButton" name="displayOrigImage_pushButton">
     <property name="geometry">
      <rect>
-      <x>670</x>
-      <y>200</y>
+      <x>660</x>
+      <y>40</y>
       <width>191</width>
       <height>34</height>
      </rect>
@@ -183,7 +183,7 @@
     <property name="geometry">
      <rect>
       <x>660</x>
-      <y>410</y>
+      <y>240</y>
       <width>405</width>
       <height>20</height>
      </rect>
@@ -199,13 +199,29 @@
     <property name="geometry">
      <rect>
       <x>660</x>
-      <y>330</y>
+      <y>200</y>
       <width>201</width>
       <height>32</height>
      </rect>
     </property>
     <property name="text">
      <string>Edge Mode</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="branchGraph">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>870</x>
+      <y>150</y>
+      <width>200</width>
+      <height>34</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Branch Graph</string>
     </property>
    </widget>
   </widget>
