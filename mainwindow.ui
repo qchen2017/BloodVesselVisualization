@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1100</width>
-    <height>700</height>
+    <height>680</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <widget class="QGraphicsView" name="graphicsView">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>20</x>
       <y>20</y>
       <width>630</width>
       <height>600</height>
@@ -27,8 +27,8 @@
    <widget class="QLabel" name="threshold_label">
     <property name="geometry">
      <rect>
-      <x>670</x>
-      <y>100</y>
+      <x>680</x>
+      <y>110</y>
       <width>81</width>
       <height>20</height>
      </rect>
@@ -40,8 +40,8 @@
    <widget class="QSlider" name="threshold_horizontalSlider">
     <property name="geometry">
      <rect>
-      <x>740</x>
-      <y>100</y>
+      <x>750</x>
+      <y>110</y>
       <width>281</width>
       <height>22</height>
      </rect>
@@ -56,8 +56,8 @@
    <widget class="QComboBox" name="imageMode_comboBox">
     <property name="geometry">
      <rect>
-      <x>950</x>
-      <y>40</y>
+      <x>960</x>
+      <y>50</y>
       <width>121</width>
       <height>31</height>
      </rect>
@@ -82,8 +82,8 @@
    <widget class="QLabel" name="imageMode_label">
     <property name="geometry">
      <rect>
-      <x>860</x>
-      <y>40</y>
+      <x>870</x>
+      <y>50</y>
       <width>91</width>
       <height>31</height>
      </rect>
@@ -98,8 +98,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>1030</x>
-      <y>100</y>
+      <x>1040</x>
+      <y>110</y>
       <width>41</width>
       <height>21</height>
      </rect>
@@ -111,7 +111,7 @@
    <widget class="QListWidget" name="imageFiles_listWidget">
     <property name="geometry">
      <rect>
-      <x>660</x>
+      <x>670</x>
       <y>310</y>
       <width>411</width>
       <height>311</height>
@@ -121,7 +121,7 @@
    <widget class="QLabel" name="imageFiles_label">
     <property name="geometry">
      <rect>
-      <x>820</x>
+      <x>830</x>
       <y>270</y>
       <width>81</width>
       <height>16</height>
@@ -140,8 +140,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>870</x>
-      <y>200</y>
+      <x>880</x>
+      <y>210</y>
       <width>200</width>
       <height>34</height>
      </rect>
@@ -156,8 +156,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>660</x>
-      <y>150</y>
+      <x>670</x>
+      <y>160</y>
       <width>200</width>
       <height>34</height>
      </rect>
@@ -169,11 +169,23 @@
    <widget class="QPushButton" name="displayOrigImage_pushButton">
     <property name="geometry">
      <rect>
-      <x>660</x>
-      <y>40</y>
+      <x>670</x>
+      <y>50</y>
       <width>191</width>
       <height>34</height>
      </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>ArrowCursor</cursorShape>
+    </property>
+    <property name="toolTip">
+     <string/>
+    </property>
+    <property name="toolTipDuration">
+     <number>-1</number>
+    </property>
+    <property name="whatsThis">
+     <string/>
     </property>
     <property name="text">
      <string>Display Original Image</string>
@@ -182,8 +194,8 @@
    <widget class="Line" name="divider_line">
     <property name="geometry">
      <rect>
-      <x>660</x>
-      <y>240</y>
+      <x>670</x>
+      <y>250</y>
       <width>405</width>
       <height>20</height>
      </rect>
@@ -198,8 +210,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>660</x>
-      <y>200</y>
+      <x>670</x>
+      <y>210</y>
       <width>201</width>
       <height>32</height>
      </rect>
@@ -214,14 +226,30 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>870</x>
-      <y>150</y>
+      <x>880</x>
+      <y>160</y>
       <width>200</width>
       <height>34</height>
      </rect>
     </property>
     <property name="text">
      <string>Branch Graph</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>830</x>
+      <y>20</y>
+      <width>91</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Main Controls</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>
@@ -264,7 +292,6 @@
      <addaction name="actionZoom_Out"/>
     </widget>
     <addaction name="actionFit_to_Window"/>
-    <addaction name="actionActual_Size"/>
     <addaction name="menuZoom"/>
    </widget>
    <addaction name="menuFile"/>
@@ -293,11 +320,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
-   </property>
-  </action>
-  <action name="actionActual_Size">
-   <property name="text">
-    <string>Actual Size</string>
    </property>
   </action>
   <action name="actionZoom_Out">

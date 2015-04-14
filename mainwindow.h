@@ -38,7 +38,6 @@ private slots:
     void on_actionOpen_triggered();
     void on_actionSave_triggered();
     void on_actionFit_to_Window_triggered();
-    void on_actionActual_Size_triggered();
     void on_actionZoom_In__triggered();
     void on_actionZoom_Out_triggered();
 
@@ -78,7 +77,7 @@ private:
     int threshold_val;
     float scaleFactor;
 
-    bool mouseEnabled;
+    // bool mouseEnabled;
 
 
 };

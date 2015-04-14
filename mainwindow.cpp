@@ -8,7 +8,6 @@
 #include <QVector2D>
 #include <QVector>
 #include <unordered_map>
-#include <sstream>
 
 using namespace cv;
 using namespace std;
@@ -30,7 +29,18 @@ MainWindow::MainWindow(QWidget *parent) :
     scaleFactor = 1.15;
 
     // use for testing blood vessel tips detection
-    mouseEnabled = false;
+    // mouseEnabled = false;
+
+    // Tool tips for each of the UI components
+    ui->displayOrigImage_pushButton->setToolTip("Displays original image in a new window.");
+    ui->imageMode_comboBox->setToolTip("Select between different image modes to display in main window.");
+    ui->threshold_horizontalSlider->setToolTip("Adjusts the current image's threshold value.");
+    ui->tipDetect_pushButton->setToolTip("Writes the (x, y) coordinates of the blood vessel tips of all the images to a file.");
+    ui->branchGraph->setToolTip("Displays graph of the blood vessel branches of all the images in a separate window.");
+    ui->edgeButton->setToolTip("Displays Edge mode in a different window.");
+    ui->animate_pushButton->setToolTip("Plays the images in sequence on a separate window.");
+    ui->imageFiles_listWidget->setToolTip("Loaded images");
+    ui->graphicsView->setToolTip("Current image");
 }
 
 MainWindow::~MainWindow()
@@ -102,9 +112,13 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::on_actionSave_triggered()
 {
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    }// error
+
     imagePath = QFileDialog::getSaveFileName(this, tr("Save File"), "",
                                                      tr("JPEG (*.jpg *.jpeg);;PNG (*.png)"));
-
     *imageObject = image.toImage();
     imageObject->save(imagePath);
 
@@ -120,18 +134,6 @@ void MainWindow::on_actionFit_to_Window_triggered()
     ui->graphicsView->fitInView(scene->itemsBoundingRect(), Qt::KeepAspectRatioByExpanding);
     ui->graphicsView->setAlignment(Qt::AlignCenter);
 } // fit to window
-
-void MainWindow::on_actionActual_Size_triggered()
-{
-    if(scene == NULL){
-        errorMsg();
-        return;
-    }
-
-    // need to open window that will show actual size
-} // actual size
-
-// need better zoom functions
 
 void MainWindow::on_actionZoom_In__triggered()
 {
@@ -181,6 +183,11 @@ void MainWindow::on_imageFiles_listWidget_itemClicked(QListWidgetItem *item)
 
 void MainWindow::on_displayOrigImage_pushButton_clicked()
 {
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    }// error
+
     int index = ui->imageFiles_listWidget->currentRow();
     imagePath = imagePaths.at(index);
 
@@ -192,14 +199,13 @@ void MainWindow::on_displayOrigImage_pushButton_clicked()
 
 void MainWindow::on_threshold_horizontalSlider_valueChanged(int value)
 {
-    int index = ui->imageFiles_listWidget->currentRow();
-    imagePath = imagePaths.at(index);
-
     if(!check_imageOpened()){
         errorMsg();
         return;
     }// error
 
+    int index = ui->imageFiles_listWidget->currentRow();
+    imagePath = imagePaths.at(index);
 
     threshold_val = value;
     ui->threshold_lineEdit->setText(QString::number(value));
@@ -220,14 +226,14 @@ void MainWindow::on_threshold_horizontalSlider_valueChanged(int value)
 
 void MainWindow::on_imageMode_comboBox_activated(const QString &arg1)
 {
-    int index = ui->imageFiles_listWidget->currentRow();
-    imagePath = imagePaths.at(index);
 
     if(!check_imageOpened()){
         errorMsg();
-        ui->imageMode_comboBox->setCurrentIndex(0);
         return;
     }// error
+
+    int index = ui->imageFiles_listWidget->currentRow();
+    imagePath = imagePaths.at(index);
 
     if (arg1 == "Normal") {
         dst = imread(imagePath.toStdString());
@@ -283,6 +289,8 @@ void MainWindow::updateView(Mat imageOut)
     ui->graphicsView->setScene(scene);
 
 }// update graphic view
+
+
 
 
 /**********************************************************************************/
@@ -443,6 +451,11 @@ void MainWindow::on_branchGraph_clicked()
 
 void MainWindow::on_animate_pushButton_clicked()
 {
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    }// error
+
     for (int i = 0; i < imagePaths.size(); i++) {
         imagePath = imagePaths.at(i);
         src = imread(imagePath.toStdString());
