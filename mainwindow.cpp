@@ -3,6 +3,7 @@
 #include <QtGui>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QHBoxLayout>
 #include <QDebug>
 #include <QVector2D>
 #include <QVector>
@@ -16,6 +17,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     edgeWin = new Edge(this); // separate UI for Edge mode
+    helpWin = new QWidget; // help window
+    helpWin->sizeHint();
+    helpWin->setWindowTitle("Help");
     ui->setupUi(this); // main window UI
     ui->threshold_lineEdit->setText("0"); // initialize line edit for the threshold value
 
@@ -40,6 +44,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->animate_pushButton->setToolTip("Plays the images in sequence on a separate window.");
     ui->imageFiles_listWidget->setToolTip("Loaded images");
     ui->graphicsView->setToolTip("Current image");
+
+    static QLabel helpInfo;
+    helpInfo.setText("Design Document: https://docs.google.com/a/ucdavis.edu/document/d/1MzFV0zI-LZV6j7tqBh1H0ese6fr5gMz8w4HmYBFGPOk/\n\n"
+                     "Testing Document: https://docs.google.com/a/ucdavis.edu/document/d/1hkfqfILpR68mZEYMrsZXgx0fQEmJTdX65G3fDLlw8MY/");
+    QHBoxLayout *vbl = new QHBoxLayout(helpWin);
+    vbl->addWidget(&helpInfo);
+
 }
 
 MainWindow::~MainWindow()
@@ -162,6 +173,11 @@ void MainWindow::on_actionZoom_Out_triggered()
 
     ui->graphicsView->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
 } // zoom out
+
+void MainWindow::on_actionView_Documentation_triggered()
+{
+    helpWin->show();
+}
 
 /**********************************************************************************/
 /*********************** Main User Interface Functionalities **********************/
@@ -472,4 +488,3 @@ void MainWindow::on_animate_pushButton_clicked()
         waitKey(75); // 75 ms between each image
     }
 }
-

@@ -1,7 +1,6 @@
 #include "image.h"
 #include <QDebug>
 #include <QVector3D>
-#include <iostream>
 
 using namespace cv;
 using namespace std;

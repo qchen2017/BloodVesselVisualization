@@ -1,7 +1,6 @@
 #include "bloodvessels.h"
 #include <QVector3D>
 #include <QDebug>
-#include <iostream>
 
 using namespace cv;
 using namespace std;

@@ -40,6 +40,7 @@ private slots:
     void on_actionFit_to_Window_triggered();
     void on_actionZoom_In__triggered();
     void on_actionZoom_Out_triggered();
+    void on_actionView_Documentation_triggered();
 
     /* Main User Interface Functionalities */
     void on_imageFiles_listWidget_itemClicked(QListWidgetItem *item);
@@ -59,6 +60,7 @@ private:
     void writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips_map);
 
     Ui::MainWindow *ui;
+    QWidget *helpWin;
 
     QStringList imagePaths;
     QString imagePath;

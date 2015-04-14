@@ -294,8 +294,15 @@
     <addaction name="actionFit_to_Window"/>
     <addaction name="menuZoom"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionView_Documentation"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">
@@ -344,6 +351,17 @@
    </property>
    <property name="text">
     <string>Blood Vessel Tips Selector</string>
+   </property>
+  </action>
+  <action name="actionView_Documentation">
+   <property name="text">
+    <string>View Documentations</string>
+   </property>
+   <property name="toolTip">
+    <string>View Documentations</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+H</string>
    </property>
   </action>
  </widget>

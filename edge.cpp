@@ -1,6 +1,5 @@
 #include "edge.h"
 #include "ui_edge.h"
-#include <iostream>
 #include <QVector2D>
 #include <QVector3D>
 #include <QDebug>
