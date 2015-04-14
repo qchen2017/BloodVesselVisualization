@@ -1,13 +1,12 @@
 #include "edge.h"
 #include "ui_edge.h"
-
 #include <iostream>
 #include <QVector2D>
 #include <QVector3D>
 #include <QDebug>
 
-using namespace std;
 using namespace cv;
+using namespace std;
 
 Edge::Edge(QWidget *parent) :
     QMainWindow(parent),
@@ -16,14 +15,14 @@ Edge::Edge(QWidget *parent) :
     ui->setupUi(this);
     setFixedSize(size().width(), size().height());
 
-    //setup vary slider
+    // set up threshold slider
     ui->vary_lineEdit->setText("0");
     ui->varySlider->setRange(0, 255);
     ui->varySlider->setSingleStep(1);
     ui->varySlider->setTickPosition(ui->varySlider->TicksBelow);
     ui->varySlider->setTickInterval(5);
 
-}//constructor
+} // constructor
 
 Edge::~Edge()
 {
@@ -42,9 +41,9 @@ void Edge::changeEvent(QEvent *e)
     }
 }// change window
 
-/*****************************************************************************************************
- ****************************************** EDGE MODE ************************************************
-*****************************************************************************************************/
+/*****************************************************************************************************/
+/****************************************** EDGE MODE ************************************************/
+/*****************************************************************************************************/
 
 void Edge::setImageView(Mat imageIn)
 {
@@ -52,7 +51,7 @@ void Edge::setImageView(Mat imageIn)
     Mat imageOut = setEdge();
     updateView(imageOut);
 
-}// set image View
+} // set image View
 
 Mat Edge::setEdge()
 {
@@ -64,7 +63,7 @@ Mat Edge::setEdge()
     Canny(edge, edge, thresh, thresh*3, 3);
     return edge;
 
-}// edge detection function
+} // edge detection function
 
 void Edge::updateView(Mat imageOut)
 {
@@ -76,12 +75,12 @@ void Edge::updateView(Mat imageOut)
     scene->addPixmap(image);
     scene->setSceneRect(0, 0, image.width(), image.height());
     ui->graphicsView->setScene(scene);
-}// update graphic view
+} // update graphic view
 
 
-/*****************************************************************************************************
- ****************************************** EDGE WINDOW UI *******************************************
-*****************************************************************************************************/
+/*****************************************************************************************************/
+/****************************************** EDGE WINDOW UI *******************************************/
+/*****************************************************************************************************/
 
 void Edge::on_varySlider_valueChanged(int value)
 {
@@ -89,12 +88,12 @@ void Edge::on_varySlider_valueChanged(int value)
     ui->vary_lineEdit->setText(QString::number(value));
     Mat imageOut = setEdge();
     updateView(imageOut);
-}// vary slider
+} // vary slider
 
 
-/*****************************************************************************************************
- ************************************ BLOOD VESSELS' TIPS DETECTION **********************************
-*****************************************************************************************************/
+/*****************************************************************************************************/
+/************************************ BLOOD VESSELS' TIPS DETECTION **********************************/
+/*****************************************************************************************************/
 
 Mat Edge::detectTips(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName)
 {
@@ -134,9 +133,9 @@ void Edge::branchGraph(Mat imageIn, Mat &imageOut)
     skel(edge, imageOut);
 }
 
-/*****************************************************************************************************
- ************ The following codes are obtained from stackoverflow.com question #:22058485 ************
-*****************************************************************************************************/
+/*****************************************************************************************************/
+/************ The following codes are obtained from stackoverflow.com question #:22058485 ************/
+/*****************************************************************************************************/
 
 //-----------------------------------------------------------------------------------------------------
 // LUT for skeletonization
@@ -379,7 +378,7 @@ void Edge::skel(Mat &src, Mat &dst)
     }
 
     dst = dst * 255;
-    //imshow("skel", dst);
+    // imshow("skel", dst); // displays the skeleton of the image in a separate window
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -393,9 +392,8 @@ void Edge::endp(Mat &imageIn, Mat &imageOut, unordered_map<string, QVector<QVect
     applylut_1(imageOut,imageOut);
     imageOut = imageOut*255;
 
-    //imshow("Blood Vessel Tips", imageOut); // display tips in a separate window
+    // imshow("Blood Vessel Tips", imageOut); // display tips in a separate window
     getTipsCoords(imageOut, tips_map, imgName);
-    //skel(imageIn, imageOut);
 }
 
 void Edge::getTipsCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName)
@@ -407,6 +405,7 @@ void Edge::getTipsCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> >
             int color = imageIn.at<int>(Point(x,y)); // get pixel color
             // if pixel is white, then it is a tip
             if (color == 255) {
+                // transforms coordinates to image coordinates (between -1 and 1, origin at the center)
                 pt.setX((float)(x - imageIn.cols/2)/(float)(imageIn.cols));
                 pt.setY((float)(imageIn.rows/2 - y)/(float)(imageIn.rows));
                 pts.push_back(pt);

@@ -3,6 +3,7 @@
 #include <QVector3D>
 #include <iostream>
 
+using namespace cv;
 using namespace std;
 
 Mat Image::setImageView(Mat imageIn, int thresh_val, string mode)
@@ -36,10 +37,9 @@ Mat Image::setContour(Mat src, int thresh_val)
     return drawing;
 }
 
-/*********************************************************************************************************************
-The following codes are obtained from http://opencv-code.com/quick-tips/implementation-of-guo-hall-thinning-algorithm/
-**********************************************************************************************************************/
-
+/************************************************************************************************************************/
+/*The following codes are obtained from http://opencv-code.com/quick-tips/implementation-of-guo-hall-thinning-algorithm/*/
+/************************************************************************************************************************/
 
 void Image::thinningIteration(Mat &im, int iter)
 {

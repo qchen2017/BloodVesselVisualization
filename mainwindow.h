@@ -50,13 +50,12 @@ private slots:
 //    void on_bloodVesselsTips_radioButton_toggled(bool checked);
 //    void on_displayBloodVesselTips_radioButton_toggled(bool checked);
 
-    /* Main App Function */
+    /* Main App Functions */
     void on_tipDetect_pushButton_clicked();
     void on_branchGraph_clicked();
     void on_animate_pushButton_clicked();
 
 private:
-
     void writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips_map);
 
     Ui::MainWindow *ui;
@@ -76,10 +75,7 @@ private:
 
     int threshold_val;
     float scaleFactor;
-
     // bool mouseEnabled;
-
-
 };
 
 #endif // MAINWINDOW_H

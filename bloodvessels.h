@@ -13,12 +13,12 @@ using namespace cv;
 class BloodVessels
 {
 public:
-    BloodVessels();
-    ~BloodVessels();
+    BloodVessels() {}
+    ~BloodVessels() {}
 
     bool isEmpty();
 
-    /* Debugging functions*/
+    /* Debugging functions */
     void saveTipPoint(qreal x, qreal y);
     Mat displayTips(Mat src);
 

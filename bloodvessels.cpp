@@ -3,17 +3,8 @@
 #include <QDebug>
 #include <iostream>
 
+using namespace cv;
 using namespace std;
-
-BloodVessels::BloodVessels()
-{
-
-}
-
-BloodVessels::~BloodVessels()
-{
-
-}
 
 bool BloodVessels::isEmpty()
 {

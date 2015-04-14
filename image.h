@@ -1,6 +1,5 @@
 #ifndef IMAGE_H
 #define IMAGE_H
-
 #include <QWidget>
 #include <QMainWindow>
 #include <QGraphicsScene>
@@ -8,8 +7,8 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/core/core.hpp"
 
-using namespace std;
 using namespace cv;
+using namespace std;
 
 class Image
 {
