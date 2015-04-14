@@ -115,7 +115,7 @@ Mat Edge::detectTips(Mat imageIn, unordered_map<string, QVector<QVector2D> > &ti
 
 }
 
-void Edge::branchGraph(Mat imageIn, Mat imageOut, QVector<QVector2D> &graph_pts)
+void Edge::branchGraph(Mat imageIn, Mat &imageOut)
 {
     this->src = imageIn;
 
@@ -132,19 +132,6 @@ void Edge::branchGraph(Mat imageIn, Mat imageOut, QVector<QVector2D> &graph_pts)
     imageOut = imageOut*255;
 
     skel(edge, imageOut);
-
-    QVector2D pt;
-    for (int x = 0; x < imageOut.cols; x++) {
-        for (int y = 0; y < imageOut.rows; y++) {
-            int color = imageOut.at<int>(Point(x,y));
-            if (color == 255) {
-                pt.setX(x);
-                pt.setY(y);
-                graph_pts.push_back(pt);
-            }
-        }
-    }
-
 }
 
 /*****************************************************************************************************
@@ -392,7 +379,7 @@ void Edge::skel(Mat &src, Mat &dst)
     }
 
     dst = dst * 255;
-    imshow("skel", dst);
+    //imshow("skel", dst);
 }
 
 //-----------------------------------------------------------------------------------------------------
@@ -408,14 +395,14 @@ void Edge::endp(Mat &imageIn, Mat &imageOut, unordered_map<string, QVector<QVect
 
     //imshow("Blood Vessel Tips", imageOut); // display tips in a separate window
     getTipsCoords(imageOut, tips_map, imgName);
-    skel(imageIn, imageOut);
+    //skel(imageIn, imageOut);
 }
 
 void Edge::getTipsCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName)
 {
     QVector2D pt;
     QVector<QVector2D> pts;
-    for (int x = 0; x < imageIn.cols; x++) {
+    for (int x = 0; x < imageIn.cols - 150; x++) {
         for (int y = 0; y < imageIn.rows; y++) {
             int color = imageIn.at<int>(Point(x,y)); // get pixel color
             // if pixel is white, then it is a tip

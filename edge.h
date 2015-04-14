@@ -27,7 +27,7 @@ public:
 
     void setImageView(Mat imageOut); // set up image for edge mode
     Mat detectTips(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName); // set up image for tips detection
-    void branchGraph(Mat imageIn, Mat imageOut, QVector<QVector2D> &graph_pts);
+    void branchGraph(Mat imageIn, Mat &imageOut);
 
 protected:
     void changeEvent(QEvent *e);

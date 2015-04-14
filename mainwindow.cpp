@@ -400,28 +400,45 @@ void MainWindow::on_branchGraph_clicked()
         return;
     }// error
 
+    Mat imageOut;
     for (int i = 0; i < imagePaths.size(); i++) {
         imagePath = imagePaths.at(i);
         src = imread(imagePath.toStdString());
         cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
-        edgeWin->branchGraph(src_resize, dst, graph_pts);
+        edgeWin->branchGraph(src_resize, imageOut);
+
+        QVector2D pt;
+        //qDebug() << imageOut.cols << imageOut.rows;
+        for (int x = 300; x < (imageOut.cols - 300); x++) {
+            for (int y = 0; y < imageOut.rows; y++) {
+                Vec3b color = imageOut.at<Vec3b>(Point(x,y));
+                if ((color[0] != 0) || (color[1] != 0) || (color[2] != 0)) {
+                    //qDebug() << color[0] << color[1] << color[2];
+                    pt.setX(x);
+                    pt.setY(y);
+                    graph_pts.push_back(pt);
+                }
+            }
+        }
     }
 
-    Mat img(image.width(), image.height(), CV_8UC3, Scalar(0, 0, 0));
+    Mat img = imageOut;
     img.setTo(cv::Scalar(0, 0, 0));
 
-    Vec3b color = 255;
-    QVector2D pt;
+    Vec3b color;
+    color[0] = 255; color[1] = 255; color[2] = 255;
+    QVector2D pt2;
     int x, y;
 
     for (int i = 0; i < graph_pts.size(); i++) {
-        pt = graph_pts.at(i);
-        x = pt.x();
-        y = pt.y();
+        pt2 = graph_pts.at(i);
+        x = pt2.x();
+        y = pt2.y();
         img.at<Vec3b>(Point(x,y)) = color;
     }
 
     imshow("Graph", img);
+
 }
 
 void MainWindow::on_animate_pushButton_clicked()
