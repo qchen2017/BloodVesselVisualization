@@ -402,13 +402,13 @@ void Edge::getTipsCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> >
 {
     QVector2D pt;
     QVector<QVector2D> pts;
-    for (int x = 0; x < imageIn.cols - 150; x++) {
+    for (int x = 0; x < imageIn.cols; x++) {
         for (int y = 0; y < imageIn.rows; y++) {
             int color = imageIn.at<int>(Point(x,y)); // get pixel color
             // if pixel is white, then it is a tip
             if (color == 255) {
-                pt.setX(x);
-                pt.setY(y);
+                pt.setX((float)(x - imageIn.cols/2)/(float)(imageIn.cols));
+                pt.setY((float)(imageIn.rows/2 - y)/(float)(imageIn.rows));
                 pts.push_back(pt);
             }
         }

@@ -4,8 +4,8 @@ Notes:
 
 2. We should have different directories like src for source codes, exe for the .exe file, etc.
 
-Tips detection - need to convert to Cartesian/image coordinates.
+Tips detection - coordinates have been fixed; does not work well for images with low contrast.
 
 Animation sequence - need additional UI controls.
 
-Branch graph (brute force) - need more efficient and accurate approach
+Branch graph (brute force) - need more efficient and accurate approach.
