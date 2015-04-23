@@ -398,8 +398,12 @@ void MainWindow::on_tipDetect_pushButton_clicked()
 void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips_map)
 {
     // prompt user for file name and location
-    QString outfile = QFileDialog::getSaveFileName(this, "Save");
-
+    //QString outfile = QFileDialog::getSaveFileName(this, "Save");
+    QString outfile = QFileDialog::getSaveFileName(this, "Save", "untitled.csv", tr("Comma Separated Values (CSV) (*.csv);;"
+                                                                                    "Excel Workbook (*.xlsx);; "
+                                                                                    "Excel 97-2003 Workbook (*.xls);;"
+                                                                                    "Text (*.txt);;"
+                                                                                    "OpenDocument Spreadsheet (*.ods)"));
     // write tips coordinates to file
     QFile file(outfile);
     if (file.open(QIODevice::WriteOnly)) {
