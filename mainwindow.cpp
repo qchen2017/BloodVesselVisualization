@@ -125,7 +125,7 @@ void MainWindow::on_actionOpen_triggered()
 
     // set highlighted item in image files list to be the first item on the list
     ui->imageFiles_listWidget->setCurrentItem(ui->imageFiles_listWidget->item(0));
-
+    ui->menuView->setEnabled(true);
 } // open image
 
 void MainWindow::on_actionSave_triggered()
