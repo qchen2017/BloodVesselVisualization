@@ -11,7 +11,6 @@
 using namespace cv;
 using namespace std;
 
-<<<<<<< HEAD
 //global variables for slide show
 int trackbarNum, timeDelay, slideNum;
 bool slidePause;
@@ -19,8 +18,6 @@ Mat imageRead;
 QStringList pathlists;
 QString pathname;
 char keyPressed;
-=======
->>>>>>> origin/master
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
