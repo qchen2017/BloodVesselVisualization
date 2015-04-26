@@ -26,8 +26,10 @@ public:
     ~Edge();
 
     void setImageView(Mat imageOut); // set up image for edge mode
-    Mat detectTips(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName); // set up image for tips detection
+    Mat detectTips(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName, int thresh_val); // set up image for tips detection
     void branchGraph(Mat imageIn, Mat &imageOut);
+
+    void convertToPixelCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map);
 
 protected:
     void changeEvent(QEvent *e);

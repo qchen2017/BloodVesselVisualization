@@ -94,7 +94,8 @@ void Edge::on_varySlider_valueChanged(int value)
 /************************************ BLOOD VESSELS' TIPS DETECTION **********************************/
 /*****************************************************************************************************/
 
-Mat Edge::detectTips(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName)
+Mat Edge::detectTips(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map,
+                     string imgName, int thresh_val)
 {
     this->src = imageIn;
 
@@ -102,7 +103,7 @@ Mat Edge::detectTips(Mat imageIn, unordered_map<string, QVector<QVector2D> > &ti
     Mat edge;
     cvtColor(src, src_gray, cv::COLOR_BGR2GRAY);
     blur(src_gray, edge, Size(3,3));
-    Canny(edge, edge, 135, 135*3, 3);
+    Canny(edge, edge, thresh_val, thresh_val*3, 3);
 
     // determine endpoints after thinning
     endp(edge, dst, tips_map, imgName);
@@ -391,7 +392,7 @@ void Edge::endp(Mat &imageIn, Mat &imageOut, unordered_map<string, QVector<QVect
     applylut_1(imageOut,imageOut);
     imageOut = imageOut*255;
 
-    // imshow("Blood Vessel Tips", imageOut); // display tips in a separate window
+    //imshow("Blood Vessel Tips", imageOut); // display tips in a separate window
     getTipsCoords(imageOut, tips_map, imgName);
 }
 
@@ -407,10 +408,31 @@ void Edge::getTipsCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> >
                 // transforms coordinates to image coordinates (between -1 and 1, origin at the center)
                 pt.setX((float)(x - imageIn.cols/2)/(float)(imageIn.cols));
                 pt.setY((float)(imageIn.rows/2 - y)/(float)(imageIn.rows));
+                // qDebug() << "Original" << x << y;
                 pts.push_back(pt);
             }
         }
     }
 
     tips_map[imgName] = pts;
+}
+
+void Edge::convertToPixelCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map)
+{
+
+    for(auto it = tips_map.begin(); it != tips_map.end(); ++it) {
+        string temp = it->first; // image path name
+
+        QVector<QVector2D> pts = tips_map[temp];
+        for (int i = 0; i < pts.size(); i++) {
+            QVector2D pt = pts.at(i);
+            int x = (pt.x() * imageIn.cols) + (imageIn.cols/2);
+            int y = (imageIn.rows/2) - (pt.y() * imageIn.rows);
+            // qDebug() << "Converted" << x << y;
+            pt.setX(x);
+            pt.setY(y);
+            pts[i] = pt;
+        }
+        tips_map[temp] = pts;
+    }
 }
