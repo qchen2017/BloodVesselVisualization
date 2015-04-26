@@ -12,10 +12,13 @@
 using namespace cv;
 using namespace std;
 
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+
+    ssWin = new Slideshow(this);
     edgeWin = new Edge(this); // separate UI for Edge mode
     helpWin = new QWidget; // help window
     helpWin->sizeHint();
@@ -55,6 +58,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+
     delete ui;
 }
 
@@ -400,10 +404,11 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
     // prompt user for file name and location
     //QString outfile = QFileDialog::getSaveFileName(this, "Save");
     QString outfile = QFileDialog::getSaveFileName(this, "Save", "untitled.csv", tr("Comma Separated Values (CSV) (*.csv);;"
-                                                                                    "Excel Workbook (*.xlsx);; "
-                                                                                    "Excel 97-2003 Workbook (*.xls);;"
-                                                                                    "Text (*.txt);;"
-                                                                                    "OpenDocument Spreadsheet (*.ods)"));
+                                                                                       "Excel Workbook (*.xlsx);; "
+                                                                                       "Excel 97-2003 Workbook (*.xls);;"
+                                                                                       "Text (*.txt);;"
+                                                                                       "OpenDocument Spreadsheet (*.ods)"));
+
     // write tips coordinates to file
     QFile file(outfile);
     if (file.open(QIODevice::WriteOnly)) {
@@ -476,19 +481,18 @@ void MainWindow::on_branchGraph_clicked()
     imshow("Graph", img);
 } // branch graph
 
+/**********************************************************************************/
+/****************************** Slideshow Functions *******************************/
+/**********************************************************************************/
+
 void MainWindow::on_animate_pushButton_clicked()
 {
+
     if(!check_imageOpened()){
         errorMsg();
         return;
     } // error
 
-    // play all images in a sequence
-    for (int i = 0; i < imagePaths.size(); i++) {
-        imagePath = imagePaths.at(i);
-        src = imread(imagePath.toStdString());
-        cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
-        imshow("Sequence", src_resize);
-        waitKey(75); // 75 ms between each image
-    }
+   ssWin->setImageList(imagePaths);
+   ssWin->show();
 }
