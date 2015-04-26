@@ -11,6 +11,7 @@
 #include "image.h"
 #include "bloodvessels.h"
 #include "edge.h"
+#include "slideshow.h"
 
 using namespace cv;
 
@@ -74,6 +75,7 @@ private:
     Image *imagePtr;
     BloodVessels *bloodVesselObject;
     Edge *edgeWin;
+    Slideshow *ssWin;
 
     Mat src, src_resize, dst;
     QVector<Mat> src_images;
