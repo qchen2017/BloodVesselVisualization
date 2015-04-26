@@ -11,6 +11,7 @@
 using namespace cv;
 using namespace std;
 
+<<<<<<< HEAD
 //global variables for slide show
 int trackbarNum, timeDelay, slideNum;
 bool slidePause;
@@ -18,11 +19,15 @@ Mat imageRead;
 QStringList pathlists;
 QString pathname;
 char keyPressed;
+=======
+>>>>>>> origin/master
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+
+    ssWin = new Slideshow(this);
     edgeWin = new Edge(this); // separate UI for Edge mode
     helpWin = new QWidget; // help window
     helpWin->sizeHint();
@@ -61,6 +66,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+
     delete ui;
 }
 
@@ -132,7 +138,7 @@ void MainWindow::on_actionOpen_triggered()
 
     // set highlighted item in image files list to be the first item on the list
     ui->imageFiles_listWidget->setCurrentItem(ui->imageFiles_listWidget->item(0));
-
+    ui->menuView->setEnabled(true);
 } // open image
 
 void MainWindow::on_actionSave_triggered()
@@ -454,7 +460,12 @@ void MainWindow::on_tipDetect_pushButton_clicked()
 void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips_map)
 {
     // prompt user for file name and location
-    QString outfile = QFileDialog::getSaveFileName(this, "Save");
+    //QString outfile = QFileDialog::getSaveFileName(this, "Save");
+    QString outfile = QFileDialog::getSaveFileName(this, "Save", "untitled.csv", tr("Comma Separated Values (CSV) (*.csv);;"
+                                                                                       "Excel Workbook (*.xlsx);; "
+                                                                                       "Excel 97-2003 Workbook (*.xls);;"
+                                                                                       "Text (*.txt);;"
+                                                                                       "OpenDocument Spreadsheet (*.ods)"));
 
     // if a file name is selected/specified, write tips coordinates to file
     // otherwise don't do anything
@@ -537,19 +548,14 @@ void MainWindow::on_branchGraph_clicked()
 
 void MainWindow::on_animate_pushButton_clicked()
 {
+
     if(!check_imageOpened()){
         errorMsg();
         return;
     } // error
 
-    // play all images in a sequence
-    for (int i = 0; i < imagePaths.size(); i++) {
-        imagePath = imagePaths.at(i);
-        src = imread(imagePath.toStdString());
-        cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
-        imshow("Sequence", src_resize);
-        waitKey(75); // 75 ms between each image
-    }
+   ssWin->setImageList(imagePaths);
+   ssWin->show();
 }
 
 void MainWindow::promptForTipsAnimation(unordered_map<string, QVector<QVector2D> > &tips_map_temp)

@@ -21,16 +21,19 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     image.cpp \
     edge.cpp \
-    bloodvessels.cpp
+    bloodvessels.cpp \
+    slideshow.cpp
 
 HEADERS  += mainwindow.h \
     image.h \
     edge.h \
-    bloodvessels.h
+    bloodvessels.h \
+    slideshow.h
 
 FORMS    += mainwindow.ui \
     edge.ui \
-    bloodvessels.ui
+    bloodvessels.ui \
+    slideshow.ui
 
 DISTFILES += \
     README.md
