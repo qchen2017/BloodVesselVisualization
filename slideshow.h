@@ -24,9 +24,11 @@ public:
     void setImageList(QStringList);
     void timerEvent(QTimerEvent*);
     void updateView(cv::Mat);
+    void closeEvent(QCloseEvent*);
 
 public slots:
-    void on_imageSlider_moved(int);
+    void imageSlider_moved(int);
+    void speedSlider_moved(int);
     void on_playButton_clicked();
     void on_pauseButton_clicked();
 
@@ -35,6 +37,7 @@ private:
     QBasicTimer interSlideTimer;
     int slideInterval; //delay time between slides
     int currentSlide;
+    int numSlides; //number of slides
     cv::Mat src;
 
     QStringList imageList;

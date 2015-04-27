@@ -12,11 +12,18 @@ Slideshow::Slideshow(QWidget *parent) :
     ui(new Ui::Slideshow)
 {
     ui->setupUi(this);
-    slideInterval = 1000;
+    ui->imageSlider->setValue(0); //set slider at beginning
+    ui->speedSlider->setMaximum(3000); //set max speed to 3 seconds
+    ui->speedSlider->setMinimum(1);
+    ui->speedSlider->setValue(1000); //initialize slider at position 1000
+
+    slideInterval = 1000; //1 second
+    ui->slideSpeed_LineEdit->setText(QString::number(slideInterval/1000) + " sec"); //set speed line edit
+
     currentSlide = 0;
 
-    connect(ui->imageSlider, SIGNAL(sliderMoved(int)),this, SLOT(on_imageSlider_moved(int)));
-
+    connect(ui->imageSlider, SIGNAL(sliderMoved(int)),this, SLOT(imageSlider_moved(int)));
+    connect(ui->speedSlider, SIGNAL(sliderMoved(int)),this, SLOT(speedSlider_moved(int)));
 }
 
 Slideshow::~Slideshow()
@@ -32,6 +39,9 @@ void Slideshow::nextSlide() {
     //update slider position
     ui->imageSlider->setValue(currentSlide);
 
+    //update slide number on line edit
+    ui->slideNum_LineEdit->setText(QString::number(currentSlide+1) + "/" + QString::number(numSlides+1) );
+
     //replay slideshow if last image is played
     if(currentSlide == (imageList.size()-1))
         currentSlide = 0;
@@ -44,7 +54,10 @@ void Slideshow::nextSlide() {
 //QStringList contains paths of opened images
 void Slideshow::setImageList(QStringList in) {
   imageList = in;
-  ui->imageSlider->setMaximum(imageList.size()-1); //set max value of slider bar to # of images
+  numSlides = imageList.size() - 1;
+
+  ui->imageSlider->setMaximum(numSlides); //set max value of slider bar to # of images
+  ui->slideNum_LineEdit->setText(QString::number(currentSlide) + "/" + QString::number(numSlides+1) );
 }
 
 //automatically called when timer goes off (ie. when slideInterval = 0)
@@ -74,15 +87,25 @@ void Slideshow::updateView(Mat imageOut) {
 
 }
 
+//stop slideshow timer when the window is closed
+void Slideshow::closeEvent(QCloseEvent *event) {
+    interSlideTimer.stop();
+    close(); //closes this widget
+}
 
 /*
  * Slideshow UI functions below
-*/
+ */
 
-void Slideshow::on_imageSlider_moved(int value) {
+void Slideshow::imageSlider_moved(int value) {
     paused = true;
     currentSlide = value;
     nextSlide();
+}
+
+void Slideshow::speedSlider_moved(int value) {
+    interSlideTimer.start(value, this); //restart timer with new timeout value
+    ui->slideSpeed_LineEdit->setText(QString::number(value/1000.0) + " sec"); //show delay in seconds
 }
 
 void Slideshow::on_playButton_clicked() {
