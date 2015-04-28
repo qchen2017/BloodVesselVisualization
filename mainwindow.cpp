@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <QVector2D>
 #include <QVector>
+#include <iostream>
 
 using namespace cv;
 using namespace std;
@@ -350,8 +351,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             bloodVesselObject->saveTipPoint(imagePath.toStdString(), x_coord, y_coord);
 
             // adjusted based on reference point
-            qreal adjusted_x = (qreal)(img_coord_pt.x() - src.cols/2)/(qreal)(src.cols);
-            qreal adjusted_y = (qreal)(src.rows/2 - img_coord_pt.y())/(qreal)(src.rows);
+            qreal adjusted_x = (qreal)(img_coord_pt.x() - src.cols/2)/(qreal)(src.cols/2);
+            qreal adjusted_y = (qreal)(src.rows/2 - img_coord_pt.y())/(qreal)(src.rows/2);
 
             // each (x, y) point is displayed in their appropriate text edits
             // (0, 0) is at the center of the image
@@ -370,6 +371,11 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
 void MainWindow::on_bloodVesselsTips_radioButton_toggled(bool checked)
 {
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    } // error
+
     int index = ui->imageFiles_listWidget->currentRow();
     imagePath = imagePaths.at(index);
     int t = thresholds[imagePath.toStdString()];
@@ -434,7 +440,7 @@ void MainWindow::on_tipDetect_pushButton_clicked()
 
         writeTipsToFile(tips_map);
     }
-    else {
+    else if (reply == QMessageBox::No) {
         for (int i = 0; i < imagePaths.size(); i++) {
             imagePath = imagePaths.at(i);
             src = imread(imagePath.toStdString());
@@ -551,31 +557,34 @@ void MainWindow::on_animate_pushButton_clicked()
         return;
     } // error
 
-   ssWin->setImageList(imagePaths);
-   ssWin->show();
+    if (imagePaths.size() == 1) {
+        QMessageBox::information(this, tr("Visualization of Directional Blood Vessels"),
+                tr("There is only one image. Please upload one or more images to play a sequence."));
+    }
+    else {
+        ssWin->setImageList(imagePaths, false);
+        ssWin->show();
+    }
+
 }
 
 void MainWindow::promptForTipsAnimation(unordered_map<string, QVector<QVector2D> > &tips_map_temp)
 {
-    // prompt user to manually select threshold value for each image or let program do it
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, "Threshold Value", "Would you like to use the current threshold value for all of the images?",
-                                  QMessageBox::Yes|QMessageBox::No);
+    reply = QMessageBox::question(this, "Threshold Value", "Would you like to use the current threshold value for all of the images?", QMessageBox::Yes|QMessageBox::No);
 
-    if (reply == QMessageBox::Yes) { // currently set threshold value for each image
-        QMessageBox::information(this, tr("Visualization of Directional Blood Vessels"),
-                tr("The application will use the currently set threshold value for each image. "
-                   "If you would like to set different threshold values, click 'Cancel' on the next window to go back.") );
-
+    if (reply == QMessageBox::Yes) {
+        QMessageBox::information(this, tr("Visualization of Directional Blood Vessels"), tr("The application will use the currently set threshold value for each image.") );
         findAllTips(false, tips_map_temp);
     }
-    else {
+    else if (reply == QMessageBox::No) {
         findAllTips(true, tips_map_temp);
     }
 }
 
 void MainWindow::findAllTips(bool threshold_default, unordered_map<string, QVector<QVector2D> > &tips_map_temp)
 {
+    //cout << imagePaths.size() << endl;
     for (int i = 0; i < imagePaths.size(); i++) {
         imagePath = imagePaths.at(i);
         src = imread(imagePath.toStdString());
@@ -585,13 +594,53 @@ void MainWindow::findAllTips(bool threshold_default, unordered_map<string, QVect
             edgeWin->detectTips(src_resize, tips_map_temp, imName, thresholds[imName]);
         }
         else {
-            edgeWin->detectTips(src_resize, tips_map_temp, imagePath.toStdString(), 135);
+            edgeWin->detectTips(src_resize, tips_map_temp, imName, 135);
         }
-        edgeWin->convertToPixelCoords(src_resize, tips_map_temp);
-
+        edgeWin->convertToPixelCoords(src_resize, tips_map_temp, imName);
     }
+
+    /* DEBUGGING
+    for (auto it = tips_map_temp.begin(); it != tips_map_temp.end(); it++) {
+        string temp = it->first;
+        QVector<QVector2D> pts = tips_map_temp[temp];
+        cout << temp << endl;
+        for (int i = 0; i < pts.size(); i++) {
+            QVector2D pt = pts.at(i);
+            cout << "Converted: " << pt.x() << " " << pt.y() << endl;
+        }
+    }
+    */
 }
 
+void MainWindow::automatedTipsAnimation(QVector<Mat> &auto_tips_images, unordered_map<string, QVector<QVector2D> > &tips_map_temp)
+{
+    bool threshold_default = true;
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Threshold Value", "Would you like to use the current threshold value for all of the images?", QMessageBox::Yes|QMessageBox::No);
+
+    if (reply == QMessageBox::Yes) {
+        QMessageBox::information(this, tr("Visualization of Directional Blood Vessels"), tr("The application will use the currently set threshold value for each image.") );
+        threshold_default = false;
+    }
+    else if (reply == QMessageBox::No) {
+        threshold_default = true;
+    }
+
+    for (int i = 0; i < imagePaths.size(); i++) {
+        imagePath = imagePaths.at(i);
+        src = imread(imagePath.toStdString());
+        cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
+        string imName = imagePath.toStdString();
+        if (!threshold_default) {
+            edgeWin->detectTips(src_resize, tips_map_temp, imName, thresholds[imName]);
+        }
+        else {
+            edgeWin->detectTips(src_resize, tips_map_temp, imName, 135);
+        }
+    }
+
+    edgeWin->getAutoTipsImages(auto_tips_images);
+}
 
 void MainWindow::on_tipsAnimation_pushButton_clicked()
 {
@@ -600,58 +649,58 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
         return;
     } // error
 
-    Mat tipsMovie = src;
     unordered_map<string, QVector<QVector2D> > tips_map_temp;
 
     // both are unchecked
     if (!ui->automated_checkBox->isChecked() && !ui->manual_checkBox->isChecked()) {
-        // alert user to make a selection
         QMessageBox::about(this, tr("Error !"), tr("Please make a selection on which tips to animate."));
     }
 
     // only automated is checked
     else if (ui->automated_checkBox->isChecked() && !ui->manual_checkBox->isChecked())  {
-
-        // RUN THE PROCESS OF AUTOMATICALLY DETECTING TIPS
-        promptForTipsAnimation(tips_map_temp);
-
-        bloodVesselObject->tipsAnimation(tipsMovie, tips_map_temp);
-        bloodVesselObject->show();
+        QVector<Mat> automatedTipsMats;
+        automatedTipsAnimation(automatedTipsMats, tips_map_temp);
+        ssWin->tipsSlideshow(automatedTipsMats, true);
+        ssWin->setImageList(imagePaths, true);
+        ssWin->show();
     }
     // only manual is checked
     else if (ui->manual_checkBox->isChecked() && !ui->automated_checkBox->isChecked()) {
         if (!bloodVesselObject->isEmpty()) {
             bloodVesselObject->getManuallySelectedTips(tips_map_temp);
-            bloodVesselObject->tipsAnimation(tipsMovie, tips_map_temp);
-            bloodVesselObject->show();
+            bloodVesselObject->tipsAnimation(tips_map_temp);
+            QVector<Mat> ims = bloodVesselObject->getTipsImages();
+            ssWin->tipsSlideshow(ims, false);
+            ssWin->setImageList(imagePaths, true);
+            ssWin->show();
         }
         else {
-            QMessageBox::information(
-                this,
-                tr("Visualization of Directional Blood Vessels"),
-                tr("No points have been selected. Nothing to show here.") );
+            QMessageBox::information(this, tr("Visualization of Directional Blood Vessels"), tr("No points have been selected. Nothing to show here.") );
         }
     }
     // both are checked
     else {
-
-        // put all automated tips to tips_map_temp
-        promptForTipsAnimation(tips_map_temp);
-
-        // now add the manually selected ones, if any
-        unordered_map<string, QVector<QVector2D> > tips_map_temp2;
+        QVector<Mat> automatedTipsMats;
+        automatedTipsAnimation(automatedTipsMats, tips_map_temp);
         if (!bloodVesselObject->isEmpty()) {
-            bloodVesselObject->getManuallySelectedTips(tips_map_temp2);
-            for(auto it = tips_map_temp2.begin(); it != tips_map_temp2.end(); ++it) {
-                string imname = it->first; // image path name
-                QVector<QVector2D> temp_pts = tips_map_temp[imname];
-                QVector<QVector2D> temp_pts2 = tips_map_temp2[imname];
-                for (int i = 0; i < temp_pts2.size(); i++) {
-                    temp_pts.push_back(temp_pts2.at(i));
+            bloodVesselObject->getManuallySelectedTips(tips_map_temp);
+            for (int i = 0; i < imagePaths.size(); i++) {
+                imagePath = imagePaths.at(i);
+                string imp = imagePath.toStdString();
+                QVector<QVector2D> pts = tips_map_temp[imp];
+                Mat newImg = automatedTipsMats.at(i);
+                for (int j = 0; j < pts.size(); j++) {
+                    QVector2D pt = pts.at(j);
+                    int x = pt.x()/3;
+                    int y = pt.y()/3;
+                    Point dot = Point(x, y);
+                    circle(newImg, dot, 5.0, Scalar(255, 255, 255), -1, 8);
                 }
-                tips_map_temp[imname] = temp_pts;
+                automatedTipsMats.replace(i, newImg);
             }
         }
-
+        ssWin->tipsSlideshow(automatedTipsMats, true);
+        ssWin->setImageList(imagePaths, true);
+        ssWin->show();
     }
 } // tips animation

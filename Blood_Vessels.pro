@@ -36,4 +36,6 @@ FORMS    += mainwindow.ui \
     slideshow.ui
 
 DISTFILES += \
-    README.md
+    README.md \
+    TEST CASES.md \
+    TEST CASES.md

@@ -32,36 +32,33 @@ void BloodVessels::changeEvent(QEvent *e)
     }
 }
 
-void BloodVessels::tipsAnimation(Mat imageIn, unordered_map<string, QVector<QVector2D> > tips_map)
+void BloodVessels::tipsAnimation(unordered_map<string, QVector<QVector2D> > tips_map)
 {
-    // img needs to be a movie
-    // or need a vector of img to play
 
     Mat img;
-    cv::resize(imageIn, img, cv::Size2i(imageIn.cols/3, imageIn.rows/3));
-    // need a better way of filling image with black
-    //img.setTo(cv::Scalar(0, 0, 0)); // fill image with black
-    cvtColor(img, img, cv::COLOR_BGR2GRAY);
-
-
     QVector2D pt;
     int x, y;
 
     for(auto it = tips_map.begin(); it != tips_map.end(); ++it) {
         string temp = it->first; // image path name
         QVector<QVector2D> pts = tips_map[temp]; // coordinates associated with image
+        img = imread(temp);
+        img.setTo(cv::Scalar(0, 0, 0)); // fill image with black
         for (int i = 0; i < pts.size(); i++) {
            pt = pts.at(i);
            x = pt.x();
            y = pt.y();
            Point dot = Point(x, y);
-           circle(img, dot, 5.0, Scalar(255, 0, 0), -1, 8);
+           circle(img, dot, 10.0, Scalar(0, 0, 255), -1, 8);
         }
+        cv::resize(img, img, cv::Size2i(img.cols/3, img.rows/3));
+        tips_images.push_back(img);
     }
+}
 
-    updateView(img);
-
-
+QVector<Mat> BloodVessels::getTipsImages()
+{
+    return tips_images;
 }
 
 void BloodVessels::getManuallySelectedTips(unordered_map<string, QVector<QVector2D> > &tips)
@@ -91,21 +88,14 @@ Mat BloodVessels::identifyTip(Mat src, float x, float y)
     int thickness = -1;
     int lineType = 8;
 
-     circle(src,
-            dot,
-            25.0,
-            Scalar(0, 0, 255),
-            thickness,
-            lineType);
+    circle(src, dot, 20.0, Scalar(0, 0, 255), thickness, lineType);
 
-     return src;
+    return src;
 }
 
 Mat BloodVessels::displayTips(Mat src, string imName)
 {
     Mat imageOut = src;
-    int thickness = -1;
-    int lineType = 8;
 
     QVector<QVector2D> bloodVesselsTips;
     bloodVesselsTips = bv_tips_map[imName];
@@ -114,12 +104,7 @@ Mat BloodVessels::displayTips(Mat src, string imName)
         float x = (float) bloodVesselsTips[i].x();
         float y = (float) bloodVesselsTips[i].y();
         Point dot = Point(x, y);
-        circle(src,
-               dot,
-               20.0,
-               Scalar(0, 0, 255),
-               thickness,
-               lineType);
+        circle(src, dot, 20.0, Scalar(0, 0, 255), -1, 8);
     }
 
     return imageOut;
@@ -128,15 +113,11 @@ Mat BloodVessels::displayTips(Mat src, string imName)
 void BloodVessels::updateView(Mat imageOut)
 {
     // convert Mat to QImage display on graphicsView
-    QImage img((uchar*)imageOut.data, imageOut.cols, imageOut.rows, QImage::Format_Indexed8);
+    cv::cvtColor(imageOut, imageOut, cv::COLOR_BGR2RGB);
+    QImage img((uchar*)imageOut.data, imageOut.cols, imageOut.rows, QImage::Format_RGB888);
     image = QPixmap::fromImage(img);
     scene = new QGraphicsScene(this);
     scene->addPixmap(image);
     scene->setSceneRect(0, 0, image.width(), image.height());
     ui->graphicsView->setScene(scene);
 } // update graphic view
-
-void BloodVessels::on_start_pushButton_clicked()
-{
-
-}

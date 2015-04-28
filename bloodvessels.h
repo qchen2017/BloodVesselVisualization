@@ -31,14 +31,12 @@ public:
     void saveTipPoint(string imgpath, qreal x, qreal y);
     Mat identifyTip(Mat src, float x, float y);
     Mat displayTips(Mat src, string imName);
-    void tipsAnimation(Mat imageIn, unordered_map<string, QVector<QVector2D> > tips_map);
     void getManuallySelectedTips(unordered_map<string, QVector<QVector2D> > &tips);
+    void tipsAnimation(unordered_map<string, QVector<QVector2D> > tips_map);
+    QVector<Mat> getTipsImages();
 
 protected:
     void changeEvent(QEvent *e);
-
-private slots:
-    void on_start_pushButton_clicked();
 
 private:
     Ui::BloodVessels *ui;
@@ -49,9 +47,9 @@ private:
     QImage *imageObject;
     QGraphicsScene *scene;
 
-    // maps selected tips to image
-    // ONLY FOR MANUALLY SELECTED TIPS
-    unordered_map<string, QVector<QVector2D> > bv_tips_map;
+    QVector<QVector2D> bloodVesselsTips;
+    unordered_map<string, QVector<QVector2D> > bv_tips_map; // maps selected tips to image
+    QVector<Mat> tips_images;
 
 };
 

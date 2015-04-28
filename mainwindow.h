@@ -30,6 +30,7 @@ public:
     void updateView(Mat imageOut);
     bool check_imageOpened();
 
+
 public slots:
     void mousePressEvent(QMouseEvent *event);
 
@@ -81,18 +82,16 @@ private:
     QVector<Mat> src_images;
 
     unordered_map<string, int> thresholds;
-
     float scaleFactor;
-
     bool mouseEnabled;
 
     // string holds the name of the image
     // vector of QVector2D holds the x and y coordinates of the tips in the image
     unordered_map<string, QVector<QVector2D> > tips_map;
 
-
     void findAllTips(bool threshold_default, unordered_map<string, QVector<QVector2D> > &tips_map_temp);
     void promptForTipsAnimation(unordered_map<string, QVector<QVector2D> > &tips_map_temp);
+    void automatedTipsAnimation(QVector<Mat> &auto_tips_images, unordered_map<string, QVector<QVector2D> > &tips_map_temp);
 };
 
 #endif // MAINWINDOW_H

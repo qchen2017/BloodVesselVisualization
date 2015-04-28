@@ -14,8 +14,10 @@ Slideshow::Slideshow(QWidget *parent) :
     ui->setupUi(this);
     slideInterval = 1000;
     currentSlide = 0;
+    tipsFlag = false;
+    forAutomatedTips = false;
 
-    connect(ui->imageSlider, SIGNAL(sliderMoved(int)),this, SLOT(on_imageSlider_moved(int)));
+    //connect(ui->imageSlider, SIGNAL(sliderMoved(int)),this, SLOT(on_imageSlider_moved(int)));
 
 }
 
@@ -25,30 +27,70 @@ Slideshow::~Slideshow()
 }
 
 
-void Slideshow::nextSlide() {
-    imageName = imageList.at(currentSlide);
-    src = imread(imageName.toStdString());
+void Slideshow::nextSlide()
+{
+    if (!tipsFlag) {
+        imageName = imageList.at(currentSlide);
+        src = imread(imageName.toStdString());
 
-    //update slider position
-    ui->imageSlider->setValue(currentSlide);
+        //update slider position
+        ui->imageSlider->setValue(currentSlide);
 
-    //replay slideshow if last image is played
-    if(currentSlide == (imageList.size()-1))
-        currentSlide = 0;
-    else
-        ++currentSlide;
+        //replay slideshow if last image is played
+        if(currentSlide == (imageList.size()-1)) {
+            currentSlide = 0;
+        }
+        else {
+            ++currentSlide;
+        }
 
-    updateView(src);
+        updateView(src);
+    }
+
+    else {
+        src = tips_mats.at(currentSlide);
+        ui->imageSlider->setValue(currentSlide);
+        //replay slideshow if last image is played
+        if(currentSlide == (tips_mats.size()-1)) {
+            currentSlide = 0;
+        }
+        else {
+            ++currentSlide;
+        }
+
+        updateView(src);
+    }
+}
+
+void Slideshow::tipsSlideshow(QVector<Mat> images, bool autoTipsFlag)
+{
+    tips_mats = images;
+    if (autoTipsFlag) {
+        forAutomatedTips = true;
+    }
+    else {
+        forAutomatedTips = false;
+    }
+    //imshow("Slideshow test", tips_mats.at(0));
 }
 
 //QStringList contains paths of opened images
-void Slideshow::setImageList(QStringList in) {
-  imageList = in;
-  ui->imageSlider->setMaximum(imageList.size()-1); //set max value of slider bar to # of images
+void Slideshow::setImageList(QStringList in, bool forTips)
+{
+    imageList = in;
+    ui->imageSlider->setMaximum(imageList.size()); //set max value of slider bar to # of images
+
+    if (forTips) {
+        tipsFlag = true;
+    }
+    else {
+        tipsFlag = false;
+    }
 }
 
 //automatically called when timer goes off (ie. when slideInterval = 0)
-void Slideshow::timerEvent(QTimerEvent* event) {
+void Slideshow::timerEvent(QTimerEvent* event)
+{
     Q_UNUSED(event);
 
     if(!paused)
@@ -56,43 +98,51 @@ void Slideshow::timerEvent(QTimerEvent* event) {
 }
 
 //update view screen in widget
-void Slideshow::updateView(Mat imageOut) {
+void Slideshow::updateView(Mat imageOut)
+{
+    if (forAutomatedTips) {
+        QImage img((uchar*)imageOut.data, imageOut.cols, imageOut.rows, QImage::Format_Indexed8);
+        image = QPixmap::fromImage(img);
+    }
+    else {
+        cvtColor(imageOut, imageOut_gray, cv::COLOR_BGR2GRAY);
+        blur( imageOut_gray, imageOut_gray, Size(3,3) );
+        QImage img((uchar*)imageOut_gray.data, imageOut_gray.cols, imageOut_gray.rows, QImage::Format_Indexed8);
+        image = QPixmap::fromImage(img);
+    }
 
-   cvtColor(imageOut, imageOut_gray, cv::COLOR_BGR2GRAY);
-   blur( imageOut_gray, imageOut_gray, Size(3,3) );
-   QImage img((uchar*)imageOut_gray.data, imageOut_gray.cols, imageOut_gray.rows, QImage::Format_Indexed8);
-   image = QPixmap::fromImage(img);
+    scene = new QGraphicsScene(this);
+    scene->addPixmap(image);
+    scene->setSceneRect(0, 0, image.width(), image.height());
 
-   scene = new QGraphicsScene(this);
-   scene->addPixmap(image);
-   scene->setSceneRect(0, 0, image.width(), image.height());
-
-   //fit image to screen and display
-   ui->graphicsView->fitInView(scene->itemsBoundingRect(), Qt::KeepAspectRatioByExpanding);
-   ui->graphicsView->setAlignment(Qt::AlignCenter);
-   ui->graphicsView->setScene(scene);
-
+    //fit image to screen and display
+    ui->graphicsView->fitInView(scene->itemsBoundingRect(), Qt::KeepAspectRatioByExpanding);
+    ui->graphicsView->setAlignment(Qt::AlignCenter);
+    ui->graphicsView->setScene(scene);
 }
+
 
 
 /*
  * Slideshow UI functions below
 */
 
-void Slideshow::on_imageSlider_moved(int value) {
+void Slideshow::on_imageSlider_sliderMoved(int value)
+{
     paused = true;
     currentSlide = value;
     nextSlide();
 }
 
-void Slideshow::on_playButton_clicked() {
+void Slideshow::on_playButton_clicked()
+{
     paused = false;
     interSlideTimer.start(slideInterval, this);
     nextSlide();
+
 }
 
-void Slideshow::on_pauseButton_clicked() {
+void Slideshow::on_pauseButton_clicked()
+{
     paused = true;
 }
-
-
