@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
     helpWin = new QWidget; // help window
     helpWin->sizeHint();
     helpWin->setWindowTitle("Help");
+    helpWin->setFixedSize(200, 130);
     ui->setupUi(this); // main window UI
     ui->threshold_lineEdit->setText("0"); // initialize line edit for the threshold value
 
@@ -59,8 +60,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->graphicsView->setToolTip("Current image");
 
     static QLabel helpInfo;
-    helpInfo.setText("Design Document: https://docs.google.com/a/ucdavis.edu/document/d/1MzFV0zI-LZV6j7tqBh1H0ese6fr5gMz8w4HmYBFGPOk/\n\n"
-                     "Testing Document: https://docs.google.com/a/ucdavis.edu/document/d/1hkfqfILpR68mZEYMrsZXgx0fQEmJTdX65G3fDLlw8MY/");
+    QString info("Documentations: ");
+    QString designDoc("<a style=\"text-decoration: none;\" href=\"https://docs.google.com/a/ucdavis.edu/document/d/1MzFV0zI-LZV6j7tqBh1H0ese6fr5gMz8w4HmYBFGPOk/\"> Design Document</a>");
+    QString testDoc("<a style=\"text-decoration: none;\" href=\"https://docs.google.com/a/ucdavis.edu/document/d/1hkfqfILpR68mZEYMrsZXgx0fQEmJTdX65G3fDLlw8MY/\"> Testing Document</a>");
+    
+    helpInfo.setText("<b>" + info + "</b><br><br>" + designDoc + "<br>" + testDoc);
+    helpInfo.setOpenExternalLinks(true);
+    helpInfo.setAlignment(Qt::AlignCenter);
+    
+    //helpInfo.setText("Design Document: https://docs.google.com/a/ucdavis.edu/document/d/1MzFV0zI-LZV6j7tqBh1H0ese6fr5gMz8w4HmYBFGPOk/\n\n"
+    //                 "Testing Document: https://docs.google.com/a/ucdavis.edu/document/d/1hkfqfILpR68mZEYMrsZXgx0fQEmJTdX65G3fDLlw8MY/");
+    
     QVBoxLayout *vbl = new QVBoxLayout(helpWin);
     vbl->addWidget(&helpInfo);
 
