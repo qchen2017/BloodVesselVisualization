@@ -27,7 +27,7 @@ public:
     void setImageList(QStringList in, bool forTips);
     void timerEvent(QTimerEvent* event);
     void updateView(Mat imageOut);
-
+    void closeEvent(QCloseEvent* event);
     void tipsSlideshow(QVector<Mat> images, bool autoTipsFlag);
 
 public slots:
@@ -36,12 +36,14 @@ public slots:
 
 private slots:
     void on_imageSlider_sliderMoved(int value);
+    void on_speedSlider_sliderMoved(int value);
 
 private:
     Ui::Slideshow *ui;
     QBasicTimer interSlideTimer;
     int slideInterval; //delay time between slides
     int currentSlide;
+    int numSlides; //number of slides
     Mat src;
     bool tipsFlag;
     bool forAutomatedTips;

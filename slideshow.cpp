@@ -121,7 +121,11 @@ void Slideshow::updateView(Mat imageOut)
     ui->graphicsView->setScene(scene);
 }
 
-
+//stop slideshow timer when the window is closed
+void Slideshow::closeEvent(QCloseEvent *event) {
+    interSlideTimer.stop();
+    close(); //closes this widget
+}
 
 /*
  * Slideshow UI functions below
@@ -145,4 +149,10 @@ void Slideshow::on_playButton_clicked()
 void Slideshow::on_pauseButton_clicked()
 {
     paused = true;
+}
+
+void Slideshow::on_speedSlider_sliderMoved(int value)
+{
+    interSlideTimer.start(value, this); //restart timer with new timeout value
+    ui->slideSpeed_LineEdit->setText(QString::number(value/1000.0) + " sec"); //show delay in seconds
 }
