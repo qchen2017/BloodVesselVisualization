@@ -157,7 +157,7 @@
     <property name="geometry">
      <rect>
       <x>860</x>
-      <y>250</y>
+      <y>280</y>
       <width>131</width>
       <height>34</height>
      </rect>
@@ -295,7 +295,7 @@
     <property name="geometry">
      <rect>
       <x>860</x>
-      <y>280</y>
+      <y>310</y>
       <width>131</width>
       <height>34</height>
      </rect>
@@ -334,7 +334,7 @@
     <property name="geometry">
      <rect>
       <x>870</x>
-      <y>340</y>
+      <y>370</y>
       <width>89</width>
       <height>20</height>
      </rect>
@@ -350,7 +350,7 @@
     <property name="geometry">
      <rect>
       <x>960</x>
-      <y>340</y>
+      <y>370</y>
       <width>89</width>
       <height>20</height>
      </rect>
@@ -366,13 +366,26 @@
     <property name="geometry">
      <rect>
       <x>870</x>
-      <y>320</y>
+      <y>350</y>
       <width>191</width>
       <height>16</height>
      </rect>
     </property>
     <property name="text">
      <string>Check which tips to animate:</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="displayTips_pushButton">
+    <property name="geometry">
+     <rect>
+      <x>860</x>
+      <y>250</y>
+      <width>131</width>
+      <height>34</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Display Tips</string>
     </property>
    </widget>
   </widget>

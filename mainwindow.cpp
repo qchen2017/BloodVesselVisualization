@@ -2,11 +2,13 @@
 #include "ui_mainwindow.h"
 #include <QtGui>
 #include <QFileDialog>
+#include <QInputDialog>
 #include <QMessageBox>
 #include <QVBoxLayout>
 #include <QDebug>
 #include <QVector2D>
 #include <QVector>
+#include <QHash>
 #include <iostream>
 
 using namespace cv;
@@ -41,7 +43,9 @@ MainWindow::MainWindow(QWidget *parent) :
     scaleFactor = 1.15;
 
     // use for manual detection of blood vessel tips
-     mouseEnabled = false;
+    mouseEnabled = false;
+
+    imageListPtr = 0;
 
     // tool tips for each of the UI components
     ui->displayOrigImage_pushButton->setToolTip("Displays original image in a new window.");
@@ -74,52 +78,98 @@ MainWindow::~MainWindow()
 
 void MainWindow::errorMsg()
 {
-    QMessageBox::about(this, tr("Error !"),
-                       tr("No loaded image.\n"
-                          "Please open an image first.\n"));
+    QMessageBox::about(this, tr("Error !"), tr("No loaded image. \n Please open an image first.\n"));
 
 } // error message for no image
 
 bool MainWindow::check_imageOpened()
 {
-    if(imagePath == NULL)
+    if (imagePath == NULL) {
         return false;
+    }
     return true;
 
 } // check if an image has been loaded
 
+bool MainWindow::imageAlreadyLoaded(QString imp)
+{
+    QList<QListWidgetItem *>  items;
+    items = ui->imageFiles_listWidget->findItems(imp, Qt::MatchExactly);
+    if (!items.isEmpty()) {
+        return true;
+    }
+    return false;
+}
+
 void MainWindow::on_actionOpen_triggered()
 {
-    // accepts png and jpg image types
-    imagePaths = QFileDialog::getOpenFileNames(
-                            this, tr("Select one or more files to open"), "",
-                            tr("Images (*.png *.jpeg *.jpg)"));
+    QHash<QString, QString> renames;
 
-    // checks if image is valid
+    // accepts png and jpg image types
+    if (imagePaths.isEmpty()) {
+        imagePaths = QFileDialog::getOpenFileNames(this, tr("Select one or more files to open"), "", tr("Images (*.png *.jpeg *.jpg)"));
+    }
+    else {
+        imagePaths.append(QFileDialog::getOpenFileNames(this, tr("Select one or more files to open"), "", tr("Images (*.png *.jpeg *.jpg)")));
+        for (int i = imageListPtr; i < imagePaths.size(); i++) {
+            if (imageAlreadyLoaded(imagePaths.at(i))) {
+                QMessageBox::StandardButton reply;
+                reply = QMessageBox::question(this, "Image", "An image of the same name already exists. Would you like to rename this image?",
+                                              QMessageBox::Yes|QMessageBox::No);
+                if (reply == QMessageBox::Yes) {
+                    bool ok;
+                    QString text = QInputDialog::getText(this, tr("Image"),
+                                                             tr("New Name:"), QLineEdit::Normal,
+                                                             QDir::home().dirName(), &ok);
+                    if (ok && !text.isEmpty())
+                        renames[imagePaths.at(i)] = text;
+                }
+                else {
+                    imagePaths.removeAt(i);
+                }
+            }
+        }
+    }
+
+    // checks if image(s) exist
     if (imagePaths.isEmpty()) {
         errorMsg();
         return;
     }
 
-    // stores all the absolute paths of all the images that are being loaded
-    for (int i = 0; i < imagePaths.size(); i++) {
+    // store all the absolute paths of all the images that are being loaded
+    for (int i = imageListPtr; i < imagePaths.size(); i++) {
         imagePath = imagePaths.at(i);
         if (imagePath == NULL) { // alert user if there's an error with one or more of the images
-            QMessageBox::about(this, tr("Error !"),
-                               tr("Error loading file."));
+            QMessageBox::about(this, tr("Error!"), tr("Error loading file."));
             imagePaths.removeAt(i);
             i--;
         }
         else { // insert image into image files list
-            ui->imageFiles_listWidget->insertItem(i, imagePath);
-            Mat img = imread(imagePath.toStdString());
-            if (i == 0) {
-                src = img; // set current src image
+            if (!imageAlreadyLoaded(imagePath)) {
+                ui->imageFiles_listWidget->insertItem(i, imagePath);
+                Mat img = imread(imagePath.toStdString());
+                if (i == 0) {
+                    src = img; // set current src image
+                }
+                src_images.push_back(img);
+                thresholds[imagePath.toStdString()] = 0;
             }
-            src_images.push_back(img);
-            thresholds[imagePath.toStdString()] = 0;
+            else {
+                if (renames.find(imagePath) != renames.end()) {
+                    ui->imageFiles_listWidget->insertItem(i, renames[imagePath]);
+                    Mat img = imread(imagePath.toStdString());
+                    if (i == 0) {
+                        src = img; // set current src image
+                    }
+                    src_images.push_back(img);
+                    thresholds[imagePath.toStdString()] = 0;
+                }
+            }
         }
     }
+
+    imageListPtr = imagePaths.size();
 
     // set graphic view (main application window)
     imageObject = new QImage();
@@ -202,6 +252,8 @@ void MainWindow::on_imageFiles_listWidget_itemClicked(QListWidgetItem *item)
     src = imread(imagePath.toStdString());
     int t = thresholds[imagePath.toStdString()];
     ui->threshold_horizontalSlider->setValue(t);
+    ui->tipsXcoord_textEdit->clear();
+    ui->tipsYcoord_textEdit->clear();
 
     // display the appropriate image in the main window
     if (ui->imageMode_comboBox->currentText() == "Normal") {
@@ -391,17 +443,23 @@ void MainWindow::on_bloodVesselsTips_radioButton_toggled(bool checked)
     }
 }
 
-//void MainWindow::on_displayBloodVesselTips_radioButton_toggled(bool checked)
-//{
-//    int index = ui->imageFiles_listWidget->currentRow();
-//    imagePath = imagePaths.at(index);
+void MainWindow::on_displayTips_pushButton_clicked()
+{
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    } // error
 
-//    if (checked && !bloodVesselObject->isEmpty()) {
-//        src = imread(imagePath.toStdString());
-//        dst = bloodVesselObject->displayTips(src);
-//        updateView(dst);
-//    }
-//}
+    int index = ui->imageFiles_listWidget->currentRow();
+    imagePath = imagePaths.at(index);
+
+    if (!bloodVesselObject->isEmpty()) {
+        src = imread(imagePath.toStdString());
+        dst = bloodVesselObject->displayTips(src, imagePath.toStdString());
+        updateView(dst);
+    }
+
+}
 
 /**********************************************************************************/
 /************************ Main Application Functionalities ************************/
@@ -704,3 +762,4 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
         ssWin->show();
     }
 } // tips animation
+

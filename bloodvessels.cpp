@@ -98,13 +98,15 @@ Mat BloodVessels::displayTips(Mat src, string imName)
     Mat imageOut = src;
 
     QVector<QVector2D> bloodVesselsTips;
-    bloodVesselsTips = bv_tips_map[imName];
+    if (bv_tips_map.find(imName) != bv_tips_map.end()) {
+        bloodVesselsTips = bv_tips_map[imName];
 
-    for (int i = 0; i < bloodVesselsTips.size(); i++) {
-        float x = (float) bloodVesselsTips[i].x();
-        float y = (float) bloodVesselsTips[i].y();
-        Point dot = Point(x, y);
-        circle(src, dot, 20.0, Scalar(0, 0, 255), -1, 8);
+        for (int i = 0; i < bloodVesselsTips.size(); i++) {
+            float x = (float) bloodVesselsTips[i].x();
+            float y = (float) bloodVesselsTips[i].y();
+            Point dot = Point(x, y);
+            circle(src, dot, 20.0, Scalar(0, 0, 255), -1, 8);
+        }
     }
 
     return imageOut;

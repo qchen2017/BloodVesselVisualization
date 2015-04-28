@@ -106,7 +106,7 @@ void Slideshow::updateView(Mat imageOut)
     }
     else {
         cvtColor(imageOut, imageOut_gray, cv::COLOR_BGR2GRAY);
-        blur( imageOut_gray, imageOut_gray, Size(3,3) );
+        blur(imageOut_gray, imageOut_gray, Size(3,3));
         QImage img((uchar*)imageOut_gray.data, imageOut_gray.cols, imageOut_gray.rows, QImage::Format_Indexed8);
         image = QPixmap::fromImage(img);
     }
