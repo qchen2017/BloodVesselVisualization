@@ -156,9 +156,9 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>860</x>
-      <y>280</y>
-      <width>131</width>
+      <x>840</x>
+      <y>290</y>
+      <width>121</width>
       <height>34</height>
      </rect>
     </property>
@@ -255,7 +255,7 @@
    <widget class="QRadioButton" name="bloodVesselsTips_radioButton">
     <property name="geometry">
      <rect>
-      <x>680</x>
+      <x>670</x>
       <y>220</y>
       <width>161</width>
       <height>34</height>
@@ -268,9 +268,9 @@
    <widget class="QTextEdit" name="tipsYcoord_textEdit">
     <property name="geometry">
      <rect>
-      <x>760</x>
+      <x>750</x>
       <y>260</y>
-      <width>91</width>
+      <width>81</width>
       <height>131</height>
      </rect>
     </property>
@@ -283,7 +283,7 @@
      <rect>
       <x>670</x>
       <y>260</y>
-      <width>91</width>
+      <width>81</width>
       <height>131</height>
      </rect>
     </property>
@@ -294,9 +294,9 @@
    <widget class="QPushButton" name="tipsAnimation_pushButton">
     <property name="geometry">
      <rect>
-      <x>860</x>
-      <y>310</y>
-      <width>131</width>
+      <x>960</x>
+      <y>250</y>
+      <width>121</width>
       <height>34</height>
      </rect>
     </property>
@@ -333,8 +333,8 @@
    <widget class="QCheckBox" name="manual_checkBox">
     <property name="geometry">
      <rect>
-      <x>870</x>
-      <y>370</y>
+      <x>970</x>
+      <y>330</y>
       <width>89</width>
       <height>20</height>
      </rect>
@@ -349,8 +349,8 @@
    <widget class="QCheckBox" name="automated_checkBox">
     <property name="geometry">
      <rect>
-      <x>960</x>
-      <y>370</y>
+      <x>970</x>
+      <y>360</y>
       <width>89</width>
       <height>20</height>
      </rect>
@@ -365,27 +365,40 @@
    <widget class="QLabel" name="tips_checkboxes_label">
     <property name="geometry">
      <rect>
-      <x>870</x>
-      <y>350</y>
-      <width>191</width>
+      <x>970</x>
+      <y>300</y>
+      <width>101</width>
       <height>16</height>
      </rect>
     </property>
     <property name="text">
-     <string>Check which tips to animate:</string>
+     <string>Tips to animate:</string>
     </property>
    </widget>
    <widget class="QPushButton" name="displayTips_pushButton">
     <property name="geometry">
      <rect>
-      <x>860</x>
+      <x>840</x>
       <y>250</y>
-      <width>131</width>
+      <width>121</width>
       <height>34</height>
      </rect>
     </property>
     <property name="text">
      <string>Display Tips</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="tester_pushButton">
+    <property name="geometry">
+     <rect>
+      <x>840</x>
+      <y>330</y>
+      <width>121</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Tester</string>
     </property>
    </widget>
   </widget>

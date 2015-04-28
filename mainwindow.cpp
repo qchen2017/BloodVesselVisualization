@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
     helpWin = new QWidget; // help window
     helpWin->sizeHint();
     helpWin->setWindowTitle("Help");
+    helpWin->setFixedSize(200, 130);
     ui->setupUi(this); // main window UI
     ui->threshold_lineEdit->setText("0"); // initialize line edit for the threshold value
 
@@ -59,8 +60,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->graphicsView->setToolTip("Current image");
 
     static QLabel helpInfo;
-    helpInfo.setText("Design Document: https://docs.google.com/a/ucdavis.edu/document/d/1MzFV0zI-LZV6j7tqBh1H0ese6fr5gMz8w4HmYBFGPOk/\n\n"
-                     "Testing Document: https://docs.google.com/a/ucdavis.edu/document/d/1hkfqfILpR68mZEYMrsZXgx0fQEmJTdX65G3fDLlw8MY/");
+    QString info("Documentations: ");
+    QString designDoc("<a style=\"text-decoration: none;\" href=\"https://docs.google.com/a/ucdavis.edu/document/d/1MzFV0zI-LZV6j7tqBh1H0ese6fr5gMz8w4HmYBFGPOk/\"> Design Document</a>");
+    QString testDoc("<a style=\"text-decoration: none;\" href=\"https://docs.google.com/a/ucdavis.edu/document/d/1hkfqfILpR68mZEYMrsZXgx0fQEmJTdX65G3fDLlw8MY/\"> Testing Document</a>");
+    
+    helpInfo.setText("<b>" + info + "</b><br><br>" + designDoc + "<br>" + testDoc);
+    helpInfo.setOpenExternalLinks(true);
+    helpInfo.setAlignment(Qt::AlignCenter);
+    
+    //helpInfo.setText("Design Document: https://docs.google.com/a/ucdavis.edu/document/d/1MzFV0zI-LZV6j7tqBh1H0ese6fr5gMz8w4HmYBFGPOk/\n\n"
+    //                 "Testing Document: https://docs.google.com/a/ucdavis.edu/document/d/1hkfqfILpR68mZEYMrsZXgx0fQEmJTdX65G3fDLlw8MY/");
+    
     QVBoxLayout *vbl = new QVBoxLayout(helpWin);
     vbl->addWidget(&helpInfo);
 
@@ -71,6 +81,7 @@ MainWindow::~MainWindow()
 
     delete ui;
 }
+
 
 /**********************************************************************************/
 /**************************** Main Menu Bar Functions *****************************/
@@ -763,3 +774,22 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
     }
 } // tips animation
 
+
+void MainWindow::on_tester_pushButton_clicked()
+{
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    } // error
+
+    unordered_map<string, QVector<QVector2D> > test_map;
+
+    int index = ui->imageFiles_listWidget->currentRow(); // index of the selected image
+    imagePath = imagePaths.at(index); // absolute path of the selected image
+    string imName = imagePath.toStdString();
+    src = imread(imName);
+    cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
+
+    edgeWin->detectTips(src_resize, test_map, imName, 135);
+    //writeTipsToFile(test_map);
+}
