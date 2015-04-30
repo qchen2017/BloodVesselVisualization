@@ -8,7 +8,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/core/core.hpp"
 
-using namespace cv;
+//using namespace cv;
 using namespace std;
 
 class Image
@@ -17,14 +17,14 @@ public:
     Image() {}
     ~Image() {}
 
-    Mat setImageView(Mat imageIn, int thresh_val, string mode); // set up image for changing modes
+    cv::Mat setImageView(cv::Mat imageIn, int thresh_val, string mode); // set up image for changing modes
 
 private:
-    Mat setContour(Mat src, int thresh_val); // contour mode
+    cv::Mat setContour(cv::Mat src, int thresh_val); // contour mode
 
     // skeleton mode - currently not implemented on the ui
-    void thinning(Mat &im);
-    void thinningIteration(Mat &im, int iter);
+    void thinning(cv::Mat &im);
+    void thinningIteration(cv::Mat &im, int iter);
 
 };
 

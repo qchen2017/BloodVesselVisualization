@@ -10,7 +10,7 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/core/core.hpp"
 
-using namespace cv;
+//using namespace cv;
 using namespace std;
 
 namespace Ui {
@@ -25,9 +25,11 @@ public:
     Edge(QWidget *parent = 0);
     ~Edge();
 
-    void setImageView(Mat imageOut); // set up image for edge mode
-    Mat detectTips(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName); // set up image for tips detection
-    void branchGraph(Mat imageIn, Mat &imageOut);
+    void setImageView(cv::Mat imageOut); // set up image for edge mode
+    cv::Mat detectTips(cv::Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName, int thresh_val); // set up image for tips detection
+    void branchGraph(cv::Mat imageIn, cv::Mat &imageOut);
+    void convertToPixelCoords(cv::Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName);
+    void getAutoTipsImages(QVector<cv::Mat> &auto_tips_images);
 
 protected:
     void changeEvent(QEvent *e);
@@ -39,26 +41,26 @@ private:
     Ui::Edge *ui;
 
     // functions for edge mode
-    Mat setEdge();
-    void updateView(Mat imageOut);
+    cv::Mat setEdge();
+    void updateView(cv::Mat imageOut);
 
     // functions for tips detection
-    void GetLutSkel(Mat &Lut);
-    void applylut_1(Mat &imageIn, Mat &imageOut);
-    void applylut_8(Mat &src, Mat &dst, Mat &lut);
-    void skel(Mat &src, Mat &dst);
-    void endp(Mat &imageIn, Mat &imageOut, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName);
+    void GetLutSkel(cv::Mat &Lut);
+    void applylut_1(cv::Mat &imageIn, cv::Mat &imageOut);
+    void applylut_8(cv::Mat &src, cv::Mat &dst, cv::Mat &lut);
+    void skel(cv::Mat &src, cv::Mat &dst);
+    void endp(cv::Mat &imageIn, cv::Mat &imageOut, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName);
 
     // functions for getting tips coordinate
-    void getTipsCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName);
+    void getTipsCoords(cv::Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName);
 
     QPixmap image;
     QImage *imageObject;
     QGraphicsScene *scene;
 
-    //variables
-    Mat src, src_gray, dst;
+    cv::Mat src, src_gray, dst;
     int thresh = 0;
+    QVector<cv::Mat> automated_tips_images;
 };
 
 #endif // EDGE_H

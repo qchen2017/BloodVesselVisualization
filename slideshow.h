@@ -8,6 +8,9 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/core/core.hpp"
 
+using namespace std;
+//using namespace cv;
+
 namespace Ui {
 class Slideshow;
 }
@@ -21,16 +24,19 @@ public:
     ~Slideshow();
 
     void nextSlide();
-    void setImageList(QStringList);
-    void timerEvent(QTimerEvent*);
-    void updateView(cv::Mat);
-    void closeEvent(QCloseEvent*);
+    void setImageList(QStringList in, bool forTips);
+    void timerEvent(QTimerEvent* event);
+    void updateView(cv::Mat imageOut);
+    void closeEvent(QCloseEvent* event);
+    void tipsSlideshow(QVector<cv::Mat> images, bool autoTipsFlag);
 
 public slots:
-    void imageSlider_moved(int);
-    void speedSlider_moved(int);
     void on_playButton_clicked();
     void on_pauseButton_clicked();
+
+private slots:
+    void on_imageSlider_sliderMoved(int value);
+    void on_speedSlider_sliderMoved(int value);
 
 private:
     Ui::Slideshow *ui;
@@ -39,12 +45,16 @@ private:
     int currentSlide;
     int numSlides; //number of slides
     cv::Mat src;
+    bool tipsFlag;
+    bool forAutomatedTips;
+    QVector<cv::Mat> tips_mats;
 
     QStringList imageList;
     QString imageName;
     cv::Mat imageOut_gray;
     QPixmap image;
     QGraphicsScene *scene;
+
 };
 
 #endif // SLIDESHOW_H
