@@ -421,9 +421,10 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             // (0, 0) is at the center of the image
             QString x = QString::number((double) adjusted_x, 'g', 3);
             QString y = QString::number((double) adjusted_y, 'g', 3);
-            ui->tipsXcoord_textEdit->append(x);
-            ui->tipsYcoord_textEdit->append(y);
-
+            if (adjusted_x >= -1 && adjusted_x <= 1 && adjusted_y >= -1 && adjusted_y <= 1) {
+                ui->tipsXcoord_textEdit->append(x);
+                ui->tipsYcoord_textEdit->append(y);
+            }
             // display the tips in real time
             dst = bloodVesselObject->identifyTip(src, (float) x_coord, (float) y_coord);
             updateView(dst);
@@ -775,21 +776,21 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
 } // tips animation
 
 
-void MainWindow::on_tester_pushButton_clicked()
-{
-    if(!check_imageOpened()){
-        errorMsg();
-        return;
-    } // error
+//void MainWindow::on_tester_pushButton_clicked()
+//{
+//    if(!check_imageOpened()){
+//        errorMsg();
+//        return;
+//    } // error
 
-    unordered_map<string, QVector<QVector2D> > test_map;
+//    unordered_map<string, QVector<QVector2D> > test_map;
 
-    int index = ui->imageFiles_listWidget->currentRow(); // index of the selected image
-    imagePath = imagePaths.at(index); // absolute path of the selected image
-    string imName = imagePath.toStdString();
-    src = imread(imName);
-    cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
+//    int index = ui->imageFiles_listWidget->currentRow(); // index of the selected image
+//    imagePath = imagePaths.at(index); // absolute path of the selected image
+//    string imName = imagePath.toStdString();
+//    src = imread(imName);
+//    cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
 
-    edgeWin->detectTips(src_resize, test_map, imName, 135);
-    //writeTipsToFile(test_map);
-}
+//    edgeWin->detectTips(src_resize, test_map, imName, 135);
+//    //writeTipsToFile(test_map);
+//}

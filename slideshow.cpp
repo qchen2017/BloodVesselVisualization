@@ -26,7 +26,6 @@ Slideshow::~Slideshow()
     delete ui;
 }
 
-
 void Slideshow::nextSlide()
 {
     if (!tipsFlag) {

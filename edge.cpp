@@ -392,7 +392,7 @@ void Edge::endp(Mat &imageIn, Mat &imageOut, unordered_map<string, QVector<QVect
     applylut_1(imageOut,imageOut);
     imageOut = imageOut*255;
 
-    // imshow("Blood Vessel Tips", imageOut); // display tips in a separate window
+    //imshow("Blood Vessel Tips", imageOut); // display tips in a separate window
     automated_tips_images.push_back(imageOut);
     getTipsCoords(imageOut, tips_map, imgName);
 }
@@ -401,23 +401,35 @@ void Edge::getTipsCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> >
 {
     QVector2D pt;
     QVector<QVector2D> pts;
-    Mat img = imageIn;
+    //QVector<QVector2D> pts_temp;
+    //Mat img = imageIn;
     for (int x = 0; x < imageIn.cols/2; x++) {
         for (int y = 0; y < imageIn.rows; y++) {
             int color = imageIn.at<unsigned short>(Point(x,y)); // get pixel color
             if (color != 0) {
-                pt.setX((float)(x - imageIn.cols/2)/(float)(imageIn.cols/2));
+                pt.setX((float)((x*2) - imageIn.cols/2)/(float)(imageIn.cols/2));
                 pt.setY((float)(imageIn.rows/2 - y)/(float)(imageIn.rows/2));
                 pts.push_back(pt);
+                //pts_temp.push_back(QVector2D(x, y));
                 //qDebug() << x << y;
-                Point dot = Point(x, y);
-                circle(img, dot, 5.0, Scalar(255, 255, 255), -1, 8);
             }
         }
     }
+    tips_map[imgName] = pts;
+
+    /* used for debugginf tips points
+    for (int i = 0; i < pts_temp.size(); i++) {
+        QVector2D pt = pts_temp.at(i);
+        int a = pt.x();
+        int b = pt.y();
+        qDebug() << a << b;
+        Point dot = Point(a*2, b);
+        circle(img, dot, 5.0, Scalar(255, 255, 255), -1, 8);
+    }
 
     imshow("Test", img);
-    tips_map[imgName] = pts;
+    */
+
 }
 
 void Edge::convertToPixelCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName)
