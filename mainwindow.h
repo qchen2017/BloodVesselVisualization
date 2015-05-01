@@ -13,6 +13,7 @@
 #include "edge.h"
 #include "slideshow.h"
 
+
 //using namespace cv;
 
 namespace Ui {
