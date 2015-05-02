@@ -48,6 +48,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     imageListPtr = 0;
 
+    // intialization for selecting reference point & length
+    refPointEnabled = false;
+    lengthEnabled = false;
+    selected_ref = false;
+    revert = false;
+
     // tool tips for each of the UI components
     ui->displayOrigImage_pushButton->setToolTip("Displays original image in a new window.");
     ui->imageMode_comboBox->setToolTip("Select between different image modes to display in main window.");
@@ -198,6 +204,9 @@ void MainWindow::on_actionOpen_triggered()
     // set highlighted item in image files list to be the first item on the list
     ui->imageFiles_listWidget->setCurrentItem(ui->imageFiles_listWidget->item(0));
     ui->menuView->setEnabled(true);
+
+    ui->select_ref_point_radioButton->setEnabled(true);
+    ui->length_checkBox->setEnabled(true);
 } // open image
 
 void MainWindow::on_actionSave_triggered()
@@ -265,6 +274,7 @@ void MainWindow::on_imageFiles_listWidget_itemClicked(QListWidgetItem *item)
     ui->threshold_horizontalSlider->setValue(t);
     ui->tipsXcoord_textEdit->clear();
     ui->tipsYcoord_textEdit->clear();
+    ui->length_textEdit->clear();
 
     // display the appropriate image in the main window
     if (ui->imageMode_comboBox->currentText() == "Normal") {
@@ -421,14 +431,71 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             // (0, 0) is at the center of the image
             QString x = QString::number((double) adjusted_x, 'g', 3);
             QString y = QString::number((double) adjusted_y, 'g', 3);
+            qreal length = 0;
+            if(lengthEnabled){
+                if(selected_ref){
+                    qreal x2_x1 = adjusted_x - ref_point.x();
+                    qreal y2_y1 = adjusted_y - ref_point.y();
+                    length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
+                }
+                else{
+                    qreal x2_x1 = adjusted_x - 0;
+                    qreal y2_y1 = adjusted_y - 0;
+                    length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
+                }
+            }
+            QString l = QString::number((double)length, 'g', 3);
+            QString e = " ";
+
             if (adjusted_x >= -1 && adjusted_x <= 1 && adjusted_y >= -1 && adjusted_y <= 1) {
                 ui->tipsXcoord_textEdit->append(x);
                 ui->tipsYcoord_textEdit->append(y);
+                if(lengthEnabled){
+                    ui->length_textEdit->append(l);
+                }
+                else{
+                    ui->length_textEdit->append(e);
+                }
             }
             // display the tips in real time
             dst = bloodVesselObject->identifyTip(src, (float) x_coord, (float) y_coord);
             updateView(dst);
         }
+        else if(refPointEnabled && !mouseEnabled){
+
+                QPoint  local_pt = ui->graphicsView->mapFromGlobal(event->globalPos());
+                QPointF img_coord_pt = ui->graphicsView->mapToScene(local_pt);
+//                qDebug() << "local_pt = " << local_pt << ", img_coord_pt = " << img_coord_pt << endl;
+
+                // adjusted based on reference point
+                qreal adjusted_x = (qreal)(img_coord_pt.x() - src.cols/2)/(qreal)(src.cols/2);
+                qreal adjusted_y = (qreal)(src.rows/2 - img_coord_pt.y())/(qreal)(src.rows/2);
+//                qDebug() << "adjusted_x = " << adjusted_x << ", adjusted_y = " << adjusted_y << endl;
+//                qDebug() << "the center? " << src.cols/2 << ", " << src.rows/2 << endl;
+
+                // each (x, y) point is displayed in their appropriate text edits
+                // (0, 0) is at the center of the image
+                QString x = QString::number((double) adjusted_x, 'g', 3);
+                QString y = QString::number((double) adjusted_y, 'g', 3);
+//                qDebug() << "x = " << x << ", y = " << y << endl;
+                QString ref = "Keep (" + x + ", " + y + ") as reference point?";
+
+                QMessageBox::StandardButton reply;
+                reply = QMessageBox::question(this, "Reference Point", ref,
+                                              QMessageBox::Yes|QMessageBox::No);
+                if(reply == QMessageBox::Yes){
+                    ref_point.setX(adjusted_x);
+                    ref_point.setY(adjusted_y);
+                    refPointEnabled = false;
+                    selected_ref = true;
+                    if(revert){
+                        mouseEnabled = true;
+                        revert = false;
+                    }
+                    qDebug() << "ref_point " << ref_point << endl;
+                }
+        }
+
     }
 
 }
@@ -554,7 +621,30 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
                 QVector<QVector2D> pts = tips_map[temp]; // coordinates associated with image
                 for (int i = 0; i < pts.size(); i++) {
                     QVector2D pt = pts.at(i);
-                    stream << pt.x() << "," << pt.y() << endl; // write all coordinates to file
+
+                    if(lengthEnabled){
+                        //length calculation here and stream as well
+                        qreal length = 0.0;
+                        if(selected_ref){
+                            // if manually selected a reference point
+                            qreal x2_x1 = pt.x() - ref_point.x();
+                            qreal y2_y1 = pt.y() - ref_point.y();
+                            length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
+                            stream << pt.x() << "," << pt.y() << ", " << length << endl; // write all coordinates to file
+
+                        }
+                        else{
+                            // default ref point = 0,0
+                            qreal x2_x1 = pt.x() - 0.0;
+                            qreal y2_y1 = pt.y() - 0.0;
+                            length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
+                            stream << pt.x() << "," << pt.y() << ", " << length << endl; // write all coordinates to file
+                        }
+                    }
+                    else{
+                        // if length is not included
+                        stream << pt.x() << "," << pt.y() << endl; // write all coordinates to file
+                    }
                 }
             }
         }
@@ -794,3 +884,29 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
 //    edgeWin->detectTips(src_resize, test_map, imName, 135);
 //    //writeTipsToFile(test_map);
 //}
+void MainWindow::on_select_ref_point_radioButton_clicked(bool checked)
+{
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    } // error
+    refPointEnabled = true;
+    if(mouseEnabled){
+        mouseEnabled = false;
+        revert = true;
+    }
+}//select reference point
+void MainWindow::on_length_checkBox_clicked(bool checked)
+{
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    } // error
+//    lengthEnabled = true;
+    if(checked){
+        lengthEnabled = true;
+    }
+    else{
+        lengthEnabled = false;
+    }
+}//include length

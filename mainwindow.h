@@ -61,6 +61,9 @@ private slots:
 
 //    void on_tester_pushButton_clicked();
 
+    void on_select_ref_point_radioButton_clicked(bool checked);
+    void on_length_checkBox_clicked(bool checked);
+
 private:
     void writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips_map);
 
@@ -85,6 +88,12 @@ private:
     float scaleFactor;
     bool mouseEnabled;
     int imageListPtr;
+
+    bool lengthEnabled;
+    bool refPointEnabled;
+    bool selected_ref;
+    bool revert;
+    QVector2D ref_point;
 
     // string holds the name of the image
     // vector of QVector2D holds the x and y coordinates of the tips in the image
