@@ -28,7 +28,7 @@
     <property name="geometry">
      <rect>
       <x>680</x>
-      <y>100</y>
+      <y>90</y>
       <width>81</width>
       <height>20</height>
      </rect>
@@ -41,7 +41,7 @@
     <property name="geometry">
      <rect>
       <x>750</x>
-      <y>100</y>
+      <y>90</y>
       <width>281</width>
       <height>22</height>
      </rect>
@@ -99,7 +99,7 @@
     <property name="geometry">
      <rect>
       <x>1040</x>
-      <y>100</y>
+      <y>90</y>
       <width>41</width>
       <height>21</height>
      </rect>
@@ -141,7 +141,7 @@
     <property name="geometry">
      <rect>
       <x>960</x>
-      <y>130</y>
+      <y>120</y>
       <width>121</width>
       <height>34</height>
      </rect>
@@ -195,8 +195,8 @@
     <property name="geometry">
      <rect>
       <x>670</x>
-      <y>170</y>
-      <width>405</width>
+      <y>160</y>
+      <width>411</width>
       <height>20</height>
      </rect>
     </property>
@@ -211,7 +211,7 @@
     <property name="geometry">
      <rect>
       <x>830</x>
-      <y>130</y>
+      <y>120</y>
       <width>101</width>
       <height>34</height>
      </rect>
@@ -227,7 +227,7 @@
     <property name="geometry">
      <rect>
       <x>670</x>
-      <y>130</y>
+      <y>120</y>
       <width>121</width>
       <height>34</height>
      </rect>
@@ -307,8 +307,8 @@
    <widget class="QLabel" name="tipsControls_label">
     <property name="geometry">
      <rect>
-      <x>820</x>
-      <y>190</y>
+      <x>830</x>
+      <y>180</y>
       <width>111</width>
       <height>16</height>
      </rect>
@@ -322,7 +322,7 @@
      <rect>
       <x>670</x>
       <y>410</y>
-      <width>405</width>
+      <width>411</width>
       <height>20</height>
      </rect>
     </property>
@@ -407,14 +407,14 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>670</x>
-      <y>380</y>
-      <width>161</width>
+      <x>810</x>
+      <y>200</y>
+      <width>131</width>
       <height>34</height>
      </rect>
     </property>
     <property name="text">
-     <string>Manual Tips Detector</string>
+     <string>Select Reference Point</string>
     </property>
    </widget>
    <widget class="QLabel" name="tipsControls_label_2">
@@ -475,6 +475,19 @@
      <bool>false</bool>
     </property>
    </widget>
+   <widget class="QLineEdit" name="refpoint_lineEdit">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>950</x>
+      <y>210</y>
+      <width>111</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <property name="acceptDrops">
@@ -511,6 +524,9 @@
      <string>View</string>
     </property>
     <widget class="QMenu" name="menuZoom">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
      <property name="title">
       <string>Zoom</string>
      </property>
@@ -540,6 +556,9 @@
    </property>
   </action>
   <action name="actionSave">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Save</string>
    </property>
@@ -552,7 +571,7 @@
     <bool>false</bool>
    </property>
    <property name="enabled">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <property name="text">
     <string>Fit to Window</string>
@@ -562,19 +581,25 @@
    </property>
   </action>
   <action name="actionZoom_Out">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Zoom Out</string>
    </property>
    <property name="shortcut">
-    <string>Meta+-</string>
+    <string>Ctrl+-</string>
    </property>
   </action>
   <action name="actionZoom_In_">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Zoom In</string>
    </property>
    <property name="shortcut">
-    <string>Meta+=</string>
+    <string>Ctrl+=</string>
    </property>
   </action>
   <action name="actionBlood_Vessel_Tips_Selector">

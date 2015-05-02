@@ -203,10 +203,15 @@ void MainWindow::on_actionOpen_triggered()
 
     // set highlighted item in image files list to be the first item on the list
     ui->imageFiles_listWidget->setCurrentItem(ui->imageFiles_listWidget->item(0));
-    ui->menuView->setEnabled(true);
+
+    ui->actionSave->setEnabled(true);
+    ui->actionFit_to_Window->setEnabled(true);
+    ui->actionZoom_In_->setEnabled(true);
+    ui->actionZoom_Out->setEnabled(true);
 
     ui->select_ref_point_radioButton->setEnabled(true);
     ui->length_checkBox->setEnabled(true);
+    ui->refpoint_lineEdit->setEnabled(true);
 } // open image
 
 void MainWindow::on_actionSave_triggered()
@@ -486,13 +491,18 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                 if(reply == QMessageBox::Yes){
                     ref_point.setX(adjusted_x);
                     ref_point.setY(adjusted_y);
+                    QString rx = QString::number((double)ref_point.x(), 'g', 3);
+                    QString ry = QString::number((double)ref_point.y(), 'g', 3);
+
+                    QString r = rx + ", " + ry;
+                    ui->refpoint_lineEdit->setText(r);
                     refPointEnabled = false;
                     selected_ref = true;
                     if(revert){
                         mouseEnabled = true;
                         revert = false;
                     }
-                    qDebug() << "ref_point " << ref_point << endl;
+//                    qDebug() << "ref_point " << ref_point << endl;
                 }
         }
 
