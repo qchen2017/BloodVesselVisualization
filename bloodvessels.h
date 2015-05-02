@@ -12,7 +12,6 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/core/core.hpp"
 
-using namespace cv;
 using namespace std;
 
 namespace Ui {
@@ -29,11 +28,11 @@ public:
 
     bool isEmpty();
     void saveTipPoint(string imgpath, qreal x, qreal y);
-    Mat identifyTip(Mat src, float x, float y);
-    Mat displayTips(Mat src, string imName);
+    cv::Mat identifyTip(cv::Mat src, float x, float y);
+    cv::Mat displayTips(cv::Mat src, string imName);
     void getManuallySelectedTips(unordered_map<string, QVector<QVector2D> > &tips);
     void tipsAnimation(unordered_map<string, QVector<QVector2D> > tips_map);
-    QVector<Mat> getTipsImages();
+    QVector<cv::Mat> getTipsImages();
 
 protected:
     void changeEvent(QEvent *e);
@@ -41,7 +40,7 @@ protected:
 private:
     Ui::BloodVessels *ui;
 
-    void updateView(Mat imageOut);
+    void updateView(cv::Mat imageOut);
 
     QPixmap image;
     QImage *imageObject;
@@ -49,7 +48,7 @@ private:
 
     QVector<QVector2D> bloodVesselsTips;
     unordered_map<string, QVector<QVector2D> > bv_tips_map; // maps selected tips to image
-    QVector<Mat> tips_images;
+    QVector<cv::Mat> tips_images;
 
 };
 
