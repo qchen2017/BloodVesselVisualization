@@ -63,6 +63,7 @@ private slots:
 
     void on_select_ref_point_radioButton_clicked(bool checked);
     void on_length_checkBox_clicked(bool checked);
+    void on_angle_checkBox_clicked(bool checked);
 
 private:
     void writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips_map);
@@ -90,6 +91,7 @@ private:
     int imageListPtr;
 
     bool lengthEnabled;
+    bool angleEnabled;
     bool refPointEnabled;
     bool selected_ref;
     bool revert;
