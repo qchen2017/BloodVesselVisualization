@@ -13,7 +13,6 @@
 #include "edge.h"
 #include "slideshow.h"
 
-using namespace cv;
 
 namespace Ui {
 class MainWindow;
@@ -27,7 +26,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    void updateView(Mat imageOut);
+    void updateView(cv::Mat imageOut);
     bool check_imageOpened();
 
 
@@ -79,8 +78,8 @@ private:
     Edge *edgeWin;
     Slideshow *ssWin;
 
-    Mat src, src_resize, dst;
-    QVector<Mat> src_images;
+    cv::Mat src, src_resize, dst;
+    QVector<cv::Mat> src_images;
 
     unordered_map<string, int> thresholds;
     float scaleFactor;
@@ -93,7 +92,7 @@ private:
 
     void findAllTips(bool threshold_default, unordered_map<string, QVector<QVector2D> > &tips_map_temp);
     void promptForTipsAnimation(unordered_map<string, QVector<QVector2D> > &tips_map_temp);
-    void automatedTipsAnimation(QVector<Mat> &auto_tips_images, unordered_map<string, QVector<QVector2D> > &tips_map_temp);
+    void automatedTipsAnimation(QVector<cv::Mat> &auto_tips_images, unordered_map<string, QVector<QVector2D> > &tips_map_temp);
 
     bool imageAlreadyLoaded(QString imp);
 };
