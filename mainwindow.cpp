@@ -1011,4 +1011,4 @@ void MainWindow::on_closeImage_toolButton_clicked()
     thresholds.erase(imagePath.toStdString());
     ui->imageFiles_listWidget->takeItem(index);
 
-}
+} // close current image on display

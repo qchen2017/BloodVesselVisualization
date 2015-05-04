@@ -21,13 +21,7 @@ Slideshow::Slideshow(QWidget *parent) :
     ui->speedSlider->setMaximum(3000); //set max speed to 3 seconds
     ui->speedSlider->setMinimum(1);
     ui->speedSlider->setValue(slideInterval); //initialize slider at position 1000
-
-
     ui->slideSpeed_LineEdit->setText(QString::number(slideInterval/1000) + " sec"); //set speed line edit
-
-//    connect(ui->imageSlider, SIGNAL(sliderMoved(int)),this, SLOT(imageSlider_moved(int)));
-//    connect(ui->speedSlider, SIGNAL(sliderMoved(int)),this, SLOT(speedSlider_moved(int)));
-
 }
 
 Slideshow::~Slideshow()
@@ -45,7 +39,7 @@ void Slideshow::nextSlide()
         ui->imageSlider->setValue(currentSlide);
 
         //update slide number on line edit
-        ui->slideNum_LineEdit->setText(QString::number(currentSlide+1) + "/" + QString::number(numSlides+1) );
+        ui->slideNum_LineEdit->setText(QString::number(currentSlide+1) + "/" + QString::number(numSlides));
 
         //replay slideshow if last image is played
         if(currentSlide == (imageList.size()-1)) {
@@ -63,7 +57,7 @@ void Slideshow::nextSlide()
         ui->imageSlider->setValue(currentSlide);
 
         //update slide number on line edit
-        ui->slideNum_LineEdit->setText(QString::number(currentSlide+1) + "/" + QString::number(numSlides+1) );
+        ui->slideNum_LineEdit->setText(QString::number(currentSlide+1) + "/" + QString::number(numSlides));
 
         //replay slideshow if last image is played
         if(currentSlide == (tips_mats.size()-1)) {
@@ -93,9 +87,9 @@ void Slideshow::tipsSlideshow(QVector<Mat> images, bool autoTipsFlag)
 void Slideshow::setImageList(QStringList in, bool forTips)
 {
     imageList = in;
-    numSlides = imageList.size() - 1;
+    numSlides = imageList.size();
     ui->imageSlider->setMaximum(numSlides); //set max value of slider bar to # of images
-    ui->slideNum_LineEdit->setText(QString::number(currentSlide) + "/" + QString::number(numSlides+1) );
+    ui->slideNum_LineEdit->setText(QString::number(currentSlide) + "/" + QString::number(numSlides) );
 
     if (forTips) {
         tipsFlag = true;
