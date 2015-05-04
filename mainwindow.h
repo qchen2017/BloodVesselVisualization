@@ -13,7 +13,6 @@
 #include "edge.h"
 #include "slideshow.h"
 
-using namespace cv;
 
 namespace Ui {
 class MainWindow;
@@ -27,7 +26,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    void updateView(Mat imageOut);
+    void updateView(cv::Mat imageOut);
     bool check_imageOpened();
 
 
@@ -62,6 +61,12 @@ private slots:
 
 //    void on_tester_pushButton_clicked();
 
+    void on_select_ref_point_radioButton_clicked(bool checked);
+    void on_length_checkBox_clicked(bool checked);
+    void on_angle_checkBox_clicked(bool checked);
+
+    void on_closeImage_toolButton_clicked();
+
 private:
     void writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips_map);
 
@@ -79,13 +84,20 @@ private:
     Edge *edgeWin;
     Slideshow *ssWin;
 
-    Mat src, src_resize, dst;
-    QVector<Mat> src_images;
+    cv::Mat src, src_resize, dst;
+    QVector<cv::Mat> src_images;
 
     unordered_map<string, int> thresholds;
     float scaleFactor;
     bool mouseEnabled;
     int imageListPtr;
+
+    bool lengthEnabled;
+    bool angleEnabled;
+    bool refPointEnabled;
+    bool selected_ref;
+    bool revert;
+    QVector2D ref_point;
 
     // string holds the name of the image
     // vector of QVector2D holds the x and y coordinates of the tips in the image
@@ -93,7 +105,7 @@ private:
 
     void findAllTips(bool threshold_default, unordered_map<string, QVector<QVector2D> > &tips_map_temp);
     void promptForTipsAnimation(unordered_map<string, QVector<QVector2D> > &tips_map_temp);
-    void automatedTipsAnimation(QVector<Mat> &auto_tips_images, unordered_map<string, QVector<QVector2D> > &tips_map_temp);
+    void automatedTipsAnimation(QVector<cv::Mat> &auto_tips_images, unordered_map<string, QVector<QVector2D> > &tips_map_temp);
 
     bool imageAlreadyLoaded(QString imp);
 };

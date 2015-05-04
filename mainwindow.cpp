@@ -9,7 +9,10 @@
 #include <QVector2D>
 #include <QVector>
 #include <QHash>
+#include <math.h>
 #include <iostream>
+
+#define PI 3.14159265 //to calculate angle
 
 using namespace cv;
 using namespace std;
@@ -47,6 +50,13 @@ MainWindow::MainWindow(QWidget *parent) :
     mouseEnabled = false;
 
     imageListPtr = 0;
+
+    // intialization for selecting reference point & length
+    refPointEnabled = false;
+    lengthEnabled = false;
+    angleEnabled = false;
+    selected_ref = false;
+    revert = false;
 
     // tool tips for each of the UI components
     ui->displayOrigImage_pushButton->setToolTip("Displays original image in a new window.");
@@ -197,7 +207,16 @@ void MainWindow::on_actionOpen_triggered()
 
     // set highlighted item in image files list to be the first item on the list
     ui->imageFiles_listWidget->setCurrentItem(ui->imageFiles_listWidget->item(0));
-    ui->menuView->setEnabled(true);
+
+    ui->actionSave->setEnabled(true);
+    ui->actionFit_to_Window->setEnabled(true);
+    ui->actionZoom_In_->setEnabled(true);
+    ui->actionZoom_Out->setEnabled(true);
+
+    ui->select_ref_point_radioButton->setEnabled(true);
+    ui->length_checkBox->setEnabled(true);
+    ui->angle_checkBox->setEnabled(true);
+    ui->refpoint_lineEdit->setEnabled(true);
 } // open image
 
 void MainWindow::on_actionSave_triggered()
@@ -265,6 +284,7 @@ void MainWindow::on_imageFiles_listWidget_itemClicked(QListWidgetItem *item)
     ui->threshold_horizontalSlider->setValue(t);
     ui->tipsXcoord_textEdit->clear();
     ui->tipsYcoord_textEdit->clear();
+    ui->length_textEdit->clear();
 
     // display the appropriate image in the main window
     if (ui->imageMode_comboBox->currentText() == "Normal") {
@@ -421,14 +441,88 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             // (0, 0) is at the center of the image
             QString x = QString::number((double) adjusted_x, 'g', 3);
             QString y = QString::number((double) adjusted_y, 'g', 3);
+
+            qreal length = 0, angle = 0;
+            if(lengthEnabled || angleEnabled){
+                qreal x2_x1, y2_y1;
+
+                if(selected_ref){
+                    x2_x1 = adjusted_x - ref_point.x();
+                    y2_y1 = adjusted_y - ref_point.y();
+                }
+                else{
+                    x2_x1 = adjusted_x - 0;
+                    y2_y1 = adjusted_y - 0;
+                }
+
+                if(lengthEnabled)
+                    length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
+
+                if(angleEnabled) {
+                    //atan2 returns positive angle for positive Y position, and vice versa
+                    angle = atan2(y2_y1, x2_x1) * 180 / PI;
+                    if(angle < 0) //recalculate to get a positive angle value
+                        angle = 360 + angle;
+                }
+            }
+
+            QString l = QString::number((double)length, 'g', 3);
+            QString e = " ";
+
             if (adjusted_x >= -1 && adjusted_x <= 1 && adjusted_y >= -1 && adjusted_y <= 1) {
                 ui->tipsXcoord_textEdit->append(x);
                 ui->tipsYcoord_textEdit->append(y);
+                if(lengthEnabled){
+                    ui->length_textEdit->append(l);
+                }
+                else{
+                    ui->length_textEdit->append(e);
+                }
             }
             // display the tips in real time
             dst = bloodVesselObject->identifyTip(src, (float) x_coord, (float) y_coord);
             updateView(dst);
         }
+        else if(refPointEnabled && !mouseEnabled){
+
+                QPoint  local_pt = ui->graphicsView->mapFromGlobal(event->globalPos());
+                QPointF img_coord_pt = ui->graphicsView->mapToScene(local_pt);
+//                qDebug() << "local_pt = " << local_pt << ", img_coord_pt = " << img_coord_pt << endl;
+
+                // adjusted based on reference point
+                qreal adjusted_x = (qreal)(img_coord_pt.x() - src.cols/2)/(qreal)(src.cols/2);
+                qreal adjusted_y = (qreal)(src.rows/2 - img_coord_pt.y())/(qreal)(src.rows/2);
+//                qDebug() << "adjusted_x = " << adjusted_x << ", adjusted_y = " << adjusted_y << endl;
+//                qDebug() << "the center? " << src.cols/2 << ", " << src.rows/2 << endl;
+
+                // each (x, y) point is displayed in their appropriate text edits
+                // (0, 0) is at the center of the image
+                QString x = QString::number((double) adjusted_x, 'g', 3);
+                QString y = QString::number((double) adjusted_y, 'g', 3);
+//                qDebug() << "x = " << x << ", y = " << y << endl;
+                QString ref = "Keep (" + x + ", " + y + ") as reference point?";
+
+                QMessageBox::StandardButton reply;
+                reply = QMessageBox::question(this, "Reference Point", ref,
+                                              QMessageBox::Yes|QMessageBox::No);
+                if(reply == QMessageBox::Yes){
+                    ref_point.setX(adjusted_x);
+                    ref_point.setY(adjusted_y);
+                    QString rx = QString::number((double)ref_point.x(), 'g', 3);
+                    QString ry = QString::number((double)ref_point.y(), 'g', 3);
+
+                    QString r = rx + ", " + ry;
+                    ui->refpoint_lineEdit->setText(r);
+                    refPointEnabled = false;
+                    selected_ref = true;
+                    if(revert){
+                        mouseEnabled = true;
+                        revert = false;
+                    }
+//                    qDebug() << "ref_point " << ref_point << endl;
+                }
+        }
+
     }
 
 }
@@ -546,18 +640,60 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
         QFile file(outfile);
         if (file.open(QIODevice::WriteOnly)) {
             QTextStream stream(&file);
+
             // iterate through tips_map to get the tips' coordinates for each image
             for(auto it = tips_map.begin(); it != tips_map.end(); ++it) {
                 string temp = it->first; // image path name
+
                 QString imgname = QString::fromStdString(temp);
                 stream << imgname << endl; // write image path name
+
+                //set up column names
+                stream << "X,Y";
+                if(lengthEnabled)
+                   stream << ",Length";
+                if(angleEnabled)
+                   stream << ",Angle";
+                stream << endl;
+
                 QVector<QVector2D> pts = tips_map[temp]; // coordinates associated with image
                 for (int i = 0; i < pts.size(); i++) {
                     QVector2D pt = pts.at(i);
-                    stream << pt.x() << "," << pt.y() << endl; // write all coordinates to file
+                    stream << pt.x() << "," << pt.y(); // write all X, Y coordinates to file
+
+                    if(lengthEnabled || angleEnabled) {
+                        //length calculation here and stream as well
+                        qreal length = 0.0, angle = 0.0;
+                        qreal x2_x1, y2_y1;
+
+                        if(selected_ref) {
+                            // if manually selected a reference point
+                            x2_x1 = pt.x() - ref_point.x();
+                            y2_y1 = pt.y() - ref_point.y();
+                        }
+                        else {
+                            // default ref point = 0,0
+                            x2_x1 = pt.x() - 0.0;
+                            y2_y1 = pt.y() - 0.0;
+                        }
+
+                        if(lengthEnabled) {
+                            length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
+                            stream << "," << length; //append length vaue to current row
+                        }
+                        if(angleEnabled) {
+                            angle = atan2(y2_y1, x2_x1) * 180 / PI;
+
+                            if(angle < 0)
+                                angle = 360 + angle;
+
+                            stream << "," << angle; //append angle value to current row
+                        }
+                    }
+                    stream << endl;
                 }
             }
-        }
+        } //if file.open()
         file.close();
      }
 
@@ -794,3 +930,85 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
 //    edgeWin->detectTips(src_resize, test_map, imName, 135);
 //    //writeTipsToFile(test_map);
 //}
+
+void MainWindow::on_select_ref_point_radioButton_clicked(bool checked)
+{
+
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    } // error
+
+    refPointEnabled = true;
+    if (mouseEnabled) {
+        mouseEnabled = false;
+        revert = true;
+    }
+
+}//select reference point
+
+void MainWindow::on_length_checkBox_clicked(bool checked)
+{
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    } // error
+//    lengthEnabled = true;
+    if(checked){
+        lengthEnabled = true;
+    }
+    else{
+        lengthEnabled = false;
+    }
+}//include length
+
+void MainWindow::on_angle_checkBox_clicked(bool checked)
+{
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    } // error
+
+    if(checked){
+        angleEnabled = true;
+    }
+    else{
+        angleEnabled = false;
+    }
+
+}
+
+void MainWindow::on_closeImage_toolButton_clicked()
+{
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    } // error
+
+    int index = ui->imageFiles_listWidget->currentRow();
+    if (imagePaths.size() > 1) {
+        if (index == 0) {
+            imagePath = imagePaths.at(index + 1);
+        }
+        else {
+            imagePath = imagePaths.at(index - 1);
+        }
+
+        src = imread(imagePath.toStdString());
+        updateView(src);
+
+    }
+    else {
+        Mat dummyImg = src;
+        dummyImg.setTo(Scalar(255, 255, 255));
+        updateView(dummyImg);
+    }
+
+    imageListPtr--;
+    src_images.remove(index);
+    imagePaths.removeAt(index);
+    tips_map.erase(imagePath.toStdString());
+    thresholds.erase(imagePath.toStdString());
+    ui->imageFiles_listWidget->takeItem(index);
+
+}
