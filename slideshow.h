@@ -9,7 +9,6 @@
 #include "opencv2/core/core.hpp"
 
 using namespace std;
-using namespace cv;
 
 namespace Ui {
 class Slideshow;
@@ -26,9 +25,9 @@ public:
     void nextSlide();
     void setImageList(QStringList in, bool forTips);
     void timerEvent(QTimerEvent* event);
-    void updateView(Mat imageOut);
+    void updateView(cv::Mat imageOut);
     void closeEvent(QCloseEvent* event);
-    void tipsSlideshow(QVector<Mat> images, bool autoTipsFlag);
+    void tipsSlideshow(QVector<cv::Mat> images, bool autoTipsFlag);
 
 public slots:
     void on_playButton_clicked();
@@ -44,10 +43,10 @@ private:
     int slideInterval; //delay time between slides
     int currentSlide;
     int numSlides; //number of slides
-    Mat src;
+    cv::Mat src;
     bool tipsFlag;
     bool forAutomatedTips;
-    QVector<Mat> tips_mats;
+    QVector<cv::Mat> tips_mats;
 
     QStringList imageList;
     QString imageName;

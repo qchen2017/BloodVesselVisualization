@@ -1,4 +1,3 @@
-//test
 #include "image.h"
 #include <QDebug>
 #include <QVector3D>

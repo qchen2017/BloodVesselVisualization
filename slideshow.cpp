@@ -17,7 +17,16 @@ Slideshow::Slideshow(QWidget *parent) :
     tipsFlag = false;
     forAutomatedTips = false;
 
-    //connect(ui->imageSlider, SIGNAL(sliderMoved(int)),this, SLOT(on_imageSlider_moved(int)));
+    ui->imageSlider->setValue(0); //set slider at beginning
+    ui->speedSlider->setMaximum(3000); //set max speed to 3 seconds
+    ui->speedSlider->setMinimum(1);
+    ui->speedSlider->setValue(slideInterval); //initialize slider at position 1000
+
+
+    ui->slideSpeed_LineEdit->setText(QString::number(slideInterval/1000) + " sec"); //set speed line edit
+
+//    connect(ui->imageSlider, SIGNAL(sliderMoved(int)),this, SLOT(imageSlider_moved(int)));
+//    connect(ui->speedSlider, SIGNAL(sliderMoved(int)),this, SLOT(speedSlider_moved(int)));
 
 }
 
@@ -25,7 +34,6 @@ Slideshow::~Slideshow()
 {
     delete ui;
 }
-
 
 void Slideshow::nextSlide()
 {
@@ -35,6 +43,9 @@ void Slideshow::nextSlide()
 
         //update slider position
         ui->imageSlider->setValue(currentSlide);
+
+        //update slide number on line edit
+        ui->slideNum_LineEdit->setText(QString::number(currentSlide+1) + "/" + QString::number(numSlides+1) );
 
         //replay slideshow if last image is played
         if(currentSlide == (imageList.size()-1)) {
@@ -50,6 +61,10 @@ void Slideshow::nextSlide()
     else {
         src = tips_mats.at(currentSlide);
         ui->imageSlider->setValue(currentSlide);
+
+        //update slide number on line edit
+        ui->slideNum_LineEdit->setText(QString::number(currentSlide+1) + "/" + QString::number(numSlides+1) );
+
         //replay slideshow if last image is played
         if(currentSlide == (tips_mats.size()-1)) {
             currentSlide = 0;
@@ -78,7 +93,9 @@ void Slideshow::tipsSlideshow(QVector<Mat> images, bool autoTipsFlag)
 void Slideshow::setImageList(QStringList in, bool forTips)
 {
     imageList = in;
-    ui->imageSlider->setMaximum(imageList.size()); //set max value of slider bar to # of images
+    numSlides = imageList.size() - 1;
+    ui->imageSlider->setMaximum(numSlides); //set max value of slider bar to # of images
+    ui->slideNum_LineEdit->setText(QString::number(currentSlide) + "/" + QString::number(numSlides+1) );
 
     if (forTips) {
         tipsFlag = true;
