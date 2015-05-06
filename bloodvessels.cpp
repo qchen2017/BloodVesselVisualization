@@ -82,6 +82,19 @@ void BloodVessels::saveTipPoint(string imgpath, qreal x, qreal y)
     bv_tips_map[imgpath] = temp;
 }
 
+void BloodVessels::deleteTipPoint(string imgpath)
+{
+    // update map
+    QVector<QVector2D> temp = bv_tips_map[imgpath];
+    temp.remove(temp.size() - 1); // remove last element
+    if (temp.empty()) {
+        bv_tips_map.erase(imgpath);
+    }
+    else {
+        bv_tips_map[imgpath] = temp;
+    }
+}
+
 Mat BloodVessels::identifyTip(Mat src, float x, float y)
 {
     Point dot = Point(x, y);

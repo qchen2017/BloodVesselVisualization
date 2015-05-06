@@ -42,6 +42,7 @@ private slots:
     void on_actionFit_to_Window_triggered();
     void on_actionZoom_In__triggered();
     void on_actionZoom_Out_triggered();
+    void on_actionUndo_Manual_Detect_triggered();
     void on_actionView_Documentation_triggered();
 
     /* Main User Interface Functionalities */
@@ -53,20 +54,22 @@ private slots:
     //void on_edgeButton_clicked();
     void on_bloodVesselsTips_radioButton_toggled(bool checked);
     void on_displayTips_pushButton_clicked();
+    void on_clearTips_pushButton_clicked();
+    void on_closeImage_toolButton_clicked();
 
     /* Main App Functions */
     void on_tipDetect_pushButton_clicked();
     void on_branchGraph_clicked();
     void on_animate_pushButton_clicked();
     void on_tipsAnimation_pushButton_clicked();
+    void on_exportManual_pushButton_clicked();
 
 //    void on_tester_pushButton_clicked();
 
-    void on_select_ref_point_radioButton_clicked(bool checked);
+    void on_select_ref_point_radioButton_clicked();
     void on_length_checkBox_clicked(bool checked);
+    void on_tip_checkBox_clicked(bool checked);
     void on_angle_checkBox_clicked(bool checked);
-
-    void on_closeImage_toolButton_clicked();
 
 private:
     void writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips_map);
@@ -85,7 +88,7 @@ private:
     Edge *edgeWin;
     Slideshow *ssWin;
 
-    cv::Mat src, src_resize, dst;
+    cv::Mat src, src_resize, dst, contourOut, edgeOut;
     QVector<cv::Mat> src_images;
 
     unordered_map<string, int> thresholds;
@@ -93,11 +96,13 @@ private:
     bool mouseEnabled;
     int imageListPtr;
 
+    bool tipsEnabled;
     bool lengthEnabled;
     bool angleEnabled;
     bool refPointEnabled;
     bool selected_ref;
     bool revert;
+    bool manualSelected;
     QVector2D ref_point;
 
     // string holds the name of the image

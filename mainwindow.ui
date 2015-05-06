@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1264</width>
-    <height>800</height>
+    <width>1374</width>
+    <height>946</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -295,7 +295,7 @@
         <item row="3" column="0">
          <layout class="QGridLayout" name="gridLayout_2">
           <property name="horizontalSpacing">
-           <number>-1</number>
+           <number>9</number>
           </property>
           <item row="1" column="0">
            <widget class="QRadioButton" name="bloodVesselsTips_radioButton">
@@ -498,7 +498,7 @@
         <item row="9" column="0">
          <layout class="QGridLayout" name="gridLayout_7">
           <property name="horizontalSpacing">
-           <number>-1</number>
+           <number>9</number>
           </property>
           <item row="1" column="1">
            <widget class="QPushButton" name="tipsAnimation_pushButton">
@@ -534,7 +534,7 @@
           <item row="0" column="0">
            <widget class="QLabel" name="tips_checkboxes_label">
             <property name="text">
-             <string>Tips to animate / export:</string>
+             <string>Tips to animate:</string>
             </property>
            </widget>
           </item>
@@ -607,7 +607,7 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="clearTips_pushButton">
             <property name="text">
              <string>Clear Tips</string>
             </property>
@@ -617,6 +617,13 @@
            <widget class="QPushButton" name="displayTips_pushButton">
             <property name="text">
              <string>Display Tips</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QPushButton" name="exportManual_pushButton">
+            <property name="text">
+             <string>Export Manual Data</string>
             </property>
            </widget>
           </item>
@@ -735,7 +742,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1264</width>
+     <width>1374</width>
      <height>22</height>
     </rect>
    </property>
@@ -772,8 +779,15 @@
     </property>
     <addaction name="actionView_Documentation"/>
    </widget>
+   <widget class="QMenu" name="menuAction">
+    <property name="title">
+     <string>Action</string>
+    </property>
+    <addaction name="actionUndo_Manual_Detect"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
+   <addaction name="menuAction"/>
    <addaction name="menuHelp"/>
   </widget>
   <action name="actionOpen">
@@ -848,6 +862,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+H</string>
+   </property>
+  </action>
+  <action name="actionUndo_Manual_Detect">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Undo Manual Detect</string>
    </property>
   </action>
  </widget>

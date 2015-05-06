@@ -28,11 +28,13 @@ public:
 
     bool isEmpty();
     void saveTipPoint(string imgpath, qreal x, qreal y);
+    void deleteTipPoint(string imgpath);
     cv::Mat identifyTip(cv::Mat src, float x, float y);
     cv::Mat displayTips(cv::Mat src, string imName);
     void getManuallySelectedTips(unordered_map<string, QVector<QVector2D> > &tips);
     void tipsAnimation(unordered_map<string, QVector<QVector2D> > tips_map);
     QVector<cv::Mat> getTipsImages();
+
 
 protected:
     void changeEvent(QEvent *e);
