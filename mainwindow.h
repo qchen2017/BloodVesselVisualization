@@ -45,11 +45,12 @@ private slots:
     void on_actionView_Documentation_triggered();
 
     /* Main User Interface Functionalities */
+    void close_opencv_window(string window_name);
     void on_imageFiles_listWidget_itemClicked(QListWidgetItem *item);
     void on_displayOrigImage_pushButton_clicked();
     void on_threshold_horizontalSlider_valueChanged(int value);
     void on_imageMode_comboBox_activated(const QString &arg1);
-    void on_edgeButton_clicked();
+    //void on_edgeButton_clicked();
     void on_bloodVesselsTips_radioButton_toggled(bool checked);
     void on_displayTips_pushButton_clicked();
 

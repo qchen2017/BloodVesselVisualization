@@ -9,6 +9,7 @@
 #include <QVector2D>
 #include <QVector>
 #include <QHash>
+#include <QSet>
 #include <math.h>
 #include <iostream>
 
@@ -39,6 +40,18 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this); // main window UI
     ui->threshold_lineEdit->setText("0"); // initialize line edit for the threshold value
 
+    //setup color combo box
+    QPixmap px(15,15);
+    px.fill(QColor(Qt::red));
+    QIcon icon(px);
+    ui->color_comboBox->addItem(icon, "Red");
+    px.fill(QColor(Qt::blue));
+    icon.addPixmap(px);
+    ui->color_comboBox->addItem(icon,"Blue");
+    px.fill(QColor(Qt::green));
+    icon.addPixmap(px);
+    ui->color_comboBox->addItem(icon,"Green");
+
     // create pointers for image and blood vessel objects
     imagePtr = new Image();
     bloodVesselObject = new BloodVessels(this); // also has a separate UI
@@ -68,6 +81,15 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->animate_pushButton->setToolTip("Plays the images in sequence on a separate window.");
     ui->imageFiles_listWidget->setToolTip("Loaded images");
     ui->graphicsView->setToolTip("Current image");
+    ui->closeImage_toolButton->setToolTip("Closes current image on display.");
+    ui->bloodVesselsTips_radioButton->setToolTip("Manually select tips using mouse control.");
+    ui->select_ref_point_radioButton->setToolTip("Manually select reference point using mouse control.");
+    ui->tipsXcoord_textEdit->setToolTip("Displays the X coordinates of the manually selected tips for image currently on display.");
+    ui->tipsYcoord_textEdit->setToolTip("Displays the Y coordinates of the manually selected tips for image currently on display.");
+    ui->displayTips_pushButton->setToolTip("Displays the manually selected tips for image currently on display.");
+    ui->tipsAnimation_pushButton->setToolTip("Plays the tips for each image in sequence on a separate window.");
+    ui->manual_checkBox->setToolTip("Animate manually selected tips.");
+    ui->automated_checkBox->setToolTip("Animate automated tips.");
 
     static QLabel helpInfo;
     QString info("Documentations: ");
@@ -125,6 +147,7 @@ bool MainWindow::imageAlreadyLoaded(QString imp)
 void MainWindow::on_actionOpen_triggered()
 {
     QHash<QString, QString> renames;
+    QSet<QString> temp_renames;
 
     // accepts png and jpg image types
     if (imagePaths.isEmpty()) {
@@ -132,21 +155,56 @@ void MainWindow::on_actionOpen_triggered()
     }
     else {
         imagePaths.append(QFileDialog::getOpenFileNames(this, tr("Select one or more files to open"), "", tr("Images (*.png *.jpeg *.jpg)")));
+
+        // got through the image to determine if there are ones that have been uploaded before/have the same absolute path/name
         for (int i = imageListPtr; i < imagePaths.size(); i++) {
+
+            // image was already uploaded before?
             if (imageAlreadyLoaded(imagePaths.at(i))) {
+                QString alrUploaded = imagePaths.at(i);
                 QMessageBox::StandardButton reply;
-                reply = QMessageBox::question(this, "Image", "An image of the same name already exists. Would you like to rename this image?",
-                                              QMessageBox::Yes|QMessageBox::No);
+                reply = QMessageBox::question(this, "Image", alrUploaded.append(" already exists. Would you like to rename this image?"), QMessageBox::Yes|QMessageBox::No);
+
+                // user wants to rename it?
                 if (reply == QMessageBox::Yes) {
                     bool ok;
-                    QString text = QInputDialog::getText(this, tr("Image"),
-                                                             tr("New Name:"), QLineEdit::Normal,
-                                                             QDir::home().dirName(), &ok);
-                    if (ok && !text.isEmpty())
-                        renames[imagePaths.at(i)] = text;
+                    QString text = QInputDialog::getText(this, tr("Image"), tr("New Name:"), QLineEdit::Normal, QDir::home().dirName(), &ok);
+
+                    // if a name was entered
+                    if (ok && !text.isEmpty()) {
+
+                        // check that it's a valid name/name hasn't been used before
+                        if ((ui->imageFiles_listWidget->findItems(text, Qt::MatchExactly)).isEmpty()) {
+
+                            // check if name hasn't been used as a rename before
+                            if (temp_renames.find(text) == temp_renames.end()) {
+                                renames[imagePaths.at(i)] = text;
+                                temp_renames.insert(text);
+                            }
+                            else {
+                                QString alertMsg = text;
+                                QMessageBox::information(this, "Image", alertMsg.append(" is already in use. The image will not be uploaded."));
+                                imagePaths.removeAt(i);
+                                i--;
+                            }
+                        }
+                        else {
+                            QString alertMsg = text;
+                            QMessageBox::information(this, "Image", alertMsg.append(" is already in use. The image will not be uploaded."));
+                            imagePaths.removeAt(i);
+                            i--;
+                        }
+                    }
+                    else {
+                        QMessageBox::information(this, "Image", "Image will not be renamed.");
+                        imagePaths.removeAt(i);
+                        i--;
+                    }
+
                 }
                 else {
                     imagePaths.removeAt(i);
+                    i--;
                 }
             }
         }
@@ -273,6 +331,16 @@ void MainWindow::on_actionView_Documentation_triggered()
 /**********************************************************************************/
 /*********************** Main User Interface Functionalities **********************/
 /**********************************************************************************/
+void MainWindow::close_opencv_window(string window_name)
+{
+    while(true){
+        char c = waitKey(33);
+        if( c == 27 ){
+            destroyWindow(window_name);
+        }
+    }//while not esc
+}
+
 
 void MainWindow::on_imageFiles_listWidget_itemClicked(QListWidgetItem *item)
 {
@@ -299,6 +367,12 @@ void MainWindow::on_imageFiles_listWidget_itemClicked(QListWidgetItem *item)
         dst = imagePtr->setImageView(src, t, "contour");
         updateView(dst);
     }
+    else if(ui->imageMode_comboBox->currentText() == "Edge") {
+        src = imread(imagePath.toStdString());
+        dst = edgeWin->setEdge(src, t);
+        updateView(dst);
+    }
+
 }
 
 void MainWindow::on_displayOrigImage_pushButton_clicked()
@@ -316,6 +390,7 @@ void MainWindow::on_displayOrigImage_pushButton_clicked()
     }
     namedWindow(imagePath.toStdString(), WINDOW_NORMAL);
     imshow(imagePath.toStdString(), src);
+    close_opencv_window(imagePath.toStdString());
 }
 
 void MainWindow::on_threshold_horizontalSlider_valueChanged(int value)
@@ -337,6 +412,10 @@ void MainWindow::on_threshold_horizontalSlider_valueChanged(int value)
     if (ui->imageMode_comboBox->currentText() == "Contour") {
         Mat contourOut = imagePtr->setImageView(src, value, "contour");
         updateView(contourOut);
+    }
+    else if(ui->imageMode_comboBox->currentText() == "Edge") {
+        dst = edgeWin->setEdge(src, value);
+        updateView(dst);
     }
     else {
         src = imread(imagePath.toStdString());
@@ -371,25 +450,30 @@ void MainWindow::on_imageMode_comboBox_activated(const QString &arg1)
         dst = imagePtr->setImageView(src, t, "contour");
         updateView(dst);
     }
+    else if (arg1 == "Edge") {
+        src = imread(imagePath.toStdString());
+        dst = edgeWin->setEdge(src, t);
+        updateView(dst);
+    }
 }
 
-void MainWindow::on_edgeButton_clicked()
-{
-    if(!check_imageOpened()){
-        errorMsg();
-        return;
-    } // error
+// void MainWindow::on_edgeButton_clicked()
+// {
+//     if(!check_imageOpened()){
+//         errorMsg();
+//         return;
+//     } // error
 
-    // get image to be displayed in edge mode
-    int index = ui->imageFiles_listWidget->currentRow();
-    imagePath = imagePaths.at(index);
-    src = imread(imagePath.toStdString());
-    cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
+//     // get image to be displayed in edge mode
+//     int index = ui->imageFiles_listWidget->currentRow();
+//     imagePath = imagePaths.at(index);
+//     src = imread(imagePath.toStdString());
+//     cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
 
-    //show edge window
-    edgeWin->setImageView(src_resize);
-    edgeWin->show();
-}
+//     //show edge window
+//     edgeWin->setImageView(src_resize);
+//     edgeWin->show();
+// }
 
 void MainWindow::updateView(Mat imageOut)
 {
@@ -561,7 +645,20 @@ void MainWindow::on_displayTips_pushButton_clicked()
 
     if (!bloodVesselObject->isEmpty()) {
         src = imread(imagePath.toStdString());
+//        QVector<QVector2D> bloodVesselsTips;
         dst = bloodVesselObject->displayTips(src, imagePath.toStdString());
+
+//        QVector2D pt;
+//        for (int i = 0; i < bloodVesselsTips.size(); i++) {
+//            pt = bloodVesselsTips.at(i);
+//            float x = pt.x();
+//            float y = pt.y();
+//            QString ptx; ptx.setNum(x);
+//            QString pty; ptx.setNum(y);
+//            ui->tipsXcoord_textEdit->setText(ptx);
+//            ui->tipsYcoord_textEdit->setText(pty);
+//        }
+
         updateView(dst);
     }
 

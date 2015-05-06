@@ -25,10 +25,12 @@ public:
     ~Edge();
 
     void setImageView(cv::Mat imageOut); // set up image for edge mode
+    cv::Mat setEdge(cv::Mat imageIn, int thresh_val);
     cv::Mat detectTips(cv::Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName, int thresh_val); // set up image for tips detection
     void branchGraph(cv::Mat imageIn, cv::Mat &imageOut);
     void convertToPixelCoords(cv::Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName);
     void getAutoTipsImages(QVector<cv::Mat> &auto_tips_images);
+
 
 protected:
     void changeEvent(QEvent *e);
@@ -40,7 +42,6 @@ private:
     Ui::Edge *ui;
 
     // functions for edge mode
-    cv::Mat setEdge();
     void updateView(cv::Mat imageOut);
 
     // functions for tips detection

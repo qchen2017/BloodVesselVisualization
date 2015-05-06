@@ -48,19 +48,22 @@ void Edge::changeEvent(QEvent *e)
 void Edge::setImageView(Mat imageIn)
 {
     this->src = imageIn;
-    Mat imageOut = setEdge();
+    Mat imageOut = setEdge(src, 0);
     updateView(imageOut);
 
 } // set image View
 
-Mat Edge::setEdge()
+Mat Edge::setEdge(Mat imageIn, int thresh_val)
 {
     Mat edge;
+    Mat imageIn_resize;
 
     //gray scale
-    cvtColor(src, src_gray, cv::COLOR_BGR2GRAY);
+    cv::resize(imageIn, imageIn_resize, cv::Size2i(imageIn.cols/3, imageIn.rows/3));
+    cvtColor(imageIn_resize, src_gray, cv::COLOR_BGR2GRAY);
     blur(src_gray, edge, Size(3,3));
-    Canny(edge, edge, thresh, thresh*3, 3);
+    Canny(edge, edge, thresh_val, thresh_val*3, 3);
+    cv::resize(edge, edge, cv::Size2i(edge.cols*3, edge.rows*3));
     return edge;
 
 } // edge detection function
@@ -86,7 +89,7 @@ void Edge::on_varySlider_valueChanged(int value)
 {
     thresh = value;
     ui->vary_lineEdit->setText(QString::number(value));
-    Mat imageOut = setEdge();
+    Mat imageOut = setEdge(src, value);
     updateView(imageOut);
 } // vary slider
 
