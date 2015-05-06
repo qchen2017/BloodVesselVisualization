@@ -649,11 +649,28 @@ void MainWindow::on_displayTips_pushButton_clicked()
     imagePath = imagePaths.at(index);
 
     if (!bloodVesselObject->isEmpty()) {
+        ui->actionUndo_Manual_Detect->setEnabled(true);
         src = imread(imagePath.toStdString());
         dst = bloodVesselObject->displayTips(src, imagePath.toStdString());
         updateView(dst);
     }
 
+}
+
+
+void MainWindow::on_clearTips_pushButton_clicked()
+{
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    } // error
+
+    int index = ui->imageFiles_listWidget->currentRow();
+    imagePath = imagePaths.at(index);
+
+    if (!bloodVesselObject->isEmpty()) {
+        src = imread(imagePath.toStdString());
+    }
 }
 
 /**********************************************************************************/
@@ -1045,6 +1062,19 @@ void MainWindow::on_select_ref_point_radioButton_clicked()
 
 }//select reference point
 
+void MainWindow::on_tip_checkBox_clicked(bool checked)
+{
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    } // error
+
+    if (checked)
+        tipsEnabled = true;
+    else
+        tipsEnabled = false;
+} //include tips
+
 void MainWindow::on_length_checkBox_clicked(bool checked)
 {
     if(!check_imageOpened()){
@@ -1124,7 +1154,7 @@ void MainWindow::on_actionUndo_Manual_Detect_triggered()
         string imp = imagePath.toStdString();
         src = imread(imp);
 
-        if (!bloodVesselObject->isEmpty()) {
+        if (!bloodVesselObject->thisImageTipsIsEmpty(imp)) {
             bloodVesselObject->deleteTipPoint(imp);
 
             QStringList xbox_lines = (ui->tipsXcoord_textEdit->toPlainText()).split("\n");
@@ -1135,7 +1165,7 @@ void MainWindow::on_actionUndo_Manual_Detect_triggered()
             ybox_lines.removeLast();
             ui->tipsYcoord_textEdit->setPlainText(ybox_lines.join("\n"));
 
-            if (bloodVesselObject->isEmpty()) {
+            if (bloodVesselObject->thisImageTipsIsEmpty(imp)) {
                 ui->actionUndo_Manual_Detect->setDisabled(true);
             }
             dst = bloodVesselObject->displayTips(src, imagePath.toStdString());
@@ -1144,30 +1174,5 @@ void MainWindow::on_actionUndo_Manual_Detect_triggered()
     }
 }
 
-void MainWindow::on_clearTips_pushButton_clicked()
-{
-    if(!check_imageOpened()){
-        errorMsg();
-        return;
-    } // error
 
-    int index = ui->imageFiles_listWidget->currentRow();
-    imagePath = imagePaths.at(index);
 
-    if (!bloodVesselObject->isEmpty()) {
-        src = imread(imagePath.toStdString());
-    }
-}
-
-void MainWindow::on_tip_checkBox_clicked(bool checked)
-{
-    if(!check_imageOpened()){
-        errorMsg();
-        return;
-    } // error
-
-    if (checked)
-        tipsEnabled = true;
-    else
-        tipsEnabled = false;
-}

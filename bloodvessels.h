@@ -27,6 +27,7 @@ public:
     ~BloodVessels();
 
     bool isEmpty();
+    bool thisImageTipsIsEmpty(string imgpath);
     void saveTipPoint(string imgpath, qreal x, qreal y);
     void deleteTipPoint(string imgpath);
     cv::Mat identifyTip(cv::Mat src, float x, float y);
@@ -34,6 +35,7 @@ public:
     void getManuallySelectedTips(unordered_map<string, QVector<QVector2D> > &tips);
     void tipsAnimation(unordered_map<string, QVector<QVector2D> > tips_map);
     QVector<cv::Mat> getTipsImages();
+
 
 
 protected:

@@ -74,6 +74,20 @@ bool BloodVessels::isEmpty()
     return false;
 }
 
+bool BloodVessels::thisImageTipsIsEmpty(string imgpath)
+{
+    if (bv_tips_map.find(imgpath) != bv_tips_map.end()) {
+        QVector<QVector2D> temp = bv_tips_map[imgpath];
+        if (temp.empty()) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    return true;
+}
+
 void BloodVessels::saveTipPoint(string imgpath, qreal x, qreal y)
 {
     // update map
@@ -87,6 +101,7 @@ void BloodVessels::deleteTipPoint(string imgpath)
     // update map
     QVector<QVector2D> temp = bv_tips_map[imgpath];
     temp.remove(temp.size() - 1); // remove last element
+
     if (temp.empty()) {
         bv_tips_map.erase(imgpath);
     }

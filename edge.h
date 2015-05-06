@@ -31,7 +31,6 @@ public:
     void convertToPixelCoords(cv::Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName);
     void getAutoTipsImages(QVector<cv::Mat> &auto_tips_images);
 
-
 protected:
     void changeEvent(QEvent *e);
 
