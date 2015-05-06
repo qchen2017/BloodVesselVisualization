@@ -53,6 +53,7 @@ private slots:
     //void on_edgeButton_clicked();
     void on_bloodVesselsTips_radioButton_toggled(bool checked);
     void on_displayTips_pushButton_clicked();
+    void on_clearTips_pushButton_clicked();
 
     /* Main App Functions */
     void on_tipDetect_pushButton_clicked();
@@ -63,9 +64,11 @@ private slots:
 
 //    void on_tester_pushButton_clicked();
 
+    /* tips function */
     void on_select_ref_point_radioButton_clicked(bool checked);
     void on_length_checkBox_clicked(bool checked);
-    void on_angle_checkBox_clicked(bool checked);
+    void on_tip_checkBox_clicked(bool checked);
+    void on_angle_checkBox_clicked(bool checked);    
 
     void on_closeImage_toolButton_clicked();
 
@@ -86,7 +89,7 @@ private:
     Edge *edgeWin;
     Slideshow *ssWin;
 
-    cv::Mat src, src_resize, dst;
+    cv::Mat src, src_resize, dst, contourOut, edgeOut;
     QVector<cv::Mat> src_images;
 
     unordered_map<string, int> thresholds;
@@ -94,12 +97,13 @@ private:
     bool mouseEnabled;
     int imageListPtr;
 
-    bool lengthEnabled;
+    bool tipsEnabled;
     bool angleEnabled;
+    bool lengthEnabled;
     bool refPointEnabled;
     bool selected_ref;
-    bool revert;
     bool manualSelected;
+
     QVector2D ref_point;
 
     // string holds the name of the image

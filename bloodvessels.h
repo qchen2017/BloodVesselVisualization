@@ -28,8 +28,8 @@ public:
 
     bool isEmpty();
     void saveTipPoint(string imgpath, qreal x, qreal y);
-    cv::Mat identifyTip(cv::Mat src, float x, float y);
-    cv::Mat displayTips(cv::Mat src, string imName);
+    cv::Mat identifyTip(cv::Mat src, float x, float y, bool mouseEnabled, bool refPointEnabled);
+    cv::Mat displayTips(cv::Mat src, string imName, bool tipsEnabled, bool lengthEnabled, bool angleEnabled);
     void getManuallySelectedTips(unordered_map<string, QVector<QVector2D> > &tips);
     void tipsAnimation(unordered_map<string, QVector<QVector2D> > tips_map);
     QVector<cv::Mat> getTipsImages();
