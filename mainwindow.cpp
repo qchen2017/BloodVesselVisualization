@@ -70,6 +70,10 @@ MainWindow::MainWindow(QWidget *parent) :
     angleEnabled = false;
     selected_ref = false;
     revert = false;
+    manualSelected = false;
+
+    ref_point.setX(0); //initialize reference point to default (0,0)
+    ref_point.setY(0);
 
     // tool tips for each of the UI components
     ui->displayOrigImage_pushButton->setToolTip("Displays original image in a new window.");
@@ -353,6 +357,7 @@ void MainWindow::on_imageFiles_listWidget_itemClicked(QListWidgetItem *item)
     ui->tipsXcoord_textEdit->clear();
     ui->tipsYcoord_textEdit->clear();
     ui->length_textEdit->clear();
+    ui->angle_textEdit->clear();
 
     // display the appropriate image in the main window
     if (ui->imageMode_comboBox->currentText() == "Normal") {
@@ -517,43 +522,32 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             // qDebug() << x_coord << y_coord;
             bloodVesselObject->saveTipPoint(imagePath.toStdString(), x_coord, y_coord);
 
-            // adjusted based on reference point
-            qreal adjusted_x = (qreal)(img_coord_pt.x() - src.cols/2)/(qreal)(src.cols/2);
-            qreal adjusted_y = (qreal)(src.rows/2 - img_coord_pt.y())/(qreal)(src.rows/2);
-
-            // each (x, y) point is displayed in their appropriate text edits
-            // (0, 0) is at the center of the image
-            QString x = QString::number((double) adjusted_x, 'g', 3);
-            QString y = QString::number((double) adjusted_y, 'g', 3);
+            // adjusted based on reference point          
+            qreal selected_x = (qreal)(img_coord_pt.x() - src.cols/2)/(qreal)(src.cols/2);
+            qreal selected_y = (qreal)(src.rows/2 - img_coord_pt.y())/(qreal)(src.rows/2);
+            qreal x2_x1 = selected_x - ref_point.x();
+            qreal y2_y1 = selected_y - ref_point.y();
 
             qreal length = 0, angle = 0;
-            if(lengthEnabled || angleEnabled){
-                qreal x2_x1, y2_y1;
+            if(lengthEnabled)
+                 length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
 
-                if(selected_ref){
-                    x2_x1 = adjusted_x - ref_point.x();
-                    y2_y1 = adjusted_y - ref_point.y();
-                }
-                else{
-                    x2_x1 = adjusted_x - 0;
-                    y2_y1 = adjusted_y - 0;
-                }
-
-                if(lengthEnabled)
-                    length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
-
-                if(angleEnabled) {
-                    //atan2 returns positive angle for positive Y position, and vice versa
-                    angle = atan2(y2_y1, x2_x1) * 180 / PI;
-                    if(angle < 0) //recalculate to get a positive angle value
-                        angle = 360 + angle;
-                }
+            if(angleEnabled) {
+                //atan2 returns positive angle for positive Y position, and vice versa
+                angle = atan2(y2_y1, x2_x1) * 180 / PI;
+                if(angle < 0) //recalculate to get a positive angle value
+                    angle = 360 + angle;
             }
 
-            QString l = QString::number((double)length, 'g', 3);
-            QString e = " ";
+            // each (x, y) point is displayed in their appropriate text edits
+            QString x = QString::number((double) x2_x1, 'g', 3);
+            QString y = QString::number((double) y2_y1, 'g', 3);
+            QString l = QString::number((double)length, 'g', 3); //length
+            QString a = QString::number((double)angle, 'g', 3); //angle
+            QString e = " "; //empty
 
-            if (adjusted_x >= -1 && adjusted_x <= 1 && adjusted_y >= -1 && adjusted_y <= 1) {
+            //disregard clicks that were pressed outside of the image
+            if (selected_x >= -1 && selected_x <= 1 && selected_y >= -1 && selected_y <= 1) {
                 ui->tipsXcoord_textEdit->append(x);
                 ui->tipsYcoord_textEdit->append(y);
                 if(lengthEnabled){
@@ -561,6 +555,13 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                 }
                 else{
                     ui->length_textEdit->append(e);
+                }
+
+                if(angleEnabled) {
+                    ui->angle_textEdit->append(a);
+                }
+                else {
+                    ui->angle_textEdit->append(e);
                 }
             }
             // display the tips in real time
@@ -723,6 +724,9 @@ void MainWindow::on_tipDetect_pushButton_clicked()
 
 void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips_map)
 {
+    qreal x2_x1;
+    qreal y2_y1;
+
     // prompt user for file name and location
     //QString outfile = QFileDialog::getSaveFileName(this, "Save");
     QString outfile = QFileDialog::getSaveFileName(this, "Save", "untitled.csv", tr("Comma Separated Values (CSV) (*.csv);;"
@@ -756,37 +760,35 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
                 QVector<QVector2D> pts = tips_map[temp]; // coordinates associated with image
                 for (int i = 0; i < pts.size(); i++) {
                     QVector2D pt = pts.at(i);
-                    stream << pt.x() << "," << pt.y(); // write all X, Y coordinates to file
 
-                    if(lengthEnabled || angleEnabled) {
-                        //length calculation here and stream as well
-                        qreal length = 0.0, angle = 0.0;
-                        qreal x2_x1, y2_y1;
+                    //in automatic detection, below two values will already be in range [-1,1]
+                    x2_x1 = pt.x() - ref_point.x();
+                    y2_y1 = pt.y() - ref_point.y();
 
-                        if(selected_ref) {
-                            // if manually selected a reference point
-                            x2_x1 = pt.x() - ref_point.x();
-                            y2_y1 = pt.y() - ref_point.y();
-                        }
-                        else {
-                            // default ref point = 0,0
-                            x2_x1 = pt.x() - 0.0;
-                            y2_y1 = pt.y() - 0.0;
-                        }
-
-                        if(lengthEnabled) {
-                            length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
-                            stream << "," << length; //append length vaue to current row
-                        }
-                        if(angleEnabled) {
-                            angle = atan2(y2_y1, x2_x1) * 180 / PI;
-
-                            if(angle < 0)
-                                angle = 360 + angle;
-
-                            stream << "," << angle; //append angle value to current row
-                        }
+                    //if manual selection is true, must convert tip points into range [-1,1]
+                    if(manualSelected == true) {
+                        qreal selected_x = (qreal)(pt.x() - src.cols/2)/(qreal)(src.cols/2);
+                        qreal selected_y = (qreal)(src.rows/2 - pt.y())/(qreal)(src.rows/2);
+                        x2_x1 = selected_x - ref_point.x();
+                        y2_y1 = selected_y - ref_point.y();
                     }
+
+                    stream << x2_x1 << "," << y2_y1; // write all X, Y coordinates to file
+
+                    qreal length = 0.0, angle = 0.0;
+                    if(lengthEnabled) {
+                        length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
+                        stream << "," << length; //append length vaue to current row
+                    }
+                    if(angleEnabled) {
+                        angle = atan2(y2_y1, x2_x1) * 180 / PI;
+
+                        if(angle < 0)
+                            angle = 360 + angle;
+
+                        stream << "," << angle; //append angle value to current row
+                    }
+
                     stream << endl;
                 }
             }
@@ -794,7 +796,15 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
         file.close();
      }
 
+    manualSelected = false;
 } // write tips to file
+
+void MainWindow::on_exportManual_pushButton_clicked() {
+    manualSelected = true;
+    unordered_map<string, QVector<QVector2D> > tips_map;
+    bloodVesselObject->getManuallySelectedTips(tips_map);
+    writeTipsToFile(tips_map);
+}
 
 void MainWindow::on_branchGraph_clicked()
 {

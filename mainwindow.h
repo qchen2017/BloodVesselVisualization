@@ -59,6 +59,7 @@ private slots:
     void on_branchGraph_clicked();
     void on_animate_pushButton_clicked();
     void on_tipsAnimation_pushButton_clicked();
+    void on_exportManual_pushButton_clicked();
 
 //    void on_tester_pushButton_clicked();
 
@@ -98,6 +99,7 @@ private:
     bool refPointEnabled;
     bool selected_ref;
     bool revert;
+    bool manualSelected;
     QVector2D ref_point;
 
     // string holds the name of the image
