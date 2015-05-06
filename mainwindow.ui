@@ -51,7 +51,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="elideMode">
        <enum>Qt::ElideMiddle</enum>
@@ -307,7 +307,7 @@
           <item row="2" column="0">
            <widget class="QRadioButton" name="select_ref_point_radioButton">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="text">
              <string>Select Reference Point</string>
@@ -515,7 +515,7 @@
                <string>Automated</string>
               </property>
               <property name="checked">
-               <bool>true</bool>
+               <bool>false</bool>
               </property>
              </widget>
             </item>
@@ -786,7 +786,7 @@
   </action>
   <action name="actionSave">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Save</string>
@@ -800,7 +800,7 @@
     <bool>false</bool>
    </property>
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Fit to Window</string>
@@ -811,7 +811,7 @@
   </action>
   <action name="actionZoom_Out">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Zoom Out</string>
@@ -822,7 +822,7 @@
   </action>
   <action name="actionZoom_In_">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Zoom In</string>
