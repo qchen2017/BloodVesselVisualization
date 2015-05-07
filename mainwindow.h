@@ -54,7 +54,6 @@ private slots:
     //void on_edgeButton_clicked();
     void on_bloodVesselsTips_radioButton_toggled(bool checked);
     void on_displayTips_pushButton_clicked();
-    void on_clearTips_pushButton_clicked();
     void on_closeImage_toolButton_clicked();
 
     /* Main App Functions */
@@ -66,10 +65,13 @@ private slots:
 
 //    void on_tester_pushButton_clicked();
 
+    //tips function
     void on_select_ref_point_radioButton_clicked();
     void on_length_checkBox_clicked(bool checked);
     void on_tip_checkBox_clicked(bool checked);
-    void on_angle_checkBox_clicked(bool checked);
+    //void on_angle_checkBox_clicked(bool checked);
+    void on_color_comboBox_activated(const QString &arg1);
+    void on_tip_size_spinBox_valueChanged(int arg1);
 
 private:
     void writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips_map);
@@ -98,10 +100,14 @@ private:
 
     bool tipsEnabled;
     bool lengthEnabled;
-    bool angleEnabled;
+    //bool angleEnabled;
     bool refPointEnabled;
     bool manualSelected;
+    int tip_size;
+    cv::Scalar tip_color;
     QVector2D ref_point;
+    float ref_coordX;
+    float ref_coordY;
 
     // string holds the name of the image
     // vector of QVector2D holds the x and y coordinates of the tips in the image

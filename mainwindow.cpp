@@ -52,6 +52,8 @@ MainWindow::MainWindow(QWidget *parent) :
     px.fill(QColor(Qt::green));
     icon.addPixmap(px);
     ui->color_comboBox->addItem(icon,"Green");
+    //initialize color
+    tip_color = Scalar(255, 0, 0);
 
     // create pointers for image and blood vessel objects
     imagePtr = new Image();
@@ -68,12 +70,13 @@ MainWindow::MainWindow(QWidget *parent) :
     // intialization for selecting reference point & length
     refPointEnabled = false;
     lengthEnabled = false;
-    tipsEnabled = false;
-    angleEnabled = false;
+    tipsEnabled = true;
+    //angleEnabled = false;
     manualSelected = false;
 
     ref_point.setX(0); //initialize reference point to default (0,0)
     ref_point.setY(0);
+    tip_size = 20;
 
     // tool tips for each of the UI components
     ui->displayOrigImage_pushButton->setToolTip("Displays original image in a new window.");
@@ -114,7 +117,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-
     delete ui;
 }
 
@@ -277,10 +279,14 @@ void MainWindow::on_actionOpen_triggered()
     ui->actionZoom_In_->setEnabled(true);
     ui->actionZoom_Out->setEnabled(true);
 
+    // set tips option
     ui->select_ref_point_radioButton->setEnabled(true);
     ui->length_checkBox->setEnabled(true);
-    ui->angle_checkBox->setEnabled(true);
+    //ui->angle_checkBox->setEnabled(true);
     ui->refpoint_lineEdit->setEnabled(true);
+    ui->tip_checkBox->setChecked(true);
+    ref_coordX = src.rows/2;
+    ref_coordY = src.cols/2;
 } // open image
 
 void MainWindow::on_actionSave_triggered()
@@ -415,7 +421,7 @@ void MainWindow::on_threshold_horizontalSlider_valueChanged(int value)
     thresholds[imagePath.toStdString()] = value; // map threshold to corresponding image
 
     // update view depending on mode
-    Mat img;
+    Mat img, src_gray;
     if (ui->imageMode_comboBox->currentText() == "Contour") {
         contourOut = imagePtr->setImageView(src, value, "contour");
         updateView(contourOut);
@@ -426,7 +432,8 @@ void MainWindow::on_threshold_horizontalSlider_valueChanged(int value)
     }
     else {
         src = imread(imagePath.toStdString());
-        cv::threshold(src, img, value, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
+        cvtColor(src, src_gray, cv::COLOR_BGR2GRAY);
+        cv::threshold(src_gray, img, value, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
         updateView(img);
     }
 }
@@ -468,7 +475,7 @@ void MainWindow::updateView(Mat imageOut)
 {
     // convert Mat to QImage display on graphicsView
     if (ui->imageMode_comboBox->currentText() != "Edge") {
-        cv::cvtColor(imageOut, imageOut, cv::COLOR_BGR2RGB);
+        //cv::cvtColor(imageOut, imageOut, cv::COLOR_BGR2RGB);
         QImage img((uchar*)imageOut.data, imageOut.cols, imageOut.rows, QImage::Format_RGB888);
         image = QPixmap::fromImage(img);
     }
@@ -535,7 +542,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                 ui->angle_textEdit->append(a);
             }
             // display the tips in real time
-            dst = bloodVesselObject->identifyTip(dst, (float) x_coord, (float) y_coord, mouseEnabled, refPointEnabled);
+            dst = bloodVesselObject->identifyTip(dst, (float) x_coord, (float) y_coord, tip_size, tip_color, mouseEnabled, refPointEnabled);
             updateView(dst);
         }
         if (refPointEnabled) {
@@ -546,12 +553,14 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
             float x_coord = img_coord_pt.x();
             float y_coord = img_coord_pt.y();
+            ref_coordX = x_coord;
+            ref_coordY = y_coord;
 
             // adjusted based on reference point
             qreal adjusted_x = (qreal)(img_coord_pt.x() - src.cols/2)/(qreal)(src.cols/2);
             qreal adjusted_y = (qreal)(src.rows/2 - img_coord_pt.y())/(qreal)(src.rows/2);
-            //                qDebug() << "adjusted_x = " << adjusted_x << ", adjusted_y = " << adjusted_y << endl;
-            //                qDebug() << "the center? " << src.cols/2 << ", " << src.rows/2 << endl;
+            //qDebug() << "adjusted_x = " << adjusted_x << ", adjusted_y = " << adjusted_y << endl;
+            //qDebug() << "the center? " << src.cols/2 << ", " << src.rows/2 << endl;
 
             // each (x, y) point is displayed in their appropriate text edits
             // (0, 0) is at the center of the image
@@ -571,7 +580,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
                 QString r = rx + ", " + ry;
                 ui->refpoint_lineEdit->setText(r);
-                dst = bloodVesselObject->identifyTip(dst, x_coord, y_coord, mouseEnabled, refPointEnabled);
+                dst = bloodVesselObject->identifyTip(dst, x_coord, y_coord, tip_size, tip_color, mouseEnabled, refPointEnabled);
                 updateView(dst);
              }
         }// select reference point mode
@@ -604,7 +613,6 @@ void MainWindow::on_bloodVesselsTips_radioButton_toggled(bool checked)
 
 void MainWindow::on_select_ref_point_radioButton_clicked()
 {
-
     if(!check_imageOpened()){
         errorMsg();
         return;
@@ -640,18 +648,18 @@ void MainWindow::on_length_checkBox_clicked(bool checked)
         lengthEnabled = false;
 }//include length
 
-void MainWindow::on_angle_checkBox_clicked(bool checked)
-{
-    if(!check_imageOpened()){
-        errorMsg();
-        return;
-    } // error
+//void MainWindow::on_angle_checkBox_clicked(bool checked)
+//{
+//    if(!check_imageOpened()){
+//        errorMsg();
+//        return;
+//    } // error
 
-    if(checked)
-        angleEnabled = true;
-    else
-        angleEnabled = false;
-}
+//    if(checked)
+//        angleEnabled = true;
+//    else
+//        angleEnabled = false;
+//}
 
 void MainWindow::on_displayTips_pushButton_clicked()
 {
@@ -666,25 +674,10 @@ void MainWindow::on_displayTips_pushButton_clicked()
     if (!bloodVesselObject->isEmpty()) {
         ui->actionUndo_Manual_Detect->setEnabled(true);
         src = imread(imagePath.toStdString());
-        dst = bloodVesselObject->displayTips(src, imagePath.toStdString(), tipsEnabled, lengthEnabled, angleEnabled);
+        dst = bloodVesselObject->displayTips(src, imagePath.toStdString(), ref_coordX, ref_coordY, tip_size, tip_color, tipsEnabled, lengthEnabled);
         updateView(dst);
     }
 
-}
-
-void MainWindow::on_clearTips_pushButton_clicked()
-{
-    if(!check_imageOpened()){
-        errorMsg();
-        return;
-    } // error
-
-    int index = ui->imageFiles_listWidget->currentRow();
-    imagePath = imagePaths.at(index);
-
-    if (!bloodVesselObject->isEmpty()) {
-        src = imread(imagePath.toStdString());
-    }
 }
 
 /**********************************************************************************/
@@ -773,9 +766,9 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
 
                 //set up column names
                 stream << "X,Y";
-                if(lengthEnabled)
+                //if(lengthEnabled)
                    stream << ",Length";
-                if(angleEnabled)
+                //if(angleEnabled)
                    stream << ",Angle";
                 stream << endl;
 
@@ -1115,14 +1108,39 @@ void MainWindow::on_actionUndo_Manual_Detect_triggered()
             ybox_lines.removeLast();
             ui->tipsYcoord_textEdit->setPlainText(ybox_lines.join("\n"));
 
+            QStringList lbox_lines = (ui->length_textEdit->toPlainText()).split("\n");
+            lbox_lines.removeLast();
+            ui->length_textEdit->setPlainText(lbox_lines.join("\n"));
+
+            QStringList abox_lines = (ui->angle_textEdit->toPlainText()).split("\n");
+            abox_lines.removeLast();
+            ui->angle_textEdit->setPlainText(abox_lines.join("\n"));
+
             if (bloodVesselObject->thisImageTipsIsEmpty(imp)) {
                 ui->actionUndo_Manual_Detect->setDisabled(true);
             }
-            dst = bloodVesselObject->displayTips(src, imagePath.toStdString(), tipsEnabled, lengthEnabled, angleEnabled);
+            dst = bloodVesselObject->displayTips(src, imagePath.toStdString(), ref_coordX, ref_coordY, tip_size, tip_color, tipsEnabled, lengthEnabled);
             updateView(dst);
         }
     }
 }
 
+void MainWindow::on_color_comboBox_activated(const QString &arg1)
+{
+    //color option
+    if (arg1 == "Red") {
+        tip_color = Scalar(255, 0, 0);
+    }
+    else if (arg1 == "Blue") {
+        tip_color = Scalar(0, 0, 255);
+    }
+    else if (arg1 == "Green") {
+        tip_color = Scalar(0, 255, 0);
+    }
+}
 
 
+void MainWindow::on_tip_size_spinBox_valueChanged(int arg1)
+{
+    tip_size = arg1;
+}

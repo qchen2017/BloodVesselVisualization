@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1267</width>
-    <height>829</height>
+    <height>827</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -584,16 +584,6 @@
               </property>
              </widget>
             </item>
-            <item>
-             <widget class="QCheckBox" name="angle_checkBox">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="text">
-               <string>Angle</string>
-              </property>
-             </widget>
-            </item>
            </layout>
           </item>
           <item row="3" column="1">
@@ -602,14 +592,7 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string>Export Tips</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QPushButton" name="clearTips_pushButton">
-            <property name="text">
-             <string>Clear Tips</string>
+             <string>Export Automated Tips</string>
             </property>
            </widget>
           </item>
@@ -620,7 +603,7 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
+          <item row="2" column="1">
            <widget class="QPushButton" name="exportManual_pushButton">
             <property name="text">
              <string>Export Manual Data</string>
@@ -873,6 +856,9 @@
    </property>
    <property name="text">
     <string>Undo Manual Detect</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
    </property>
   </action>
  </widget>
