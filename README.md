@@ -9,3 +9,7 @@ Changed -> display mode check box -> only affect the output of "Display Tips" bu
 
 P.S When you change reference point after manually selected tips,the result of "export manual data" is corrent, but now the program would not update the (x,y,length,angle) textEdit on the fly.
 Should we bother changing it?
+
+Removed Length checkbox, Edge button, scrollButtons for tabs
+
+
