@@ -100,8 +100,6 @@ private:
     bool lengthEnabled;
     bool angleEnabled;
     bool refPointEnabled;
-    bool selected_ref;
-    bool revert;
     bool manualSelected;
     QVector2D ref_point;
 

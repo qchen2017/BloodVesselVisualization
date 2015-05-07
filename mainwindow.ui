@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1267</width>
-    <height>827</height>
+    <height>829</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -708,6 +708,9 @@
        </item>
        <item row="2" column="0">
         <widget class="QToolButton" name="closeImage_toolButton">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
          <property name="text">
           <string>Close</string>
          </property>
