@@ -1,9 +1,5 @@
 Notes:
 
-Fixed the Close button error that Eva pointed out
-
-Added Action->Undo Manual Detect in Menu Bar
-
 Added -> shortcut to unselect tip(ctrl Z), delete tip on the fly
          draw reference point on the fly
          change draw_tip color and size
