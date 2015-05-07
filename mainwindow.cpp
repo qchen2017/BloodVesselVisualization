@@ -84,23 +84,32 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->actionUndo_Manual_Detect->setEnabled(false);
 
     // tool tips for each of the UI components
-    ui->displayOrigImage_pushButton->setToolTip("Displays original image in a new window.");
-    ui->imageMode_comboBox->setToolTip("Select between different image modes to display in main window.");
-    ui->threshold_horizontalSlider->setToolTip("Adjusts the current image's threshold value.");
-    ui->tipDetect_pushButton->setToolTip("Export the (x, y) coordinates of the blood vessel tips (automated) of all the images to a file.");
-    ui->branchGraph->setToolTip("Displays graph of the blood vessel branches of all the images in a separate window.");
-    ui->animate_pushButton->setToolTip("Plays the images in sequence on a separate window.");
     ui->imageFiles_listWidget->setToolTip("Loaded images.");
     ui->graphicsView->setToolTip("Current image on display.");
     ui->closeImage_toolButton->setToolTip("Closes current image on display.");
-    ui->bloodVesselsTips_radioButton->setToolTip("Manually select tips using mouse control.");
+
+    ui->displayOrigImage_pushButton->setToolTip("Displays original image in a new window.");
+    ui->imageMode_comboBox->setToolTip("Select between different image modes to display in main window.");
+    ui->threshold_horizontalSlider->setToolTip("Adjusts the current image's threshold value.");
+    ui->branchGraph->setToolTip("Displays graph of the blood vessel branches of all the images in a separate window.");
+    ui->animate_pushButton->setToolTip("Plays the images in sequence on a separate window.");
+
     ui->select_ref_point_radioButton->setToolTip("Manually select reference point using mouse control.");
-    ui->tipsXcoord_textEdit->setToolTip("Displays the X coordinates of the manually selected tips for image currently on display.");
-    ui->tipsYcoord_textEdit->setToolTip("Displays the Y coordinates of the manually selected tips for image currently on display.");
-    ui->displayTips_pushButton->setToolTip("Displays the manually selected tips for image currently on display.");
-    ui->tipsAnimation_pushButton->setToolTip("Plays the tips for each image in sequence on a separate window.");
+    ui->bloodVesselsTips_radioButton->setToolTip("Manually select tips using mouse control.");
+    ui->color_comboBox->setToolTip("Select color of tip dot for manual tips detection.");
+    ui->tip_size_spinBox->setToolTip("Select size of tip dot for manual tips detection.");
+
+    ui->tipDetect_pushButton->setToolTip("Export the (x, y) coordinates of the blood vessel tips (automated) of all the images to a file.");
     ui->manual_checkBox->setToolTip("Animate manually selected tips.");
     ui->automated_checkBox->setToolTip("Animate automated tips.");
+    ui->tipsAnimation_pushButton->setToolTip("Plays the tips for each image in sequence on a separate window.");
+
+    ui->tipsXcoord_textEdit->setToolTip("Displays the X coordinates of the manually selected tips for image currently on display.");
+    ui->tipsYcoord_textEdit->setToolTip("Displays the Y coordinates of the manually selected tips for image currently on display.");
+    ui->angle_textEdit->setToolTip("Displays the angle between a manually selected tip and the reference point.");
+    ui->length_textEdit->setToolTip("Displays the length/distance between a manually selected tip and the reference point.");
+
+    ui->displayTips_pushButton->setToolTip("Displays the manually selected tips for image currently on display.");
     ui->exportManual_pushButton->setToolTip("Export the manually detected tips of all the images to a file.");
 
     // initialize help window
@@ -120,7 +129,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-
     delete ui;
 }
 
@@ -289,14 +297,24 @@ void MainWindow::on_actionOpen_triggered()
 
     dummyImgOn = false;
 
-    // enable menu bar functions
+    // enable menu bar and UI functions
     ui->actionSave->setEnabled(true);
     ui->actionFit_to_Window->setEnabled(true);
     ui->actionZoom_In_->setEnabled(true);
     ui->actionZoom_Out->setEnabled(true);
 
+    ui->threshold_horizontalSlider->setEnabled(true);
+    ui->imageMode_comboBox->setEnabled(true);
+    ui->displayOrigImage_pushButton->setEnabled(true);
+    ui->branchGraph->setEnabled(true);
+    ui->animate_pushButton->setEnabled(true);
+    ui->save_pushButton->setEnabled(true);
+    ui->closeImage_toolButton->setEnabled(true);
+
     ui->bloodVesselsTips_radioButton->setEnabled(true);
     ui->select_ref_point_radioButton->setEnabled(true);
+    ui->color_comboBox->setEnabled(true);
+    ui->tip_size_spinBox->setEnabled(true);
 
     ui->manual_checkBox->setEnabled(true);
     ui->automated_checkBox->setEnabled(true);
@@ -305,6 +323,12 @@ void MainWindow::on_actionOpen_triggered()
     ui->angle_checkBox->setEnabled(true);
     
     ui->refpoint_lineEdit->setEnabled(true);
+
+    ui->tipsAnimation_pushButton->setEnabled(true);
+    ui->exportManual_pushButton->setEnabled(true);
+    ui->displayTips_pushButton->setEnabled(true);
+    ui->clearTips_pushButton->setEnabled(true);
+    ui->tipDetect_pushButton->setEnabled(true);
 
 } // open image
 
@@ -413,6 +437,20 @@ void MainWindow::close_opencv_window(string window_name)
         }
     } // while not esc
 } // closes an open cv window
+
+void MainWindow::on_save_pushButton_clicked()
+{
+    if (!check_imageOpened()) {
+        errorMsg();
+        return;
+    } // error
+
+    // save image to either jpg or png formats
+    imagePath = QFileDialog::getSaveFileName(this, tr("Save File"), "",
+                                                     tr("JPEG (*.jpg *.jpeg);;PNG (*.png)"));
+    *imageObject = image.toImage();
+    imageObject->save(imagePath);
+}
 
 void MainWindow::on_closeImage_toolButton_clicked()
 {
@@ -1182,9 +1220,5 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
         ssWin->show();
     }
 } // tips animation
-
-
-
-
 
 
