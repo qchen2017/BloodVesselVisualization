@@ -70,8 +70,6 @@ MainWindow::MainWindow(QWidget *parent) :
     lengthEnabled = false;
     tipsEnabled = false;
     angleEnabled = false;
-    selected_ref = false;
-    revert = false;
     manualSelected = false;
 
     ref_point.setX(0); //initialize reference point to default (0,0)
@@ -236,6 +234,7 @@ void MainWindow::on_actionOpen_triggered()
                 Mat img = imread(imagePath.toStdString());
                 if (i == 0) {
                     src = img; // set current src image
+                    dst = src;
                 }
                 src_images.push_back(img);
                 thresholds[imagePath.toStdString()] = 0;
@@ -246,6 +245,7 @@ void MainWindow::on_actionOpen_triggered()
                     Mat img = imread(imagePath.toStdString());
                     if (i == 0) {
                         src = img; // set current src image
+                        dst = src;
                     }
                     src_images.push_back(img);
                     thresholds[imagePath.toStdString()] = 0;
@@ -464,24 +464,6 @@ void MainWindow::on_imageMode_comboBox_activated(const QString &arg1)
     }
 }
 
-// void MainWindow::on_edgeButton_clicked()
-// {
-//     if(!check_imageOpened()){
-//         errorMsg();
-//         return;
-//     } // error
-
-//     // get image to be displayed in edge mode
-//     int index = ui->imageFiles_listWidget->currentRow();
-//     imagePath = imagePaths.at(index);
-//     src = imread(imagePath.toStdString());
-//     cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
-
-//     //show edge window
-//     edgeWin->setImageView(src_resize);
-//     edgeWin->show();
-// }
-
 void MainWindow::updateView(Mat imageOut)
 {
     // convert Mat to QImage display on graphicsView
@@ -531,15 +513,12 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             qreal y2_y1 = selected_y - ref_point.y();
 
             qreal length = 0, angle = 0;
-            if(lengthEnabled)
-                 length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
+            length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
 
-            if(angleEnabled) {
-                //atan2 returns positive angle for positive Y position, and vice versa
-                angle = atan2(y2_y1, x2_x1) * 180 / PI;
-                if(angle < 0) //recalculate to get a positive angle value
-                    angle = 360 + angle;
-            }
+            //atan2 returns positive angle for positive Y position, and vice versa
+            angle = atan2(y2_y1, x2_x1) * 180 / PI;
+            if(angle < 0) //recalculate to get a positive angle value
+                angle = 360 + angle;
 
             // each (x, y) point is displayed in their appropriate text edits
             QString x = QString::number((double) x2_x1, 'g', 3);
@@ -556,51 +535,48 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                 ui->angle_textEdit->append(a);
             }
             // display the tips in real time
-            dst = bloodVesselObject->identifyTip(src, (float) x_coord, (float) y_coord);
+            dst = bloodVesselObject->identifyTip(dst, (float) x_coord, (float) y_coord, mouseEnabled, refPointEnabled);
             updateView(dst);
         }
-        else if(refPointEnabled && !mouseEnabled){
+        if (refPointEnabled) {
+            //select reference point
+            QPoint  local_pt = ui->graphicsView->mapFromGlobal(event->globalPos());
+            QPointF img_coord_pt = ui->graphicsView->mapToScene(local_pt);
+            //qDebug() << "local_pt = " << local_pt << ", img_coord_pt = " << img_coord_pt << endl;
 
-                QPoint  local_pt = ui->graphicsView->mapFromGlobal(event->globalPos());
-                QPointF img_coord_pt = ui->graphicsView->mapToScene(local_pt);
-//                qDebug() << "local_pt = " << local_pt << ", img_coord_pt = " << img_coord_pt << endl;
+            float x_coord = img_coord_pt.x();
+            float y_coord = img_coord_pt.y();
 
-                // adjusted based on reference point
-                qreal adjusted_x = (qreal)(img_coord_pt.x() - src.cols/2)/(qreal)(src.cols/2);
-                qreal adjusted_y = (qreal)(src.rows/2 - img_coord_pt.y())/(qreal)(src.rows/2);
-//                qDebug() << "adjusted_x = " << adjusted_x << ", adjusted_y = " << adjusted_y << endl;
-//                qDebug() << "the center? " << src.cols/2 << ", " << src.rows/2 << endl;
+            // adjusted based on reference point
+            qreal adjusted_x = (qreal)(img_coord_pt.x() - src.cols/2)/(qreal)(src.cols/2);
+            qreal adjusted_y = (qreal)(src.rows/2 - img_coord_pt.y())/(qreal)(src.rows/2);
+            //                qDebug() << "adjusted_x = " << adjusted_x << ", adjusted_y = " << adjusted_y << endl;
+            //                qDebug() << "the center? " << src.cols/2 << ", " << src.rows/2 << endl;
 
-                // each (x, y) point is displayed in their appropriate text edits
-                // (0, 0) is at the center of the image
-                QString x = QString::number((double) adjusted_x, 'g', 3);
-                QString y = QString::number((double) adjusted_y, 'g', 3);
-//                qDebug() << "x = " << x << ", y = " << y << endl;
-                QString ref = "Keep (" + x + ", " + y + ") as reference point?";
+            // each (x, y) point is displayed in their appropriate text edits
+            // (0, 0) is at the center of the image
+            QString x = QString::number((double) adjusted_x, 'g', 3);
+            QString y = QString::number((double) adjusted_y, 'g', 3);
+            //                qDebug() << "x = " << x << ", y = " << y << endl;
+            QString ref = "Keep (" + x + ", " + y + ") as reference point?";
 
-                QMessageBox::StandardButton reply;
-                reply = QMessageBox::question(this, "Reference Point", ref,
-                                              QMessageBox::Yes|QMessageBox::No);
-                if(reply == QMessageBox::Yes){
-                    ref_point.setX(adjusted_x);
-                    ref_point.setY(adjusted_y);
-                    QString rx = QString::number((double)ref_point.x(), 'g', 3);
-                    QString ry = QString::number((double)ref_point.y(), 'g', 3);
+            QMessageBox::StandardButton reply;
+            reply = QMessageBox::question(this, "Reference Point", ref,
+                                          QMessageBox::Yes|QMessageBox::No);
+            if(reply == QMessageBox::Yes){
+                ref_point.setX(adjusted_x);
+                ref_point.setY(adjusted_y);
+                QString rx = QString::number((double)ref_point.x(), 'g', 3);
+                QString ry = QString::number((double)ref_point.y(), 'g', 3);
 
-                    QString r = rx + ", " + ry;
-                    ui->refpoint_lineEdit->setText(r);
-                    refPointEnabled = false;
-                    selected_ref = true;
-                    if(revert){
-                        mouseEnabled = true;
-                        revert = false;
-                    }
-//                    qDebug() << "ref_point " << ref_point << endl;
-                }
-        }
+                QString r = rx + ", " + ry;
+                ui->refpoint_lineEdit->setText(r);
+                dst = bloodVesselObject->identifyTip(dst, x_coord, y_coord, mouseEnabled, refPointEnabled);
+                updateView(dst);
+             }
+        }// select reference point mode
 
-    }
-
+    }// if image open
 }
 
 void MainWindow::on_bloodVesselsTips_radioButton_toggled(bool checked)
@@ -615,8 +591,8 @@ void MainWindow::on_bloodVesselsTips_radioButton_toggled(bool checked)
     int t = thresholds[imagePath.toStdString()];
 
     if (checked) {
-        src = imread(imagePath.toStdString());
-        cv::threshold(src, dst, t, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
+//        src = imread(imagePath.toStdString());
+//        cv::threshold(src, dst, t, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
         mouseEnabled = true;
         refPointEnabled = false;
     }
@@ -624,6 +600,57 @@ void MainWindow::on_bloodVesselsTips_radioButton_toggled(bool checked)
         mouseEnabled = false;
         return;
     }
+}
+
+void MainWindow::on_select_ref_point_radioButton_clicked()
+{
+
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    } // error
+
+    refPointEnabled = true;
+    mouseEnabled = false;
+}//select reference point
+
+void MainWindow::on_tip_checkBox_clicked(bool checked)
+{
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    } // error
+
+    if (checked)
+        tipsEnabled = true;
+    else
+        tipsEnabled = false;
+} //include tips
+
+void MainWindow::on_length_checkBox_clicked(bool checked)
+{
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    } // error
+//    lengthEnabled = true;
+    if(checked)
+        lengthEnabled = true;
+    else
+        lengthEnabled = false;
+}//include length
+
+void MainWindow::on_angle_checkBox_clicked(bool checked)
+{
+    if(!check_imageOpened()){
+        errorMsg();
+        return;
+    } // error
+
+    if(checked)
+        angleEnabled = true;
+    else
+        angleEnabled = false;
 }
 
 void MainWindow::on_displayTips_pushButton_clicked()
@@ -639,12 +666,11 @@ void MainWindow::on_displayTips_pushButton_clicked()
     if (!bloodVesselObject->isEmpty()) {
         ui->actionUndo_Manual_Detect->setEnabled(true);
         src = imread(imagePath.toStdString());
-        dst = bloodVesselObject->displayTips(src, imagePath.toStdString());
+        dst = bloodVesselObject->displayTips(src, imagePath.toStdString(), tipsEnabled, lengthEnabled, angleEnabled);
         updateView(dst);
     }
 
 }
-
 
 void MainWindow::on_clearTips_pushButton_clicked()
 {
@@ -772,19 +798,15 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
                     stream << x2_x1 << "," << y2_y1; // write all X, Y coordinates to file
 
                     qreal length = 0.0, angle = 0.0;
-                    if(lengthEnabled) {
-                        length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
-                        stream << "," << length; //append length vaue to current row
-                    }
-                    if(angleEnabled) {
-                        angle = atan2(y2_y1, x2_x1) * 180 / PI;
+                    length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
+                    stream << "," << length; //append length vaue to current row
 
-                        if(angle < 0)
-                            angle = 360 + angle;
+                    angle = atan2(y2_y1, x2_x1) * 180 / PI;
 
-                        stream << "," << angle; //append angle value to current row
-                    }
+                    if(angle < 0)
+                        angle = 360 + angle;
 
+                    stream << "," << angle; //append angle value to current row
                     stream << endl;
                 }
             }
@@ -1034,66 +1056,6 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
 //    //writeTipsToFile(test_map);
 //}
 
-void MainWindow::on_select_ref_point_radioButton_clicked()
-{
-
-    if(!check_imageOpened()){
-        errorMsg();
-        return;
-    } // error
-
-    refPointEnabled = true;
-    if (mouseEnabled) {
-        mouseEnabled = false;
-        revert = true;
-    }
-
-}//select reference point
-
-void MainWindow::on_tip_checkBox_clicked(bool checked)
-{
-    if(!check_imageOpened()){
-        errorMsg();
-        return;
-    } // error
-
-    if (checked)
-        tipsEnabled = true;
-    else
-        tipsEnabled = false;
-} //include tips
-
-void MainWindow::on_length_checkBox_clicked(bool checked)
-{
-    if(!check_imageOpened()){
-        errorMsg();
-        return;
-    } // error
-//    lengthEnabled = true;
-    if(checked){
-        lengthEnabled = true;
-    }
-    else{
-        lengthEnabled = false;
-    }
-}//include length
-
-void MainWindow::on_angle_checkBox_clicked(bool checked)
-{
-    if(!check_imageOpened()){
-        errorMsg();
-        return;
-    } // error
-
-    if(checked){
-        angleEnabled = true;
-    }
-    else{
-        angleEnabled = false;
-    }
-
-}
-
 void MainWindow::on_closeImage_toolButton_clicked()
 {
     if(!check_imageOpened()){
@@ -1156,7 +1118,7 @@ void MainWindow::on_actionUndo_Manual_Detect_triggered()
             if (bloodVesselObject->thisImageTipsIsEmpty(imp)) {
                 ui->actionUndo_Manual_Detect->setDisabled(true);
             }
-            dst = bloodVesselObject->displayTips(src, imagePath.toStdString());
+            dst = bloodVesselObject->displayTips(src, imagePath.toStdString(), tipsEnabled, lengthEnabled, angleEnabled);
             updateView(dst);
         }
     }
