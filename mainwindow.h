@@ -43,6 +43,7 @@ private slots:
     /* Main User Interface Functionalities */
     void close_opencv_window(string window_name);
     void on_closeImage_toolButton_clicked();
+    void on_clearThresh_pushButton_clicked();
     void on_imageFiles_listWidget_itemClicked(QListWidgetItem *item);
     void on_displayOrigImage_pushButton_clicked();
     void on_threshold_horizontalSlider_valueChanged(int value);
@@ -66,6 +67,8 @@ private slots:
     void on_animate_pushButton_clicked();
     void on_tipsAnimation_pushButton_clicked();
     
+
+
 private:
     
     Ui::MainWindow *ui;

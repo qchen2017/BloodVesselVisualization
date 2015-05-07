@@ -54,9 +54,9 @@ MainWindow::MainWindow(QWidget *parent) :
     dummyImgOn = true;
     mouseEnabled = false;
     refPointEnabled = false;
-    lengthEnabled = false;
+    lengthEnabled = true;
     tipsEnabled = false;
-    angleEnabled = false;
+    angleEnabled = true;
     selected_ref = false;
     revert = false;
     manualSelected = false;
@@ -91,6 +91,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->displayOrigImage_pushButton->setToolTip("Displays original image in a new window.");
     ui->imageMode_comboBox->setToolTip("Select between different image modes to display in main window.");
     ui->threshold_horizontalSlider->setToolTip("Adjusts the current image's threshold value.");
+    ui->clearThresh_pushButton->setToolTip("Clears the threshold set for current image on display.");
     ui->branchGraph->setToolTip("Displays graph of the blood vessel branches of all the images in a separate window.");
     ui->animate_pushButton->setToolTip("Plays the images in sequence on a separate window.");
 
@@ -308,7 +309,7 @@ void MainWindow::on_actionOpen_triggered()
     ui->displayOrigImage_pushButton->setEnabled(true);
     ui->branchGraph->setEnabled(true);
     ui->animate_pushButton->setEnabled(true);
-    ui->save_pushButton->setEnabled(true);
+    ui->clearThresh_pushButton->setEnabled(true);
     ui->closeImage_toolButton->setEnabled(true);
 
     ui->bloodVesselsTips_radioButton->setEnabled(true);
@@ -428,6 +429,7 @@ void MainWindow::on_actionView_Documentation_triggered()
 /**********************************************************************************/
 /*********************** Main User Interface Functionalities **********************/
 /**********************************************************************************/
+
 void MainWindow::close_opencv_window(string window_name)
 {
     while (true) {
@@ -438,18 +440,19 @@ void MainWindow::close_opencv_window(string window_name)
     } // while not esc
 } // closes an open cv window
 
-void MainWindow::on_save_pushButton_clicked()
+void MainWindow::on_clearThresh_pushButton_clicked()
 {
     if (!check_imageOpened()) {
         errorMsg();
         return;
     } // error
 
-    // save image to either jpg or png formats
-    imagePath = QFileDialog::getSaveFileName(this, tr("Save File"), "",
-                                                     tr("JPEG (*.jpg *.jpeg);;PNG (*.png)"));
-    *imageObject = image.toImage();
-    imageObject->save(imagePath);
+    int index = ui->imageFiles_listWidget->currentRow();
+    imagePath = imagePaths.at(index);
+    src = imread(imagePath.toStdString());
+    thresholds[imagePath.toStdString()] = 0;
+    updateView(src);
+
 }
 
 void MainWindow::on_closeImage_toolButton_clicked()
@@ -496,7 +499,6 @@ void MainWindow::on_closeImage_toolButton_clicked()
     }
 
 } // close current image on display
-
 
 void MainWindow::on_imageFiles_listWidget_itemClicked(QListWidgetItem *item)
 {
@@ -596,7 +598,7 @@ void MainWindow::on_imageMode_comboBox_activated(const QString &arg1)
     // display appropriate mode
     if (arg1 == "Normal") {
         dst = imread(imagePath.toStdString());
-        if (t > 0) {
+        if (t > -1) {
             cv::threshold(src, dst, t, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
         }
         updateView(dst);
@@ -1059,6 +1061,8 @@ void MainWindow::on_branchGraph_clicked()
     }
 
     imshow("Graph", img);
+    close_opencv_window("Graph");
+
 } // branch graph
 
 /**********************************************************************************/
