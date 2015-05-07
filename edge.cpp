@@ -420,7 +420,7 @@ void Edge::getTipsCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> >
     }
     tips_map[imgName] = pts;
 
-    /* used for debugginf tips points
+    /* used for debugging tips points
     for (int i = 0; i < pts_temp.size(); i++) {
         QVector2D pt = pts_temp.at(i);
         int a = pt.x();
