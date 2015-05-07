@@ -1,8 +1,6 @@
 Notes:
 
-Fixed the Close button error that Eva pointed out
+Cleaned up code
 
-Added Action->Undo Manual Detect in Menu Bar
-
-Merged with Jonathan's last commit
+Fixed more errors in close button
 

@@ -13,12 +13,12 @@
 #include <math.h>
 #include <iostream>
 
-#define PI 3.14159265 //to calculate angle
+#define PI 3.14159265 // to calculate angle
 
 using namespace cv;
 using namespace std;
 
-//global variables for slide show
+// global variables for slide show
 int trackbarNum, timeDelay, slideNum;
 bool slidePause;
 Mat imageRead;
@@ -30,42 +30,29 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    ui->setupUi(this); // main window UI
 
-    ssWin = new Slideshow(this);
-    edgeWin = new Edge(this); // separate UI for Edge mode
-    helpWin = new QWidget; // help window
+    // create pointers for other objects
+    imagePtr = new Image();
+    bloodVesselObject = new BloodVessels(this);
+    ssWin = new Slideshow(this); // has a separate UI
+    edgeWin = new Edge(this);
+
+    // initialize Help window
+    helpWin = new QWidget;
     helpWin->sizeHint();
     helpWin->setWindowTitle("Help");
     helpWin->setFixedSize(200, 130);
-    ui->setupUi(this); // main window UI
-    ui->threshold_lineEdit->setText("0"); // initialize line edit for the threshold value
-    ui->actionUndo_Manual_Detect->setEnabled(false);
 
-    //setup color combo box
-    QPixmap px(15,15);
-    px.fill(QColor(Qt::red));
-    QIcon icon(px);
-    ui->color_comboBox->addItem(icon, "Red");
-    px.fill(QColor(Qt::blue));
-    icon.addPixmap(px);
-    ui->color_comboBox->addItem(icon,"Blue");
-    px.fill(QColor(Qt::green));
-    icon.addPixmap(px);
-    ui->color_comboBox->addItem(icon,"Green");
-
-    // create pointers for image and blood vessel objects
-    imagePtr = new Image();
-    bloodVesselObject = new BloodVessels(this); // also has a separate UI
+    // use for keeping track of images that have been uploaded or closed
+    imageListPtr = 0;
 
     // initialize variables for threshold and zoom functions
     scaleFactor = 1.15;
 
-    // use for manual detection of blood vessel tips
+    // control flags
+    dummyImgOn = true;
     mouseEnabled = false;
-
-    imageListPtr = 0;
-
-    // intialization for selecting reference point & length
     refPointEnabled = false;
     lengthEnabled = false;
     tipsEnabled = false;
@@ -77,16 +64,34 @@ MainWindow::MainWindow(QWidget *parent) :
     ref_point.setX(0); //initialize reference point to default (0,0)
     ref_point.setY(0);
 
+
+    /************************************* MAIN WINDOW UI ***************************************/
+
+    // setup color combo box
+    QPixmap px(15,15);
+    px.fill(QColor(Qt::red));
+    QIcon icon(px);
+    ui->color_comboBox->addItem(icon, "Red");
+    px.fill(QColor(Qt::blue));
+    icon.addPixmap(px);
+    ui->color_comboBox->addItem(icon,"Blue");
+    px.fill(QColor(Qt::green));
+    icon.addPixmap(px);
+    ui->color_comboBox->addItem(icon,"Green");
+
+    // other initial states
+    ui->threshold_lineEdit->setText("0");
+    ui->actionUndo_Manual_Detect->setEnabled(false);
+
     // tool tips for each of the UI components
     ui->displayOrigImage_pushButton->setToolTip("Displays original image in a new window.");
     ui->imageMode_comboBox->setToolTip("Select between different image modes to display in main window.");
     ui->threshold_horizontalSlider->setToolTip("Adjusts the current image's threshold value.");
-    ui->tipDetect_pushButton->setToolTip("Writes the (x, y) coordinates of the blood vessel tips of all the images to a file.");
+    ui->tipDetect_pushButton->setToolTip("Export the (x, y) coordinates of the blood vessel tips (automated) of all the images to a file.");
     ui->branchGraph->setToolTip("Displays graph of the blood vessel branches of all the images in a separate window.");
-    ui->edgeButton->setToolTip("Displays Edge mode in a different window.");
     ui->animate_pushButton->setToolTip("Plays the images in sequence on a separate window.");
-    ui->imageFiles_listWidget->setToolTip("Loaded images");
-    ui->graphicsView->setToolTip("Current image");
+    ui->imageFiles_listWidget->setToolTip("Loaded images.");
+    ui->graphicsView->setToolTip("Current image on display.");
     ui->closeImage_toolButton->setToolTip("Closes current image on display.");
     ui->bloodVesselsTips_radioButton->setToolTip("Manually select tips using mouse control.");
     ui->select_ref_point_radioButton->setToolTip("Manually select reference point using mouse control.");
@@ -96,7 +101,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tipsAnimation_pushButton->setToolTip("Plays the tips for each image in sequence on a separate window.");
     ui->manual_checkBox->setToolTip("Animate manually selected tips.");
     ui->automated_checkBox->setToolTip("Animate automated tips.");
+    ui->exportManual_pushButton->setToolTip("Export the manually detected tips of all the images to a file.");
 
+    // initialize help window
     static QLabel helpInfo;
     QString info("Documentations: ");
     QString designDoc("<a style=\"text-decoration: none;\" href=\"https://docs.google.com/a/ucdavis.edu/document/d/1MzFV0zI-LZV6j7tqBh1H0ese6fr5gMz8w4HmYBFGPOk/\"> Design Document</a>");
@@ -105,10 +112,7 @@ MainWindow::MainWindow(QWidget *parent) :
     helpInfo.setText("<b>" + info + "</b><br><br>" + designDoc + "<br>" + testDoc);
     helpInfo.setOpenExternalLinks(true);
     helpInfo.setAlignment(Qt::AlignCenter);
-    
-    //helpInfo.setText("Design Document: https://docs.google.com/a/ucdavis.edu/document/d/1MzFV0zI-LZV6j7tqBh1H0ese6fr5gMz8w4HmYBFGPOk/\n\n"
-    //                 "Testing Document: https://docs.google.com/a/ucdavis.edu/document/d/1hkfqfILpR68mZEYMrsZXgx0fQEmJTdX65G3fDLlw8MY/");
-    
+ 
     QVBoxLayout *vbl = new QVBoxLayout(helpWin);
     vbl->addWidget(&helpInfo);
 
@@ -120,9 +124,8 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-
 /**********************************************************************************/
-/**************************** Main Menu Bar Functions *****************************/
+/*********************************** HELPER FUNCTIONS *****************************/
 /**********************************************************************************/
 
 void MainWindow::errorMsg()
@@ -133,7 +136,7 @@ void MainWindow::errorMsg()
 
 bool MainWindow::check_imageOpened()
 {
-    if (imagePath == NULL) {
+    if (imagePath == NULL || dummyImgOn == true) {
         return false;
     }
     return true;
@@ -148,14 +151,18 @@ bool MainWindow::imageAlreadyLoaded(QString imp)
         return true;
     }
     return false;
-}
+} // check if an image was already loaded before
+
+/**********************************************************************************/
+/**************************** Main Menu Bar Functions *****************************/
+/**********************************************************************************/
 
 void MainWindow::on_actionOpen_triggered()
 {
     QHash<QString, QString> renames;
     QSet<QString> temp_renames;
 
-    // accepts png and jpg image types
+    // ****** accepts png and jpg image types
     if (imagePaths.isEmpty()) {
         imagePaths = QFileDialog::getOpenFileNames(this, tr("Select one or more files to open"), "", tr("Images (*.png *.jpeg *.jpg)"));
     }
@@ -165,24 +172,24 @@ void MainWindow::on_actionOpen_triggered()
         // got through the image to determine if there are ones that have been uploaded before/have the same absolute path/name
         for (int i = imageListPtr; i < imagePaths.size(); i++) {
 
-            // image was already uploaded before?
+            // ***** image was already uploaded before?
             if (imageAlreadyLoaded(imagePaths.at(i))) {
                 QString alrUploaded = imagePaths.at(i);
                 QMessageBox::StandardButton reply;
                 reply = QMessageBox::question(this, "Image", alrUploaded.append(" already exists. Would you like to rename this image?"), QMessageBox::Yes|QMessageBox::No);
 
-                // user wants to rename it?
+                // **** user wants to rename it?
                 if (reply == QMessageBox::Yes) {
                     bool ok;
                     QString text = QInputDialog::getText(this, tr("Image"), tr("New Name:"), QLineEdit::Normal, QDir::home().dirName(), &ok);
 
-                    // if a name was entered
+                    // *** if a name was entered
                     if (ok && !text.isEmpty()) {
 
-                        // check that it's a valid name/name hasn't been used before
+                        // ** check that it's a valid name/name hasn't been used before
                         if ((ui->imageFiles_listWidget->findItems(text, Qt::MatchExactly)).isEmpty()) {
 
-                            // check if name hasn't been used as a rename before
+                            // * check if name hasn't been used as a rename before
                             if (temp_renames.find(text) == temp_renames.end()) {
                                 renames[imagePaths.at(i)] = text;
                                 temp_renames.insert(text);
@@ -192,29 +199,29 @@ void MainWindow::on_actionOpen_triggered()
                                 QMessageBox::information(this, "Image", alertMsg.append(" is already in use. The image will not be uploaded."));
                                 imagePaths.removeAt(i);
                                 i--;
-                            }
+                            } // end if else *
                         }
                         else {
                             QString alertMsg = text;
                             QMessageBox::information(this, "Image", alertMsg.append(" is already in use. The image will not be uploaded."));
                             imagePaths.removeAt(i);
                             i--;
-                        }
+                        } // end if else **
                     }
                     else {
                         QMessageBox::information(this, "Image", "Image will not be renamed.");
                         imagePaths.removeAt(i);
                         i--;
-                    }
+                    } // end if else ***
 
                 }
                 else {
                     imagePaths.removeAt(i);
                     i--;
-                }
-            }
-        }
-    }
+                } // end if else ****
+            } // end if ******
+        } // end for loop
+    } // end if ******
 
     // checks if image(s) exist
     if (imagePaths.isEmpty()) {
@@ -225,12 +232,15 @@ void MainWindow::on_actionOpen_triggered()
     // store all the absolute paths of all the images that are being loaded
     for (int i = imageListPtr; i < imagePaths.size(); i++) {
         imagePath = imagePaths.at(i);
-        if (imagePath == NULL) { // alert user if there's an error with one or more of the images
+
+        // alert user if there's an error with one or more of the images
+        if (imagePath == NULL) { 
             QMessageBox::about(this, tr("Error!"), tr("Error loading file."));
             imagePaths.removeAt(i);
             i--;
         }
-        else { // insert image into image files list
+        else {
+            // check if image hasn't been loaded before
             if (!imageAlreadyLoaded(imagePath)) {
                 ui->imageFiles_listWidget->insertItem(i, imagePath);
                 Mat img = imread(imagePath.toStdString());
@@ -239,8 +249,9 @@ void MainWindow::on_actionOpen_triggered()
                 }
                 src_images.push_back(img);
                 thresholds[imagePath.toStdString()] = 0;
-            }
+            }            
             else {
+                // check if the name of the image hasn't been used as a rename
                 if (renames.find(imagePath) != renames.end()) {
                     ui->imageFiles_listWidget->insertItem(i, renames[imagePath]);
                     Mat img = imread(imagePath.toStdString());
@@ -254,7 +265,11 @@ void MainWindow::on_actionOpen_triggered()
         }
     }
 
+    // keep track of current number of images
     imageListPtr = imagePaths.size();
+
+    // assign an image to src_resize
+    cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
 
     // set graphic view (main application window)
     imageObject = new QImage();
@@ -272,20 +287,30 @@ void MainWindow::on_actionOpen_triggered()
     // set highlighted item in image files list to be the first item on the list
     ui->imageFiles_listWidget->setCurrentItem(ui->imageFiles_listWidget->item(0));
 
+    dummyImgOn = false;
+
+    // enable menu bar functions
     ui->actionSave->setEnabled(true);
     ui->actionFit_to_Window->setEnabled(true);
     ui->actionZoom_In_->setEnabled(true);
     ui->actionZoom_Out->setEnabled(true);
 
+    ui->bloodVesselsTips_radioButton->setEnabled(true);
     ui->select_ref_point_radioButton->setEnabled(true);
+
+    ui->manual_checkBox->setEnabled(true);
+    ui->automated_checkBox->setEnabled(true);
+    ui->tip_checkBox->setEnabled(true);
     ui->length_checkBox->setEnabled(true);
     ui->angle_checkBox->setEnabled(true);
+    
     ui->refpoint_lineEdit->setEnabled(true);
+
 } // open image
 
 void MainWindow::on_actionSave_triggered()
 {
-    if(!check_imageOpened()){
+    if (!check_imageOpened()) {
         errorMsg();
         return;
     } // error
@@ -300,7 +325,7 @@ void MainWindow::on_actionSave_triggered()
 
 void MainWindow::on_actionFit_to_Window_triggered()
 {
-    if(scene == NULL){
+    if(scene == NULL || dummyImgOn == true){
         errorMsg();
         return;
     }
@@ -311,7 +336,7 @@ void MainWindow::on_actionFit_to_Window_triggered()
 
 void MainWindow::on_actionZoom_In__triggered()
 {
-    if (scene == NULL){
+    if (scene == NULL || dummyImgOn == true){
         errorMsg();
         return;
     } // error
@@ -321,13 +346,55 @@ void MainWindow::on_actionZoom_In__triggered()
 
 void MainWindow::on_actionZoom_Out_triggered()
 {
-    if (scene == NULL){
+    if (scene == NULL || dummyImgOn == true){
         errorMsg();
         return;
     } // error
 
     ui->graphicsView->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
 } // zoom out
+
+void MainWindow::on_actionUndo_Manual_Detect_triggered()
+{
+    // if there is an image
+    if (imageListPtr > 0) {
+        int index = ui->imageFiles_listWidget->currentRow();
+        imagePath = imagePaths.at(index);
+        string imp = imagePath.toStdString();
+        src = imread(imp);
+
+        // if this image has manually detected tips saved
+        if (!bloodVesselObject->thisImageTipsIsEmpty(imp)) {
+            bloodVesselObject->deleteTipPoint(imp);
+
+            // update the text boxes to reflect undoing
+            QStringList xbox_lines = (ui->tipsXcoord_textEdit->toPlainText()).split("\n");
+            xbox_lines.removeLast();
+            ui->tipsXcoord_textEdit->setPlainText(xbox_lines.join("\n"));
+
+            QStringList ybox_lines = (ui->tipsYcoord_textEdit->toPlainText()).split("\n");
+            ybox_lines.removeLast();
+            ui->tipsYcoord_textEdit->setPlainText(ybox_lines.join("\n"));
+
+            QStringList length_lines = (ui->length_textEdit->toPlainText()).split("\n");
+            length_lines.removeLast();
+            ui->length_textEdit->setPlainText(length_lines.join("\n"));
+
+            QStringList angle_lines = (ui->angle_textEdit->toPlainText()).split("\n");
+            angle_lines.removeLast();
+            ui->angle_textEdit->setPlainText(angle_lines.join("\n"));
+
+            // check again if there are more saved tips for this image - disable menu bar action if all tips have been undone
+            if (bloodVesselObject->thisImageTipsIsEmpty(imp)) {
+                ui->actionUndo_Manual_Detect->setDisabled(true);
+            }
+
+            // update current image ond display to reflect undoing
+            dst = bloodVesselObject->displayTips(src, imagePath.toStdString());
+            updateView(dst);
+        }
+    }
+}
 
 void MainWindow::on_actionView_Documentation_triggered()
 {
@@ -339,13 +406,58 @@ void MainWindow::on_actionView_Documentation_triggered()
 /**********************************************************************************/
 void MainWindow::close_opencv_window(string window_name)
 {
-    while(true){
+    while (true) {
         char c = waitKey(33);
-        if( c == 27 ){
+        if (c == 27) {
             destroyWindow(window_name);
         }
-    }//while not esc
-}
+    } // while not esc
+} // closes an open cv window
+
+void MainWindow::on_closeImage_toolButton_clicked()
+{
+    if (!check_imageOpened()) {
+        errorMsg();
+        return;
+    } // error
+
+    int index = 0;
+    
+    // if there are more than one images currently loaded, display either the image before or after the one that was closed
+    if (imagePaths.size() > 1) {
+        index = ui->imageFiles_listWidget->currentRow();
+
+        // if it is the first image display the one after it
+        if (index == 0) {
+            imagePath = imagePaths.at(index + 1);
+        }
+
+        else {
+            imagePath = imagePaths.at(index - 1);
+        }
+
+        src = imread(imagePath.toStdString());
+        updateView(src);
+
+    }
+    else { // else, there was only one image, so put a dummy image after the only image is closed
+        dummyImgOn = true;
+        Mat dummyImg = src_resize;
+        dummyImg.setTo(Scalar(255, 255, 255));
+        updateView(dummyImg);
+    }
+
+    // update the containers and other variables related to image files handling
+    if (imageListPtr > 0) {
+        imageListPtr--;
+        src_images.remove(index);
+        imagePaths.removeAt(index);
+        tips_map.erase(imagePath.toStdString());
+        thresholds.erase(imagePath.toStdString());
+        ui->imageFiles_listWidget->takeItem(index);
+    }
+
+} // close current image on display
 
 
 void MainWindow::on_imageFiles_listWidget_itemClicked(QListWidgetItem *item)
@@ -384,7 +496,7 @@ void MainWindow::on_imageFiles_listWidget_itemClicked(QListWidgetItem *item)
 
 void MainWindow::on_displayOrigImage_pushButton_clicked()
 {
-    if(!check_imageOpened()){
+    if (!check_imageOpened()) {
         errorMsg();
         return;
     } // error
@@ -402,7 +514,7 @@ void MainWindow::on_displayOrigImage_pushButton_clicked()
 
 void MainWindow::on_threshold_horizontalSlider_valueChanged(int value)
 {
-    if(!check_imageOpened()){
+    if (!check_imageOpened()) {
         errorMsg();
         return;
     } // error
@@ -433,7 +545,7 @@ void MainWindow::on_threshold_horizontalSlider_valueChanged(int value)
 
 void MainWindow::on_imageMode_comboBox_activated(const QString &arg1)
 {
-    if(!check_imageOpened()){
+    if (!check_imageOpened()) {
         errorMsg();
         return;
     } // error
@@ -463,24 +575,6 @@ void MainWindow::on_imageMode_comboBox_activated(const QString &arg1)
         updateView(dst);
     }
 }
-
-// void MainWindow::on_edgeButton_clicked()
-// {
-//     if(!check_imageOpened()){
-//         errorMsg();
-//         return;
-//     } // error
-
-//     // get image to be displayed in edge mode
-//     int index = ui->imageFiles_listWidget->currentRow();
-//     imagePath = imagePaths.at(index);
-//     src = imread(imagePath.toStdString());
-//     cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
-
-//     //show edge window
-//     edgeWin->setImageView(src_resize);
-//     edgeWin->show();
-// }
 
 void MainWindow::updateView(Mat imageOut)
 {
@@ -521,7 +615,6 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
             qreal x_coord = img_coord_pt.x();
             qreal y_coord = img_coord_pt.y();
-            // qDebug() << x_coord << y_coord;
             bloodVesselObject->saveTipPoint(imagePath.toStdString(), x_coord, y_coord);
 
             // adjusted based on reference point
@@ -571,29 +664,25 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             dst = bloodVesselObject->identifyTip(src, (float) x_coord, (float) y_coord);
             updateView(dst);
         }
-        else if(refPointEnabled && !mouseEnabled){
+        else if (refPointEnabled && !mouseEnabled) {
 
                 QPoint  local_pt = ui->graphicsView->mapFromGlobal(event->globalPos());
                 QPointF img_coord_pt = ui->graphicsView->mapToScene(local_pt);
-//                qDebug() << "local_pt = " << local_pt << ", img_coord_pt = " << img_coord_pt << endl;
 
                 // adjusted based on reference point
                 qreal adjusted_x = (qreal)(img_coord_pt.x() - src.cols/2)/(qreal)(src.cols/2);
                 qreal adjusted_y = (qreal)(src.rows/2 - img_coord_pt.y())/(qreal)(src.rows/2);
-//                qDebug() << "adjusted_x = " << adjusted_x << ", adjusted_y = " << adjusted_y << endl;
-//                qDebug() << "the center? " << src.cols/2 << ", " << src.rows/2 << endl;
 
                 // each (x, y) point is displayed in their appropriate text edits
                 // (0, 0) is at the center of the image
                 QString x = QString::number((double) adjusted_x, 'g', 3);
                 QString y = QString::number((double) adjusted_y, 'g', 3);
-//                qDebug() << "x = " << x << ", y = " << y << endl;
                 QString ref = "Keep (" + x + ", " + y + ") as reference point?";
 
                 QMessageBox::StandardButton reply;
                 reply = QMessageBox::question(this, "Reference Point", ref,
                                               QMessageBox::Yes|QMessageBox::No);
-                if(reply == QMessageBox::Yes){
+                if (reply == QMessageBox::Yes) {
                     ref_point.setX(adjusted_x);
                     ref_point.setY(adjusted_y);
                     QString rx = QString::number((double)ref_point.x(), 'g', 3);
@@ -607,7 +696,6 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                         mouseEnabled = true;
                         revert = false;
                     }
-//                    qDebug() << "ref_point " << ref_point << endl;
                 }
         }
 
@@ -617,7 +705,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
 void MainWindow::on_bloodVesselsTips_radioButton_toggled(bool checked)
 {
-    if(!check_imageOpened()){
+    if (!check_imageOpened()) {
         errorMsg();
         return;
     } // error
@@ -636,11 +724,72 @@ void MainWindow::on_bloodVesselsTips_radioButton_toggled(bool checked)
         mouseEnabled = false;
         return;
     }
-}
+} // enable manual detection of tips
+
+void MainWindow::on_select_ref_point_radioButton_clicked()
+{
+
+    if (!check_imageOpened()) {
+        errorMsg();
+        return;
+    } // error
+
+    refPointEnabled = true;
+    
+    if (mouseEnabled) {
+        mouseEnabled = false;
+        revert = true;
+    }
+
+} // select reference point
+
+void MainWindow::on_tip_checkBox_clicked(bool checked)
+{
+    if (!check_imageOpened()) {
+        errorMsg();
+        return;
+    } // error
+
+    if (checked)
+        tipsEnabled = true;
+    else
+        tipsEnabled = false;
+} // include tips
+
+void MainWindow::on_length_checkBox_clicked(bool checked)
+{
+    if (!check_imageOpened()) {
+        errorMsg();
+        return;
+    } // error
+
+    if(checked){
+        lengthEnabled = true;
+    }
+    else{
+        lengthEnabled = false;
+    }
+} // include length
+
+void MainWindow::on_angle_checkBox_clicked(bool checked)
+{
+    if (!check_imageOpened()) {
+        errorMsg();
+        return;
+    } // error
+
+    if(checked){
+        angleEnabled = true;
+    }
+    else{
+        angleEnabled = false;
+    }
+
+} // include angle
 
 void MainWindow::on_displayTips_pushButton_clicked()
 {
-    if(!check_imageOpened()){
+    if (!check_imageOpened()) {
         errorMsg();
         return;
     } // error
@@ -660,7 +809,7 @@ void MainWindow::on_displayTips_pushButton_clicked()
 
 void MainWindow::on_clearTips_pushButton_clicked()
 {
-    if(!check_imageOpened()){
+    if (!check_imageOpened()) {
         errorMsg();
         return;
     } // error
@@ -679,7 +828,7 @@ void MainWindow::on_clearTips_pushButton_clicked()
 
 void MainWindow::on_tipDetect_pushButton_clicked()
 {
-    if(!check_imageOpened()){
+    if (!check_imageOpened()) {
         errorMsg();
         return;
     } // error
@@ -691,7 +840,6 @@ void MainWindow::on_tipDetect_pushButton_clicked()
 
 
     if (reply == QMessageBox::Yes) { // currently set threshold value for each image
-
         // notify user
         QMessageBox::information(
                 this,
@@ -728,7 +876,9 @@ void MainWindow::on_tipDetect_pushButton_clicked()
         writeTipsToFile(tips_map);
     }
 
-} // tip detection
+    // if the prompt was closed instead of responding YES or NO, nothing will happen
+
+} // automated tip detection
 
 void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips_map)
 {
@@ -759,9 +909,9 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
 
                 //set up column names
                 stream << "X,Y";
-                if(lengthEnabled)
+                if (lengthEnabled)
                    stream << ",Length";
-                if(angleEnabled)
+                if (angleEnabled)
                    stream << ",Angle";
                 stream << endl;
 
@@ -800,23 +950,30 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
                     stream << endl;
                 }
             }
-        } //if file.open()
+        } // if file.open()
         file.close();
      }
 
     manualSelected = false;
+
 } // write tips to file
 
 void MainWindow::on_exportManual_pushButton_clicked() {
+
+    if (!check_imageOpened()) {
+        errorMsg();
+        return;
+    } // error
+
     manualSelected = true;
     unordered_map<string, QVector<QVector2D> > tips_map;
     bloodVesselObject->getManuallySelectedTips(tips_map);
     writeTipsToFile(tips_map);
-}
+} // export the manually detected tips
 
 void MainWindow::on_branchGraph_clicked()
 {
-    if(!check_imageOpened()){
+    if (!check_imageOpened()) {
         errorMsg();
         return;
     } // error
@@ -873,7 +1030,7 @@ void MainWindow::on_branchGraph_clicked()
 void MainWindow::on_animate_pushButton_clicked()
 {
 
-    if(!check_imageOpened()){
+    if (!check_imageOpened()) {
         errorMsg();
         return;
     } // error
@@ -965,7 +1122,7 @@ void MainWindow::automatedTipsAnimation(QVector<Mat> &auto_tips_images, unordere
 
 void MainWindow::on_tipsAnimation_pushButton_clicked()
 {
-    if(!check_imageOpened()){
+    if (!check_imageOpened()) {
         errorMsg();
         return;
     } // error
@@ -1027,152 +1184,7 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
 } // tips animation
 
 
-//void MainWindow::on_tester_pushButton_clicked()
-//{
-//    if(!check_imageOpened()){
-//        errorMsg();
-//        return;
-//    } // error
 
-//    unordered_map<string, QVector<QVector2D> > test_map;
-
-//    int index = ui->imageFiles_listWidget->currentRow(); // index of the selected image
-//    imagePath = imagePaths.at(index); // absolute path of the selected image
-//    string imName = imagePath.toStdString();
-//    src = imread(imName);
-//    cv::resize(src, src_resize, cv::Size2i(src.cols/3, src.rows/3));
-
-//    edgeWin->detectTips(src_resize, test_map, imName, 135);
-//    //writeTipsToFile(test_map);
-//}
-
-void MainWindow::on_select_ref_point_radioButton_clicked()
-{
-
-    if(!check_imageOpened()){
-        errorMsg();
-        return;
-    } // error
-
-    refPointEnabled = true;
-    if (mouseEnabled) {
-        mouseEnabled = false;
-        revert = true;
-    }
-
-}//select reference point
-
-void MainWindow::on_tip_checkBox_clicked(bool checked)
-{
-    if(!check_imageOpened()){
-        errorMsg();
-        return;
-    } // error
-
-    if (checked)
-        tipsEnabled = true;
-    else
-        tipsEnabled = false;
-} //include tips
-
-void MainWindow::on_length_checkBox_clicked(bool checked)
-{
-    if(!check_imageOpened()){
-        errorMsg();
-        return;
-    } // error
-//    lengthEnabled = true;
-    if(checked){
-        lengthEnabled = true;
-    }
-    else{
-        lengthEnabled = false;
-    }
-}//include length
-
-void MainWindow::on_angle_checkBox_clicked(bool checked)
-{
-    if(!check_imageOpened()){
-        errorMsg();
-        return;
-    } // error
-
-    if(checked){
-        angleEnabled = true;
-    }
-    else{
-        angleEnabled = false;
-    }
-
-}
-
-void MainWindow::on_closeImage_toolButton_clicked()
-{
-    if(!check_imageOpened()){
-        errorMsg();
-        return;
-    } // error
-
-    int index = 0;
-    if (imagePaths.size() > 1) {
-        index = ui->imageFiles_listWidget->currentRow();
-
-        if (index == 0) {
-            imagePath = imagePaths.at(index + 1);
-        }
-        else {
-            imagePath = imagePaths.at(index - 1);
-        }
-
-        src = imread(imagePath.toStdString());
-        updateView(src);
-
-    }
-    else {
-        Mat dummyImg = src;
-        dummyImg.setTo(Scalar(255, 255, 255));
-        updateView(dummyImg);
-    }
-
-    if (imageListPtr > 0) {
-        imageListPtr--;
-        src_images.remove(index);
-        imagePaths.removeAt(index);
-        tips_map.erase(imagePath.toStdString());
-        thresholds.erase(imagePath.toStdString());
-        ui->imageFiles_listWidget->takeItem(index);
-    }
-
-} // close current image on display
-
-void MainWindow::on_actionUndo_Manual_Detect_triggered()
-{
-    // if there is an image
-    if (imageListPtr > 0) {
-        int index = ui->imageFiles_listWidget->currentRow();
-        imagePath = imagePaths.at(index);
-        string imp = imagePath.toStdString();
-        src = imread(imp);
-
-        if (!bloodVesselObject->thisImageTipsIsEmpty(imp)) {
-            bloodVesselObject->deleteTipPoint(imp);
-
-            QStringList xbox_lines = (ui->tipsXcoord_textEdit->toPlainText()).split("\n");
-            xbox_lines.removeLast();
-            ui->tipsXcoord_textEdit->setPlainText(xbox_lines.join("\n"));
-
-            QStringList ybox_lines = (ui->tipsYcoord_textEdit->toPlainText()).split("\n");
-            ybox_lines.removeLast();
-            ui->tipsYcoord_textEdit->setPlainText(ybox_lines.join("\n"));
-
-            if (bloodVesselObject->thisImageTipsIsEmpty(imp)) {
-                ui->actionUndo_Manual_Detect->setDisabled(true);
-            }
-            dst = bloodVesselObject->displayTips(src, imagePath.toStdString());
-            updateView(dst);
-        }
-    }
-}
 
 
 
