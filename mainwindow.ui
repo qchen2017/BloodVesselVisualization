@@ -56,11 +56,21 @@
       <property name="elideMode">
        <enum>Qt::ElideMiddle</enum>
       </property>
+      <property name="usesScrollButtons">
+       <bool>false</bool>
+      </property>
       <widget class="QWidget" name="main_image_control">
        <attribute name="title">
         <string>Main</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_5">
+        <item row="3" column="0">
+         <widget class="QLabel" name="threshold_label">
+          <property name="text">
+           <string>Threshold:</string>
+          </property>
+         </widget>
+        </item>
         <item row="5" column="0" colspan="3">
          <widget class="Line" name="line_2">
           <property name="orientation">
@@ -80,13 +90,6 @@
            </size>
           </property>
          </spacer>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="threshold_label">
-          <property name="text">
-           <string>Threshold:</string>
-          </property>
-         </widget>
         </item>
         <item row="6" column="0" colspan="2">
          <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -173,13 +176,6 @@
           </item>
          </layout>
         </item>
-        <item row="8" column="2">
-         <widget class="Line" name="divider_line">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
         <item row="4" column="0">
          <widget class="QSlider" name="threshold_horizontalSlider">
           <property name="sizePolicy">
@@ -191,6 +187,13 @@
           <property name="maximum">
            <number>255</number>
           </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="2">
+         <widget class="Line" name="divider_line">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -209,16 +212,6 @@
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item row="9" column="0">
-         <widget class="QPushButton" name="edgeButton">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Edge Mode</string>
           </property>
          </widget>
         </item>
@@ -277,7 +270,6 @@
        <zorder>label</zorder>
        <zorder>threshold_lineEdit</zorder>
        <zorder>line_2</zorder>
-       <zorder>edgeButton</zorder>
        <zorder>verticalSpacer_3</zorder>
       </widget>
       <widget class="QWidget" name="tab">
@@ -571,19 +563,6 @@
               </property>
              </widget>
             </item>
-            <item>
-             <widget class="QCheckBox" name="length_checkBox">
-              <property name="enabled">
-               <bool>true</bool>
-              </property>
-              <property name="text">
-               <string>Length</string>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
            </layout>
           </item>
           <item row="3" column="1">
@@ -729,7 +708,7 @@
      <x>0</x>
      <y>0</y>
      <width>1267</width>
-     <height>22</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
