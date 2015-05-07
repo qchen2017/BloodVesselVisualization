@@ -546,26 +546,14 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             QString y = QString::number((double) y2_y1, 'g', 3);
             QString l = QString::number((double)length, 'g', 3); //length
             QString a = QString::number((double)angle, 'g', 3); //angle
-            QString e = " "; //empty
 
             //disregard clicks that were pressed outside of the image
             if (selected_x >= -1 && selected_x <= 1 && selected_y >= -1 && selected_y <= 1) {
                 ui->actionUndo_Manual_Detect->setEnabled(true);
                 ui->tipsXcoord_textEdit->append(x);
                 ui->tipsYcoord_textEdit->append(y);
-                if(lengthEnabled){
-                    ui->length_textEdit->append(l);
-                }
-                else{
-                    ui->length_textEdit->append(e);
-                }
-
-                if(angleEnabled) {
-                    ui->angle_textEdit->append(a);
-                }
-                else {
-                    ui->angle_textEdit->append(e);
-                }
+                ui->length_textEdit->append(l);
+                ui->angle_textEdit->append(a);
             }
             // display the tips in real time
             dst = bloodVesselObject->identifyTip(src, (float) x_coord, (float) y_coord);

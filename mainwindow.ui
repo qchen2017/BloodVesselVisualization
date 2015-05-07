@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1374</width>
-    <height>946</height>
+    <width>1267</width>
+    <height>827</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -382,7 +382,7 @@
           <item row="4" column="2">
            <widget class="QSpinBox" name="tip_size_spinBox">
             <property name="value">
-             <number>5</number>
+             <number>20</number>
             </property>
            </widget>
           </item>
@@ -742,7 +742,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1374</width>
+     <width>1267</width>
      <height>22</height>
     </rect>
    </property>
