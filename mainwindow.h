@@ -53,8 +53,6 @@ private slots:
     void on_bloodVesselsTips_radioButton_toggled(bool checked);
     void on_select_ref_point_radioButton_clicked();
     void on_tip_checkBox_clicked(bool checked);
-    void on_length_checkBox_clicked(bool checked);
-    void on_angle_checkBox_clicked(bool checked);
     void on_displayTips_pushButton_clicked();
     void on_clearTips_pushButton_clicked();
 
@@ -95,8 +93,6 @@ private:
     // control flags
     bool dummyImgOn;
     bool tipsEnabled;
-    bool lengthEnabled;
-    bool angleEnabled;
     bool refPointEnabled;
     bool selected_ref;
     bool revert;

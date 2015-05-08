@@ -54,9 +54,7 @@ MainWindow::MainWindow(QWidget *parent) :
     dummyImgOn = true;
     mouseEnabled = false;
     refPointEnabled = false;
-    lengthEnabled = true;
     tipsEnabled = false;
-    angleEnabled = true;
     selected_ref = false;
     revert = false;
     manualSelected = false;
@@ -85,7 +83,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // tool tips for each of the UI components
     ui->imageFiles_listWidget->setToolTip("Loaded images.");
-    ui->graphicsView->setToolTip("Current image on display.");
+    //ui->graphicsView->setToolTip("Current image on display.");
     ui->closeImage_toolButton->setToolTip("Closes current image on display.");
 
     ui->displayOrigImage_pushButton->setToolTip("Displays original image in a new window.");
@@ -320,11 +318,7 @@ void MainWindow::on_actionOpen_triggered()
     ui->manual_checkBox->setEnabled(true);
     ui->automated_checkBox->setEnabled(true);
     ui->tip_checkBox->setEnabled(true);
-    ui->length_checkBox->setEnabled(true);
-    ui->angle_checkBox->setEnabled(true);
     
-    ui->refpoint_lineEdit->setEnabled(true);
-
     ui->tipsAnimation_pushButton->setEnabled(true);
     ui->exportManual_pushButton->setEnabled(true);
     ui->displayTips_pushButton->setEnabled(true);
@@ -350,7 +344,7 @@ void MainWindow::on_actionSave_triggered()
 
 void MainWindow::on_actionFit_to_Window_triggered()
 {
-    if(scene == NULL || dummyImgOn == true){
+    if (scene == NULL || dummyImgOn == true) {
         errorMsg();
         return;
     }
@@ -361,7 +355,7 @@ void MainWindow::on_actionFit_to_Window_triggered()
 
 void MainWindow::on_actionZoom_In__triggered()
 {
-    if (scene == NULL || dummyImgOn == true){
+    if (scene == NULL || dummyImgOn == true) {
         errorMsg();
         return;
     } // error
@@ -371,7 +365,7 @@ void MainWindow::on_actionZoom_In__triggered()
 
 void MainWindow::on_actionZoom_Out_triggered()
 {
-    if (scene == NULL || dummyImgOn == true){
+    if (scene == NULL || dummyImgOn == true) {
         errorMsg();
         return;
     } // error
@@ -526,7 +520,7 @@ void MainWindow::on_imageFiles_listWidget_itemClicked(QListWidgetItem *item)
         dst = imagePtr->setImageView(src, t, "contour");
         updateView(dst);
     }
-    else if(ui->imageMode_comboBox->currentText() == "Edge") {
+    else if (ui->imageMode_comboBox->currentText() == "Edge") {
         src = imread(imagePath.toStdString());
         dst = edgeWin->setEdge(src, t);
         updateView(dst);
@@ -572,7 +566,7 @@ void MainWindow::on_threshold_horizontalSlider_valueChanged(int value)
         contourOut = imagePtr->setImageView(src, value, "contour");
         updateView(contourOut);
     }
-    else if(ui->imageMode_comboBox->currentText() == "Edge") {
+    else if (ui->imageMode_comboBox->currentText() == "Edge") {
         dst = edgeWin->setEdge(src, value);
         updateView(dst);
     }
@@ -641,10 +635,9 @@ void MainWindow::updateView(Mat imageOut)
 /**********************************************************************************/
 /********************* Functions for Manual Tips Detection ************************/
 /**********************************************************************************/
-
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
-    if(check_imageOpened()){
+    if (check_imageOpened()) {
 
         int index = ui->imageFiles_listWidget->currentRow();
         imagePath = imagePaths.at(index);
@@ -664,14 +657,12 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             qreal y2_y1 = selected_y - ref_point.y();
 
             qreal length = 0, angle = 0;
-            if(lengthEnabled)
-                 length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
+            length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
 
-            if(angleEnabled) {
-                //atan2 returns positive angle for positive Y position, and vice versa
-                angle = atan2(y2_y1, x2_x1) * 180 / PI;
-                if(angle < 0) //recalculate to get a positive angle value
-                    angle = 360 + angle;
+            //atan2 returns positive angle for positive Y position, and vice versa
+            angle = atan2(y2_y1, x2_x1) * 180 / PI;
+            if (angle < 0) { //recalculate to get a positive angle value
+                angle = 360 + angle;
             }
 
             // each (x, y) point is displayed in their appropriate text edits
@@ -679,26 +670,15 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             QString y = QString::number((double) y2_y1, 'g', 3);
             QString l = QString::number((double)length, 'g', 3); //length
             QString a = QString::number((double)angle, 'g', 3); //angle
-            QString e = " "; //empty
 
             //disregard clicks that were pressed outside of the image
             if (selected_x >= -1 && selected_x <= 1 && selected_y >= -1 && selected_y <= 1) {
                 ui->actionUndo_Manual_Detect->setEnabled(true);
                 ui->tipsXcoord_textEdit->append(x);
                 ui->tipsYcoord_textEdit->append(y);
-                if(lengthEnabled){
-                    ui->length_textEdit->append(l);
-                }
-                else{
-                    ui->length_textEdit->append(e);
-                }
+                ui->length_textEdit->append(l);
+                ui->angle_textEdit->append(a);
 
-                if(angleEnabled) {
-                    ui->angle_textEdit->append(a);
-                }
-                else {
-                    ui->angle_textEdit->append(e);
-                }
             }
             // display the tips in real time
             dst = bloodVesselObject->identifyTip(src, (float) x_coord, (float) y_coord);
@@ -706,37 +686,41 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
         }
         else if (refPointEnabled && !mouseEnabled) {
 
-                QPoint  local_pt = ui->graphicsView->mapFromGlobal(event->globalPos());
-                QPointF img_coord_pt = ui->graphicsView->mapToScene(local_pt);
+            QPoint  local_pt = ui->graphicsView->mapFromGlobal(event->globalPos());
+            QPointF img_coord_pt = ui->graphicsView->mapToScene(local_pt);
 
-                // adjusted based on reference point
-                qreal adjusted_x = (qreal)(img_coord_pt.x() - src.cols/2)/(qreal)(src.cols/2);
-                qreal adjusted_y = (qreal)(src.rows/2 - img_coord_pt.y())/(qreal)(src.rows/2);
+            // adjusted based on reference point
+            qreal adjusted_x = (qreal)(img_coord_pt.x() - src.cols/2)/(qreal)(src.cols/2);
+            qreal adjusted_y = (qreal)(src.rows/2 - img_coord_pt.y())/(qreal)(src.rows/2);
 
-                // each (x, y) point is displayed in their appropriate text edits
-                // (0, 0) is at the center of the image
-                QString x = QString::number((double) adjusted_x, 'g', 3);
-                QString y = QString::number((double) adjusted_y, 'g', 3);
-                QString ref = "Keep (" + x + ", " + y + ") as reference point?";
+            // each (x, y) point is displayed in their appropriate text edits
+            // (0, 0) is at the center of the image
+            QString x = QString::number((double) adjusted_x, 'g', 3);
+            QString y = QString::number((double) adjusted_y, 'g', 3);
+            QString ref = "Keep (" + x + ", " + y + ") as reference point?";
 
-                QMessageBox::StandardButton reply;
-                reply = QMessageBox::question(this, "Reference Point", ref,
-                                              QMessageBox::Yes|QMessageBox::No);
-                if (reply == QMessageBox::Yes) {
-                    ref_point.setX(adjusted_x);
-                    ref_point.setY(adjusted_y);
-                    QString rx = QString::number((double)ref_point.x(), 'g', 3);
-                    QString ry = QString::number((double)ref_point.y(), 'g', 3);
+            QMessageBox::StandardButton reply;
+            reply = QMessageBox::question(this, "Reference Point", ref,
+                                          QMessageBox::Yes|QMessageBox::No);
+            if (reply == QMessageBox::Yes) {
+                ref_point.setX(adjusted_x);
+                ref_point.setY(adjusted_y);
+                QString rx = QString::number((double)ref_point.x(), 'g', 3);
+                QString ry = QString::number((double)ref_point.y(), 'g', 3);
 
-                    QString r = rx + ", " + ry;
-                    ui->refpoint_lineEdit->setText(r);
-                    refPointEnabled = false;
-                    selected_ref = true;
-                    if(revert){
-                        mouseEnabled = true;
-                        revert = false;
-                    }
+                QString r = rx + ", " + ry;
+                ui->refpoint_lineEdit->setText(r);
+                refPointEnabled = false;
+                selected_ref = true;
+                if (revert) {
+                    mouseEnabled = true;
+                    revert = false;
                 }
+                ui->tipsXcoord_textEdit->clear();
+                ui->tipsYcoord_textEdit->clear();
+                ui->length_textEdit->clear();
+                ui->angle_textEdit->clear();
+            }
         }
 
     }
@@ -795,37 +779,6 @@ void MainWindow::on_tip_checkBox_clicked(bool checked)
     else
         tipsEnabled = false;
 } // include tips
-
-void MainWindow::on_length_checkBox_clicked(bool checked)
-{
-    if (!check_imageOpened()) {
-        errorMsg();
-        return;
-    } // error
-
-    if(checked){
-        lengthEnabled = true;
-    }
-    else{
-        lengthEnabled = false;
-    }
-} // include length
-
-void MainWindow::on_angle_checkBox_clicked(bool checked)
-{
-    if (!check_imageOpened()) {
-        errorMsg();
-        return;
-    } // error
-
-    if(checked){
-        angleEnabled = true;
-    }
-    else{
-        angleEnabled = false;
-    }
-
-} // include angle
 
 void MainWindow::on_displayTips_pushButton_clicked()
 {
@@ -949,10 +902,8 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
 
                 //set up column names
                 stream << "X,Y";
-                if (lengthEnabled)
-                   stream << ",Length";
-                if (angleEnabled)
-                   stream << ",Angle";
+                stream << ",Length";
+                stream << ",Angle";
                 stream << endl;
 
                 QVector<QVector2D> pts = tips_map[temp]; // coordinates associated with image
@@ -964,7 +915,7 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
                     y2_y1 = pt.y() - ref_point.y();
 
                     //if manual selection is true, must convert tip points into range [-1,1]
-                    if(manualSelected == true) {
+                    if (manualSelected == true) {
                         qreal selected_x = (qreal)(pt.x() - src.cols/2)/(qreal)(src.cols/2);
                         qreal selected_y = (qreal)(src.rows/2 - pt.y())/(qreal)(src.rows/2);
                         x2_x1 = selected_x - ref_point.x();
@@ -974,19 +925,14 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
                     stream << x2_x1 << "," << y2_y1; // write all X, Y coordinates to file
 
                     qreal length = 0.0, angle = 0.0;
-                    if(lengthEnabled) {
-                        length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
-                        stream << "," << length; //append length vaue to current row
+                    length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
+                    stream << "," << length; //append length vaue to current row
+
+                    angle = atan2(y2_y1, x2_x1) * 180 / PI;
+                    if (angle < 0) {
+                        angle = 360 + angle;
                     }
-                    if(angleEnabled) {
-                        angle = atan2(y2_y1, x2_x1) * 180 / PI;
-
-                        if(angle < 0)
-                            angle = 360 + angle;
-
-                        stream << "," << angle; //append angle value to current row
-                    }
-
+                    stream << "," << angle; //append angle value to current row
                     stream << endl;
                 }
             }
