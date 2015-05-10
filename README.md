@@ -8,9 +8,11 @@ Added "Revert All Changes" button for undoing all changes in threshold or displa
 
 Added "Reset" in Menu Bar -> Action for resetting/deleting all manually detected tips.
 It will delete all tips that have been manually detected/saved and also will also disable "Export Manual Data" since there is nothing to export after a "Reset".
-The tips have been deleted by "Reset" will also not be saved in any future export of manually selected tips.
+The tips that have been deleted by "Reset" will also not be saved in any future export of manually selected tips.
 
 Added ability to change tip size for manual tips detection
+
+Added color dialog box for manual tips detection
 
 Merged with commit 6d88deb478 from master
 

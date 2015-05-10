@@ -52,6 +52,7 @@ private slots:
     
     /* Functions for Manual Tips Detection */
     void on_bloodVesselsTips_radioButton_toggled(bool checked);
+    void on_color_pushButton_clicked();
     void on_select_ref_point_radioButton_clicked();
     void on_tip_checkBox_clicked(bool checked);
     void on_displayTips_pushButton_clicked();
@@ -65,8 +66,6 @@ private slots:
     /* Slideshow Funtions */
     void on_animate_pushButton_clicked();
     void on_tipsAnimation_pushButton_clicked();
-
-
 
 private:
     
@@ -90,6 +89,7 @@ private:
     bool mouseEnabled;
     int imageListPtr;
     QVector2D ref_point;
+    QColor tips_color;
 
     // control flags
     bool dummyImgOn;

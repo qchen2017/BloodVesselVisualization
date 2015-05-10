@@ -10,6 +10,7 @@
 #include <QVector>
 #include <QHash>
 #include <QSet>
+#include <QColorDialog>
 #include <math.h>
 #include <iostream>
 
@@ -50,6 +51,13 @@ MainWindow::MainWindow(QWidget *parent) :
     // initialize variables for threshold and zoom functions
     scaleFactor = 1.15;
 
+    // initialize color for manual tips detection - default is red
+    tips_color.setRgb(255, 0, 0);
+    QString qss_init = QString("background-color: %1").arg(tips_color.name());
+    ui->color_pushButton->setStyleSheet(qss_init);
+    ui->color_pushButton->setAutoFillBackground(true);
+    ui->color_pushButton->setFlat(true);
+
     // control flags
     dummyImgOn = true;
     mouseEnabled = false;
@@ -65,17 +73,17 @@ MainWindow::MainWindow(QWidget *parent) :
 
     /************************************* MAIN WINDOW UI ***************************************/
 
-    // setup color combo box
-    QPixmap px(15,15);
-    px.fill(QColor(Qt::red));
-    QIcon icon(px);
-    ui->color_comboBox->addItem(icon, "Red");
-    px.fill(QColor(Qt::blue));
-    icon.addPixmap(px);
-    ui->color_comboBox->addItem(icon,"Blue");
-    px.fill(QColor(Qt::green));
-    icon.addPixmap(px);
-    ui->color_comboBox->addItem(icon,"Green");
+//    // setup color combo box
+//    QPixmap px(15,15);
+//    px.fill(QColor(Qt::red));
+//    QIcon icon(px);
+//    ui->color_comboBox->addItem(icon, "Red");
+//    px.fill(QColor(Qt::blue));
+//    icon.addPixmap(px);
+//    ui->color_comboBox->addItem(icon,"Blue");
+//    px.fill(QColor(Qt::green));
+//    icon.addPixmap(px);
+//    ui->color_comboBox->addItem(icon,"Green");
 
     // other initial states
     ui->threshold_lineEdit->setText("0");
@@ -95,7 +103,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->select_ref_point_radioButton->setToolTip("Manually select reference point using mouse control.");
     ui->bloodVesselsTips_radioButton->setToolTip("Manually select tips using mouse control.");
-    ui->color_comboBox->setToolTip("Select color of tip dot for manual tips detection.");
+    ui->color_pushButton->setToolTip("Select color of tip dot for manual tips detection.");
+    //ui->color_comboBox->setToolTip("Select color of tip dot for manual tips detection.");
     ui->tip_size_spinBox->setToolTip("Select size of tip dot for manual tips detection.");
 
     ui->tipDetect_pushButton->setToolTip("Export the (x, y) coordinates of the blood vessel tips (automated) of all the images to a file.");
@@ -312,7 +321,8 @@ void MainWindow::on_actionOpen_triggered()
 
     ui->bloodVesselsTips_radioButton->setEnabled(true);
     ui->select_ref_point_radioButton->setEnabled(true);
-    ui->color_comboBox->setEnabled(true);
+    ui->color_pushButton->setEnabled(true);
+    //ui->color_comboBox->setEnabled(true);
     ui->tip_size_spinBox->setEnabled(true);
 
     ui->manual_checkBox->setEnabled(true);
@@ -410,7 +420,7 @@ void MainWindow::on_actionUndo_Manual_Detect_triggered()
 
             // update current image ond display to reflect undoing
             int tips_size = ui->tip_size_spinBox->value();
-            dst = bloodVesselObject->displayTips(src, imagePath.toStdString(), tips_size);
+            dst = bloodVesselObject->displayTips(src, imagePath.toStdString(), tips_size, tips_color);
             updateView(dst);
         }
     }
@@ -554,6 +564,7 @@ void MainWindow::on_imageFiles_listWidget_itemClicked(QListWidgetItem *item)
     }
 
 }
+
 
 void MainWindow::on_displayOrigImage_pushButton_clicked()
 {
@@ -710,7 +721,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             }
             // display the tips in real time
             int tips_size = ui->tip_size_spinBox->value();
-            dst = bloodVesselObject->identifyTip(src, (float) x_coord, (float) y_coord, tips_size);
+            dst = bloodVesselObject->identifyTip(src, (float) x_coord, (float) y_coord, tips_size, tips_color);
             updateView(dst);
         }
         else if (refPointEnabled && !mouseEnabled) {
@@ -782,6 +793,20 @@ void MainWindow::on_bloodVesselsTips_radioButton_toggled(bool checked)
 
 } // enable manual detection of tips
 
+void MainWindow::on_color_pushButton_clicked()
+{
+    QColorDialog *qcd = new QColorDialog(QColor::fromRgb(0, 0, 0, 255), this);
+    QColor color = qcd->getColor();
+    if(color.isValid()) {
+        QString qss = QString("background-color: %1").arg(color.name());
+        ui->color_pushButton->setStyleSheet(qss);
+        ui->color_pushButton->setAutoFillBackground(true);
+        ui->color_pushButton->setFlat(true);
+        tips_color = color;
+    }
+}
+
+
 void MainWindow::on_select_ref_point_radioButton_clicked()
 {
 
@@ -826,7 +851,7 @@ void MainWindow::on_displayTips_pushButton_clicked()
         ui->actionUndo_Manual_Detect->setEnabled(true);
         src = imread(imagePath.toStdString());
         int tips_size = ui->tip_size_spinBox->value();
-        dst = bloodVesselObject->displayTips(src, imagePath.toStdString(), tips_size);
+        dst = bloodVesselObject->displayTips(src, imagePath.toStdString(), tips_size, tips_color);
         updateView(dst);
     }
 
@@ -1203,3 +1228,4 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
         ssWin->show();
     }
 } // tips animation
+
