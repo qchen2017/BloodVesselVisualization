@@ -89,7 +89,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->displayOrigImage_pushButton->setToolTip("Displays original image in a new window.");
     ui->imageMode_comboBox->setToolTip("Select between different image modes to display in main window.");
     ui->threshold_horizontalSlider->setToolTip("Adjusts the current image's threshold value.");
-    ui->clearThresh_pushButton->setToolTip("Clears the threshold set for current image on display.");
+    ui->revertAllChanges_pushButton->setToolTip("Reverts the image to its original state.");
     ui->branchGraph->setToolTip("Displays graph of the blood vessel branches of all the images in a separate window.");
     ui->animate_pushButton->setToolTip("Plays the images in sequence on a separate window.");
 
@@ -307,7 +307,7 @@ void MainWindow::on_actionOpen_triggered()
     ui->displayOrigImage_pushButton->setEnabled(true);
     ui->branchGraph->setEnabled(true);
     ui->animate_pushButton->setEnabled(true);
-    ui->clearThresh_pushButton->setEnabled(true);
+    ui->revertAllChanges_pushButton->setEnabled(true);
     ui->closeImage_toolButton->setEnabled(true);
 
     ui->bloodVesselsTips_radioButton->setEnabled(true);
@@ -409,10 +409,35 @@ void MainWindow::on_actionUndo_Manual_Detect_triggered()
             }
 
             // update current image ond display to reflect undoing
-            dst = bloodVesselObject->displayTips(src, imagePath.toStdString());
+            int tips_size = ui->tip_size_spinBox->value();
+            dst = bloodVesselObject->displayTips(src, imagePath.toStdString(), tips_size);
             updateView(dst);
         }
     }
+}
+
+void MainWindow::on_actionReset_triggered()
+{
+    if (!check_imageOpened()) {
+        errorMsg();
+        return;
+    } // error
+
+    int index = ui->imageFiles_listWidget->currentRow();
+    imagePath = imagePaths.at(index);
+    tips_map.erase(imagePath.toStdString());
+    bloodVesselObject->deleteAllTipPoints(imagePath.toStdString());
+    src = imread(imagePath.toStdString());
+
+    ui->exportManual_pushButton->setDisabled(true);
+    ui->tipsXcoord_textEdit->clear();
+    ui->tipsYcoord_textEdit->clear();
+    ui->length_textEdit->clear();
+    ui->angle_textEdit->clear();
+    ui->actionReset->setDisabled(true);
+
+    updateView(src);
+
 }
 
 void MainWindow::on_actionView_Documentation_triggered()
@@ -434,7 +459,7 @@ void MainWindow::close_opencv_window(string window_name)
     } // while not esc
 } // closes an open cv window
 
-void MainWindow::on_clearThresh_pushButton_clicked()
+void MainWindow::on_revertAllChanges_pushButton_clicked()
 {
     if (!check_imageOpened()) {
         errorMsg();
@@ -445,6 +470,8 @@ void MainWindow::on_clearThresh_pushButton_clicked()
     imagePath = imagePaths.at(index);
     src = imread(imagePath.toStdString());
     thresholds[imagePath.toStdString()] = 0;
+    ui->threshold_horizontalSlider->setValue(0);
+    ui->imageMode_comboBox->setCurrentIndex(0);
     updateView(src);
 
 }
@@ -641,6 +668,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
         int index = ui->imageFiles_listWidget->currentRow();
         imagePath = imagePaths.at(index);
+        ui->exportManual_pushButton->setEnabled(true);
 
         if (mouseEnabled) {
             QPoint  local_pt = ui->graphicsView->mapFromGlobal(event->globalPos());
@@ -681,7 +709,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
             }
             // display the tips in real time
-            dst = bloodVesselObject->identifyTip(src, (float) x_coord, (float) y_coord);
+            int tips_size = ui->tip_size_spinBox->value();
+            dst = bloodVesselObject->identifyTip(src, (float) x_coord, (float) y_coord, tips_size);
             updateView(dst);
         }
         else if (refPointEnabled && !mouseEnabled) {
@@ -748,6 +777,9 @@ void MainWindow::on_bloodVesselsTips_radioButton_toggled(bool checked)
         mouseEnabled = false;
         return;
     }
+
+    ui->actionReset->setEnabled(true);
+
 } // enable manual detection of tips
 
 void MainWindow::on_select_ref_point_radioButton_clicked()
@@ -793,7 +825,8 @@ void MainWindow::on_displayTips_pushButton_clicked()
     if (!bloodVesselObject->isEmpty()) {
         ui->actionUndo_Manual_Detect->setEnabled(true);
         src = imread(imagePath.toStdString());
-        dst = bloodVesselObject->displayTips(src, imagePath.toStdString());
+        int tips_size = ui->tip_size_spinBox->value();
+        dst = bloodVesselObject->displayTips(src, imagePath.toStdString(), tips_size);
         updateView(dst);
     }
 
@@ -1170,5 +1203,3 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
         ssWin->show();
     }
 } // tips animation
-
-

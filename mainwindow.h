@@ -38,12 +38,13 @@ private slots:
     void on_actionZoom_In__triggered();
     void on_actionZoom_Out_triggered();
     void on_actionUndo_Manual_Detect_triggered();
+    void on_actionReset_triggered();
     void on_actionView_Documentation_triggered();
 
     /* Main User Interface Functionalities */
     void close_opencv_window(string window_name);
     void on_closeImage_toolButton_clicked();
-    void on_clearThresh_pushButton_clicked();
+    void on_revertAllChanges_pushButton_clicked();
     void on_imageFiles_listWidget_itemClicked(QListWidgetItem *item);
     void on_displayOrigImage_pushButton_clicked();
     void on_threshold_horizontalSlider_valueChanged(int value);
@@ -64,7 +65,7 @@ private slots:
     /* Slideshow Funtions */
     void on_animate_pushButton_clicked();
     void on_tipsAnimation_pushButton_clicked();
-    
+
 
 
 private:

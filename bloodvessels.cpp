@@ -110,18 +110,23 @@ void BloodVessels::deleteTipPoint(string imgpath)
     }
 }
 
-Mat BloodVessels::identifyTip(Mat src, float x, float y)
+void BloodVessels::deleteAllTipPoints(string imgpath)
+{
+    bv_tips_map.erase(imgpath);
+}
+
+Mat BloodVessels::identifyTip(Mat src, float x, float y, int tips_size)
 {
     Point dot = Point(x, y);
     int thickness = -1;
     int lineType = 8;
 
-    circle(src, dot, 20.0, Scalar(0, 0, 255), thickness, lineType);
+    circle(src, dot, (float)tips_size, Scalar(0, 0, 255), thickness, lineType);
 
     return src;
 }
 
-Mat BloodVessels::displayTips(Mat src, string imName)
+Mat BloodVessels::displayTips(Mat src, string imName, int tips_size)
 {
     Mat imageOut = src;
 
@@ -133,7 +138,7 @@ Mat BloodVessels::displayTips(Mat src, string imName)
             float x = (float) bloodVesselsTips[i].x();
             float y = (float) bloodVesselsTips[i].y();
             Point dot = Point(x, y);
-            circle(src, dot, 20.0, Scalar(0, 0, 255), -1, 8);
+            circle(src, dot, (float)tips_size, Scalar(0, 0, 255), -1, 8);
         }
     }
 
