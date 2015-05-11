@@ -416,6 +416,7 @@ void MainWindow::on_actionUndo_Manual_Detect_triggered()
             // check again if there are more saved tips for this image - disable menu bar action if all tips have been undone
             if (bloodVesselObject->thisImageTipsIsEmpty(imp)) {
                 ui->actionUndo_Manual_Detect->setDisabled(true);
+                ui->exportManual_pushButton->setDisabled(true);
             }
 
             // update current image ond display to reflect undoing
@@ -709,8 +710,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             // each (x, y) point is displayed in their appropriate text edits
             QString x = QString::number((double) x2_x1, 'g', 3);
             QString y = QString::number((double) y2_y1, 'g', 3);
-            QString l = QString::number((double)length, 'g', 3); //length
-            QString a = QString::number((double)angle, 'g', 3); //angle
+            QString l = QString::number((double) length, 'g', 3); //length
+            QString a = QString::number((double) angle, 'g', 3); //angle
 
             //disregard clicks that were pressed outside of the image
             if (selected_x >= -1 && selected_x <= 1 && selected_y >= -1 && selected_y <= 1) {
@@ -854,11 +855,53 @@ void MainWindow::on_displayTips_pushButton_clicked()
         src = imread(imagePath.toStdString());
         int tips_size = ui->tip_size_spinBox->value();
         dst = bloodVesselObject->displayTips(src, imagePath.toStdString(), tips_size, tips_color);
+        displayTipsDetailsOnTextBoxes();
         updateView(dst);
     }
 
 }
 
+void MainWindow::displayTipsDetailsOnTextBoxes()
+{
+    // clear everything first so there aren't any duplicates
+    ui->tipsXcoord_textEdit->clear();
+    ui->tipsYcoord_textEdit->clear();
+    ui->length_textEdit->clear();
+    ui->angle_textEdit->clear();
+
+    int index = ui->imageFiles_listWidget->currentRow();
+    imagePath = imagePaths.at(index);
+    string imgname = imagePath.toStdString();
+
+    unordered_map<string, QVector<QVector2D> > tips_map;
+    bloodVesselObject->getManuallySelectedTips(tips_map);
+    QVector<QVector2D> pts = tips_map[imgname]; // coordinates associated with image
+    for (int i = 0; i < pts.size(); i++) {
+        QVector2D pt = pts.at(i);
+
+        qreal selected_x = (qreal)(pt.x() - src.cols/2)/(qreal)(src.cols/2);
+        qreal selected_y = (qreal)(src.rows/2 - pt.y())/(qreal)(src.rows/2);
+        qreal x2_x1 = selected_x - ref_point.x();
+        qreal y2_y1 = selected_y - ref_point.y();
+        qreal length = 0.0, angle = 0.0;
+        length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
+
+        angle = atan2(y2_y1, x2_x1) * 180 / PI;
+        if (angle < 0) {
+            angle = 360 + angle;
+        }
+
+        QString x = QString::number((double) x2_x1, 'g', 3);
+        QString y = QString::number((double) y2_y1, 'g', 3);
+        QString l = QString::number((double) length, 'g', 3); //length
+        QString a = QString::number((double) angle, 'g', 3); //angle
+
+        ui->tipsXcoord_textEdit->append(x);
+        ui->tipsYcoord_textEdit->append(y);
+        ui->length_textEdit->append(l);
+        ui->angle_textEdit->append(a);
+    } // end inner for loop
+}
 
 void MainWindow::on_clearTips_pushButton_clicked()
 {
@@ -871,6 +914,10 @@ void MainWindow::on_clearTips_pushButton_clicked()
     imagePath = imagePaths.at(index);
 
     if (!bloodVesselObject->isEmpty()) {
+        ui->tipsXcoord_textEdit->clear();
+        ui->tipsYcoord_textEdit->clear();
+        ui->length_textEdit->clear();
+        ui->angle_textEdit->clear();
         src = imread(imagePath.toStdString());
         updateView(src);
     }
@@ -955,7 +1002,7 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
             QTextStream stream(&file);
 
             // iterate through tips_map to get the tips' coordinates for each image
-            for(auto it = tips_map.begin(); it != tips_map.end(); ++it) {
+            for (auto it = tips_map.begin(); it != tips_map.end(); ++it) {
                 string temp = it->first; // image path name
 
                 QString imgname = QString::fromStdString(temp);
@@ -995,8 +1042,8 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
                     }
                     stream << "," << angle; //append angle value to current row
                     stream << endl;
-                }
-            }
+                } // end inner for loop
+            } // end outer for loop
         } // if file.open()
         file.close();
      }

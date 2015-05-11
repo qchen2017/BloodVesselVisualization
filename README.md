@@ -30,7 +30,7 @@ When selecting new reference points, do we keep the tips selected from a previou
 do we delete those so that the new tips that will be selected/saved/displayed are all using the new reference point?
 I think we should also write the reference point in the CSV file for exports.
 
-Manually select tips for one image, select a new image, go back to the previous image, click "Display Tips"
+[FIXED] Manually select tips for one image, select a new image, go back to the previous image, click "Display Tips"
 -- the text boxes don't get updated with the values for the tips that were displayed
 
 

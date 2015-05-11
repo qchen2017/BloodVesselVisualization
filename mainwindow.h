@@ -112,6 +112,7 @@ private:
     bool imageAlreadyLoaded(QString imp);
     void updateView(cv::Mat imageOut);
 
+    void displayTipsDetailsOnTextBoxes();
     void writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips_map);
     void findAllTips(bool threshold_default, unordered_map<string, QVector<QVector2D> > &tips_map_temp);
     void promptForTipsAnimation(unordered_map<string, QVector<QVector2D> > &tips_map_temp);
