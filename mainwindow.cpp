@@ -870,6 +870,7 @@ void MainWindow::on_clearTips_pushButton_clicked()
 
     if (!bloodVesselObject->isEmpty()) {
         src = imread(imagePath.toStdString());
+        updateView(src);
     }
 }
 
