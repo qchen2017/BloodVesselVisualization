@@ -21,10 +21,6 @@ public:
 private:
     cv::Mat setContour(cv::Mat src, int thresh_val); // contour mode
 
-    // skeleton mode - currently not implemented on the ui
-    void thinning(cv::Mat &im);
-    void thinningIteration(cv::Mat &im, int iter);
-
 };
 
 #endif // Image_H

@@ -37,13 +37,11 @@ public:
     void tipsAnimation(unordered_map<string, QVector<QVector2D> > tips_map);
     QVector<cv::Mat> getTipsImages();
 
-
-
 protected:
     void changeEvent(QEvent *e);
 
 private:
-    Ui::BloodVessels *ui;
+    Ui::BloodVessels *ui; // currently not used
 
     void updateView(cv::Mat imageOut);
 

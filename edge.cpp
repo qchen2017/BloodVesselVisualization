@@ -402,10 +402,12 @@ void Edge::endp(Mat &imageIn, Mat &imageOut, unordered_map<string, QVector<QVect
 
 void Edge::getTipsCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName)
 {
+    // used for debugging
+    // QVector<QVector2D> pts_temp;
+    // Mat img = imageIn;
+
     QVector2D pt;
     QVector<QVector2D> pts;
-    //QVector<QVector2D> pts_temp;
-    //Mat img = imageIn;
     for (int x = 0; x < imageIn.cols/2; x++) {
         for (int y = 0; y < imageIn.rows; y++) {
             int color = imageIn.at<unsigned short>(Point(x,y)); // get pixel color
@@ -413,14 +415,16 @@ void Edge::getTipsCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> >
                 pt.setX((float)((x*2) - imageIn.cols/2)/(float)(imageIn.cols/2));
                 pt.setY((float)(imageIn.rows/2 - y)/(float)(imageIn.rows/2));
                 pts.push_back(pt);
-                //pts_temp.push_back(QVector2D(x, y));
-                //qDebug() << x << y;
+
+                // used for debugging
+                // pts_temp.push_back(QVector2D(x, y));
+                // qDebug() << x << y;
             }
         }
     }
     tips_map[imgName] = pts;
 
-    /* used for debugginf tips points
+    /* used for debugging tips points
     for (int i = 0; i < pts_temp.size(); i++) {
         QVector2D pt = pts_temp.at(i);
         int a = pt.x();

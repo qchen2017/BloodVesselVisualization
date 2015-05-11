@@ -38,7 +38,7 @@ private slots:
     void on_varySlider_valueChanged(int value);
 
 private:
-    Ui::Edge *ui;
+    Ui::Edge *ui; // currently not used
 
     // functions for edge mode
     void updateView(cv::Mat imageOut);
@@ -50,7 +50,7 @@ private:
     void skel(cv::Mat &src, cv::Mat &dst);
     void endp(cv::Mat &imageIn, cv::Mat &imageOut, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName);
 
-    // functions for getting tips coordinate
+    // function for getting tips coordinate
     void getTipsCoords(cv::Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName);
 
     QPixmap image;

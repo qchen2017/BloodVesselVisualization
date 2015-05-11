@@ -50,6 +50,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // initialize variables for threshold and zoom functions
     scaleFactor = 1.15;
+    zoomMax = 0;
 
     // initialize color for manual tips detection - default is red
     tips_color.setRgb(255, 0, 0);
@@ -62,7 +63,6 @@ MainWindow::MainWindow(QWidget *parent) :
     dummyImgOn = true;
     mouseEnabled = false;
     refPointEnabled = false;
-    tipsEnabled = false;
     selected_ref = false;
     revert = false;
     manualSelected = false;
@@ -327,7 +327,6 @@ void MainWindow::on_actionOpen_triggered()
 
     ui->manual_checkBox->setEnabled(true);
     ui->automated_checkBox->setEnabled(true);
-    ui->tip_checkBox->setEnabled(true);
     
     ui->tipsAnimation_pushButton->setEnabled(true);
     ui->exportManual_pushButton->setEnabled(true);
@@ -370,7 +369,10 @@ void MainWindow::on_actionZoom_In__triggered()
         return;
     } // error
 
-    ui->graphicsView->scale(scaleFactor, scaleFactor);
+    if (zoomMax < 20) {
+        ui->graphicsView->scale(scaleFactor, scaleFactor);
+        zoomMax++;
+    }
 } // zoom in
 
 void MainWindow::on_actionZoom_Out_triggered()
@@ -380,7 +382,10 @@ void MainWindow::on_actionZoom_Out_triggered()
         return;
     } // error
 
-    ui->graphicsView->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+    if (zoomMax > -20) {
+        ui->graphicsView->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+        zoomMax--;
+    }
 } // zoom out
 
 void MainWindow::on_actionUndo_Manual_Detect_triggered()
@@ -827,19 +832,6 @@ void MainWindow::on_select_ref_point_radioButton_clicked()
 
 } // select reference point
 
-void MainWindow::on_tip_checkBox_clicked(bool checked)
-{
-    if (!check_imageOpened()) {
-        errorMsg();
-        return;
-    } // error
-
-    if (checked)
-        tipsEnabled = true;
-    else
-        tipsEnabled = false;
-} // include tips
-
 void MainWindow::on_displayTips_pushButton_clicked()
 {
     if (!check_imageOpened()) {
@@ -900,7 +892,7 @@ void MainWindow::displayTipsDetailsOnTextBoxes()
         ui->tipsYcoord_textEdit->append(y);
         ui->length_textEdit->append(l);
         ui->angle_textEdit->append(a);
-    } // end inner for loop
+    } // end for loop
 }
 
 void MainWindow::on_clearTips_pushButton_clicked()

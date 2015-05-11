@@ -54,7 +54,6 @@ private slots:
     void on_bloodVesselsTips_radioButton_toggled(bool checked);
     void on_color_pushButton_clicked();
     void on_select_ref_point_radioButton_clicked();
-    void on_tip_checkBox_clicked(bool checked);
     void on_displayTips_pushButton_clicked();
     void on_clearTips_pushButton_clicked();
 
@@ -86,6 +85,7 @@ private:
     cv::Mat src, src_resize, dst, contourOut, edgeOut;
     
     float scaleFactor;
+    float zoomMax;
     bool mouseEnabled;
     int imageListPtr;
     QVector2D ref_point;
@@ -93,7 +93,6 @@ private:
 
     // control flags
     bool dummyImgOn;
-    bool tipsEnabled;
     bool refPointEnabled;
     bool selected_ref;
     bool revert;
