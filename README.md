@@ -16,3 +16,11 @@ Added color dialog box for manual tips detection
 
 Merged with commit 6d88deb478 from master
 
+========================================================================================================
+
+Bugs to fix:
+
+Click on "Tips Animation" (Automated), close the window, then click on "Play Sequence" -- the images in "Play Sequence" get all messed up
+
+
+
