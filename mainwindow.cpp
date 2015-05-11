@@ -445,6 +445,7 @@ void MainWindow::on_actionReset_triggered()
     ui->length_textEdit->clear();
     ui->angle_textEdit->clear();
     ui->actionReset->setDisabled(true);
+    ui->actionUndo_Manual_Detect->setDisabled(true);
 
     updateView(src);
 
@@ -682,6 +683,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
         ui->exportManual_pushButton->setEnabled(true);
 
         if (mouseEnabled) {
+            ui->actionReset->setEnabled(true);
             QPoint  local_pt = ui->graphicsView->mapFromGlobal(event->globalPos());
             QPointF img_coord_pt = ui->graphicsView->mapToScene(local_pt);
 
