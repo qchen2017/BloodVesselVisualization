@@ -5,6 +5,7 @@ Added a limit on how much user can zoom in or out
 Removed Tip checkbox (doesn't seem to have any purpose in the program right now?)
 
 Removed extraneous code from image.h and image.cpp
+
 ========================================================================================================
 Bugs to fix:
 
