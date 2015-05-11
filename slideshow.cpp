@@ -1,5 +1,6 @@
 #include "slideshow.h"
 #include "ui_slideshow.h"
+#include <QCloseEvent>
 #include <iostream>
 
 using namespace cv;
@@ -135,7 +136,11 @@ void Slideshow::updateView(Mat imageOut)
 //stop slideshow timer when the window is closed
 void Slideshow::closeEvent(QCloseEvent *event) {
     interSlideTimer.stop();
+    forAutomatedTips = false;
+    ui->speedSlider->setValue(1000);
+    ui->slideSpeed_LineEdit->setText(QString::number(1000/1000) + " sec");
     close(); //closes this widget
+    event->accept();
 }
 
 /*

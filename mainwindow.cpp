@@ -719,8 +719,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                 ui->tipsYcoord_textEdit->append(y);
                 ui->length_textEdit->append(l);
                 ui->angle_textEdit->append(a);
-
             }
+
             // display the tips in real time
             int tips_size = ui->tip_size_spinBox->value();
             dst = bloodVesselObject->identifyTip(src, (float) x_coord, (float) y_coord, tips_size, tips_color);
