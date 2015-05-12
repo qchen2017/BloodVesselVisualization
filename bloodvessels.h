@@ -35,7 +35,9 @@ public:
     cv::Mat displayTips(cv::Mat src, string imName, int tips_size, QColor tips_color);
     void getManuallySelectedTips(unordered_map<string, QVector<QVector2D> > &tips);
     void tipsAnimation(unordered_map<string, QVector<QVector2D> > tips_map);
-    QVector<cv::Mat> getTipsImages();
+    QVector<cv::Mat> getTipsImages();  
+    QVector<cv::Mat> getTipsImagesWithOrigBG();
+    void clearImageVectors();
 
 protected:
     void changeEvent(QEvent *e);
@@ -52,6 +54,7 @@ private:
     QVector<QVector2D> bloodVesselsTips;
     unordered_map<string, QVector<QVector2D> > bv_tips_map; // maps selected tips to image
     QVector<cv::Mat> tips_images;
+    QVector<cv::Mat> tips_images_orig_bg;
 
 };
 

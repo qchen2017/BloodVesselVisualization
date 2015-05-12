@@ -35,7 +35,7 @@ void BloodVessels::changeEvent(QEvent *e)
 void BloodVessels::tipsAnimation(unordered_map<string, QVector<QVector2D> > tips_map)
 {
 
-    Mat img;
+    Mat img, img_orig_bg;
     QVector2D pt;
     int x, y;
 
@@ -43,6 +43,7 @@ void BloodVessels::tipsAnimation(unordered_map<string, QVector<QVector2D> > tips
         string temp = it->first; // image path name
         QVector<QVector2D> pts = tips_map[temp]; // coordinates associated with image
         img = imread(temp);
+        img_orig_bg = imread(temp);
         img.setTo(cv::Scalar(0, 0, 0)); // fill image with black
         for (int i = 0; i < pts.size(); i++) {
            pt = pts.at(i);
@@ -50,15 +51,29 @@ void BloodVessels::tipsAnimation(unordered_map<string, QVector<QVector2D> > tips
            y = pt.y();
            Point dot = Point(x, y);
            circle(img, dot, 10.0, Scalar(0, 0, 255), -1, 8);
+           circle(img_orig_bg, dot, 10.0, Scalar(0, 0, 255), -1, 8);
+
         }
         cv::resize(img, img, cv::Size2i(img.cols/3, img.rows/3));
         tips_images.push_back(img);
+        tips_images_orig_bg.push_back(img_orig_bg);
     }
 }
 
 QVector<Mat> BloodVessels::getTipsImages()
 {
     return tips_images;
+}
+
+QVector<Mat> BloodVessels::getTipsImagesWithOrigBG()
+{
+    return tips_images_orig_bg;
+}
+
+void BloodVessels::clearImageVectors()
+{
+    tips_images.clear();
+    tips_images_orig_bg.clear();
 }
 
 void BloodVessels::getManuallySelectedTips(unordered_map<string, QVector<QVector2D> > &tips)

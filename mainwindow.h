@@ -65,6 +65,8 @@ private slots:
     /* Slideshow Funtions */
     void on_animate_pushButton_clicked();
     void on_tipsAnimation_pushButton_clicked();
+    void on_blackBG_checkBox_clicked(bool checked);
+    void on_imageBG_checkBox_clicked(bool checked);
 
 private:
     

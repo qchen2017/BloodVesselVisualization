@@ -87,6 +87,7 @@ void Slideshow::tipsSlideshow(QVector<Mat> images, bool autoTipsFlag)
 //QStringList contains paths of opened images
 void Slideshow::setImageList(QStringList in, bool forTips)
 {
+
     imageList = in;
     numSlides = imageList.size();
     ui->imageSlider->setMaximum(numSlides); //set max value of slider bar to # of images
@@ -136,9 +137,15 @@ void Slideshow::updateView(Mat imageOut)
 //stop slideshow timer when the window is closed
 void Slideshow::closeEvent(QCloseEvent *event) {
     interSlideTimer.stop();
+    slideInterval = 1000;
+    currentSlide = 0;
+    tipsFlag = false;
     forAutomatedTips = false;
+    imageList.clear();
+    tips_mats.clear();
     ui->speedSlider->setValue(1000);
     ui->slideSpeed_LineEdit->setText(QString::number(1000/1000) + " sec");
+
     close(); //closes this widget
     event->accept();
 }

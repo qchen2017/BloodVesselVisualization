@@ -327,6 +327,8 @@ void MainWindow::on_actionOpen_triggered()
 
     ui->manual_checkBox->setEnabled(true);
     ui->automated_checkBox->setEnabled(true);
+    ui->imageBG_checkBox->setEnabled(true);
+    ui->blackBG_checkBox->setEnabled(true);
     
     ui->tipsAnimation_pushButton->setEnabled(true);
     ui->exportManual_pushButton->setEnabled(true);
@@ -1204,8 +1206,12 @@ void MainWindow::automatedTipsAnimation(QVector<Mat> &auto_tips_images, unordere
             edgeWin->detectTips(src_resize, tips_map_temp, imName, 135);
         }
     }
-
-    edgeWin->getAutoTipsImages(auto_tips_images);
+    if (ui->blackBG_checkBox->isChecked()) {
+        edgeWin->getAutoTipsImages(auto_tips_images);
+    }
+    else if (ui->imageBG_checkBox->isChecked()) {
+        edgeWin->getAutoTipsImagesWithOrigBG(auto_tips_images);
+    }
 }
 
 void MainWindow::on_tipsAnimation_pushButton_clicked()
@@ -1216,6 +1222,9 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
     } // error
 
     unordered_map<string, QVector<QVector2D> > tips_map_temp;
+    QVector<Mat> automatedTipsMats;
+    bloodVesselObject->clearImageVectors();
+    edgeWin->clearImageVectors();
 
     // both are unchecked
     if (!ui->automated_checkBox->isChecked() && !ui->manual_checkBox->isChecked()) {
@@ -1224,7 +1233,6 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
 
     // only automated is checked
     else if (ui->automated_checkBox->isChecked() && !ui->manual_checkBox->isChecked())  {
-        QVector<Mat> automatedTipsMats;
         automatedTipsAnimation(automatedTipsMats, tips_map_temp);
         ssWin->tipsSlideshow(automatedTipsMats, true);
         ssWin->setImageList(imagePaths, true);
@@ -1236,7 +1244,13 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
             bloodVesselObject->getManuallySelectedTips(tips_map_temp);
             bloodVesselObject->tipsAnimation(tips_map_temp);
             QVector<Mat> ims = bloodVesselObject->getTipsImages();
-            ssWin->tipsSlideshow(ims, false);
+            QVector<Mat> ims2 = bloodVesselObject->getTipsImagesWithOrigBG();
+            if (ui->imageBG_checkBox->isChecked()) {
+                ssWin->tipsSlideshow(ims2, false);
+            }
+            else if (ui->blackBG_checkBox->isChecked()) {
+                ssWin->tipsSlideshow(ims, false);
+            }
             ssWin->setImageList(imagePaths, true);
             ssWin->show();
         }
@@ -1246,8 +1260,8 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
     }
     // both are checked
     else {
-        QVector<Mat> automatedTipsMats;
         automatedTipsAnimation(automatedTipsMats, tips_map_temp);
+        qDebug() << automatedTipsMats.size() << tips_map_temp.size();
         if (!bloodVesselObject->isEmpty()) {
             bloodVesselObject->getManuallySelectedTips(tips_map_temp);
             for (int i = 0; i < imagePaths.size(); i++) {
@@ -1271,3 +1285,23 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
     }
 } // tips animation
 
+
+void MainWindow::on_blackBG_checkBox_clicked(bool checked)
+{
+    if (checked) {
+        ui->imageBG_checkBox->setChecked(false);
+    }
+    else {
+        ui->imageBG_checkBox->setChecked(true);
+    }
+}
+
+void MainWindow::on_imageBG_checkBox_clicked(bool checked)
+{
+    if (checked) {
+        ui->blackBG_checkBox->setChecked(false);
+    }
+    else {
+        ui->blackBG_checkBox->setChecked(true);
+    }
+}

@@ -29,7 +29,9 @@ public:
     cv::Mat detectTips(cv::Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName, int thresh_val); // set up image for tips detection
     void branchGraph(cv::Mat imageIn, cv::Mat &imageOut);
     void convertToPixelCoords(cv::Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName);
-    void getAutoTipsImages(QVector<cv::Mat> &auto_tips_images);
+    void getAutoTipsImages(QVector<cv::Mat> &auto_tips_images); 
+    void getAutoTipsImagesWithOrigBG(QVector<cv::Mat> &auto_tips_images_origBG);
+    void clearImageVectors();
 
 protected:
     void changeEvent(QEvent *e);
@@ -60,6 +62,8 @@ private:
     cv::Mat src, src_gray, dst;
     int thresh = 0;
     QVector<cv::Mat> automated_tips_images;
+    QVector<cv::Mat> automated_tips_images_origBG;
+
 };
 
 #endif // EDGE_H
