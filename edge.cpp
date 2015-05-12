@@ -404,9 +404,9 @@ void Edge::getTipsCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> >
 {
     QVector<QVector2D> pts_temp;
     Mat img = imageIn;
-    Mat img2 = imread(imgName);
-    cvtColor(img2, img2, cv::COLOR_BGR2GRAY);
-    cv::resize(img2, img2, cv::Size2i(imageIn.cols, imageIn.rows));
+    Mat img_orig_bg = imread(imgName);
+    cvtColor(img_orig_bg, img_orig_bg, cv::COLOR_BGR2GRAY);
+    cv::resize(img_orig_bg, img_orig_bg, cv::Size2i(imageIn.cols, imageIn.rows));
 
     QVector2D pt;
     QVector<QVector2D> pts;
@@ -429,11 +429,11 @@ void Edge::getTipsCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> >
         int b = pt.y();
         Point dot = Point(a*2, b);
         circle(img, dot, 4.0, Scalar(255, 255, 255), -1, 8);
-        circle(img2, dot, 4.0, Scalar(0, 0, 0), -1, 8);
+        circle(img_orig_bg, dot, 4.0, Scalar(0, 0, 0), -1, 8);
     }
 
     automated_tips_images.push_back(img);
-    automated_tips_images_origBG.push_back(img2);
+    automated_tips_images_origBG.push_back(img_orig_bg);
 
 }
 

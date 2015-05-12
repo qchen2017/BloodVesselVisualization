@@ -1223,6 +1223,8 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
 
     unordered_map<string, QVector<QVector2D> > tips_map_temp;
     QVector<Mat> automatedTipsMats;
+
+    // clear the image vectors so there aren't any duplicates on every new instance of ssWin
     bloodVesselObject->clearImageVectors();
     edgeWin->clearImageVectors();
 
@@ -1261,7 +1263,6 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
     // both are checked
     else {
         automatedTipsAnimation(automatedTipsMats, tips_map_temp);
-        qDebug() << automatedTipsMats.size() << tips_map_temp.size();
         if (!bloodVesselObject->isEmpty()) {
             bloodVesselObject->getManuallySelectedTips(tips_map_temp);
             for (int i = 0; i < imagePaths.size(); i++) {
@@ -1284,7 +1285,6 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
         ssWin->show();
     }
 } // tips animation
-
 
 void MainWindow::on_blackBG_checkBox_clicked(bool checked)
 {

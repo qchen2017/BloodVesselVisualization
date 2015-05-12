@@ -1,7 +1,6 @@
 Notes:
 
 Added option to switch between black BG and image BG when doing Tips Animation
-(need to fix tips colors/size)
 
 Added a limit on how much user can zoom in or out
 

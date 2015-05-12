@@ -136,6 +136,8 @@ void Slideshow::updateView(Mat imageOut)
 
 //stop slideshow timer when the window is closed
 void Slideshow::closeEvent(QCloseEvent *event) {
+
+    // reset everything before closing widget
     interSlideTimer.stop();
     slideInterval = 1000;
     currentSlide = 0;
