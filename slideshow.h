@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QBasicTimer>
 #include <QGraphicsView>
+#include <QFileDialog>
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/core/core.hpp"
@@ -32,6 +33,7 @@ public:
 public slots:
     void on_playButton_clicked();
     void on_pauseButton_clicked();
+    void on_actionSave_triggered();
 
 private slots:
     void on_imageSlider_sliderMoved(int value);

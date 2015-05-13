@@ -2,6 +2,7 @@
 #include "ui_slideshow.h"
 #include <QCloseEvent>
 #include <iostream>
+#include <QDebug>
 
 using namespace cv;
 using namespace std;
@@ -32,6 +33,7 @@ Slideshow::~Slideshow()
 
 void Slideshow::nextSlide()
 {
+    qDebug() << tipsFlag;
     if (!tipsFlag) {
         imageName = imageList.at(currentSlide);
         src = imread(imageName.toStdString());
@@ -169,6 +171,70 @@ void Slideshow::on_playButton_clicked()
     interSlideTimer.start(slideInterval, this);
     nextSlide();
 
+}
+
+//From menu bar, click save to generate an .avi video file.
+void Slideshow::on_actionSave_triggered()
+{
+    //manually select a location to save the .avi
+    QString savePath = QFileDialog::getSaveFileName(this, tr("Save File"), "",
+                                                       tr("AVI (*.avi)"));
+
+    if (!tipsFlag) {
+        //find framesize
+        QString frameName = imageList.at(0);
+        Mat frame = imread(frameName.toStdString());
+        Size s = frame.size();
+        double height = s.height;
+        double width = s.width;
+
+        Size frameSize(static_cast<int>(width), static_cast<int>(height));
+        VideoWriter outVideoFile (savePath.toStdString(), 0, 2, frameSize, true);
+
+        for(int i = 0 ; i < imageList.size(); i++) { //display images/frames to MyVideo, and create output video
+            frameName = imageList.at(i);
+            frame = imread(frameName.toStdString());
+
+            if( !frame.data ) { // Check for invalid input
+                cout <<  "Could not open or find the image at " << i << endl ;
+                return;
+            }
+
+            outVideoFile << (frame); //write the frame into the file
+        }
+    }
+    else {
+        Mat frame = tips_mats.at(0);
+        Size s = frame.size();
+        double height = s.height;
+        double width = s.width;
+
+        Size frameSize(static_cast<int>(width), static_cast<int>(height));
+
+        //initialize videowriter
+        //constructor format: Location & name of output file, fourcc codec, framerate (# frames/sec), framesize, isColor
+        VideoWriter outVideoFile (savePath.toStdString(), 0, 2, frameSize, true);
+
+        if ( !outVideoFile.isOpened() ) //check if the fourcc is allowed
+        {
+            cout << "ERROR: Failed to write the video" << endl;
+            return;
+        }
+
+        namedWindow("MyVideo"); //create a window called "MyVideo"
+        for(int i = 0; i < tips_mats.size(); i++) {
+            frame = tips_mats.at(i);
+
+            if( !frame.data ) { // Check for invalid input
+                cout <<  "Could not open or find the image at " << i << endl ;
+                return;
+            }
+
+            outVideoFile << (frame);
+            imshow("MyVideo", tips_mats.at(i)); //show the frame in "MyVideo" window
+            waitKey(100);
+        }
+    }
 }
 
 void Slideshow::on_pauseButton_clicked()
