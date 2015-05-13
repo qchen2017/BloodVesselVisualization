@@ -62,6 +62,8 @@ MainWindow::MainWindow(QWidget *parent) :
     // control flags
     dummyImgOn = true;
     mouseEnabled = false;
+    lengthEnabled = false;
+    tipsEnabled = true;
     refPointEnabled = false;
     selected_ref = false;
     revert = false;
@@ -69,7 +71,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ref_point.setX(0); //initialize reference point to default (0,0)
     ref_point.setY(0);
-
+    refPtPixel.setX(0);
+    refPtPixel.setY(0);
 
     /************************************* MAIN WINDOW UI ***************************************/
 
@@ -110,6 +113,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tipDetect_pushButton->setToolTip("Export the (x, y) coordinates of the blood vessel tips (automated) of all the images to a file.");
     ui->manual_checkBox->setToolTip("Animate manually selected tips.");
     ui->automated_checkBox->setToolTip("Animate automated tips.");
+    ui->tips_checkBox->setToolTip("Check to display manually selected tips 'Display Tips' is pressed.");
+    ui->length_checkBox->setToolTip("Check to draw line between tips and reference point when 'Display Tips' is pressed.");
     ui->tipsAnimation_pushButton->setToolTip("Plays the tips for each image in sequence on a separate window.");
 
     ui->tipsXcoord_textEdit->setToolTip("Displays the X coordinates of the manually selected tips for image currently on display.");
@@ -304,6 +309,8 @@ void MainWindow::on_actionOpen_triggered()
     ui->imageFiles_listWidget->setCurrentItem(ui->imageFiles_listWidget->item(0));
 
     dummyImgOn = false;
+    refPtPixel.setX(src.cols/2);
+    refPtPixel.setY(src.rows/2);
 
     // enable menu bar and UI functions
     ui->actionSave->setEnabled(true);
@@ -322,11 +329,12 @@ void MainWindow::on_actionOpen_triggered()
     ui->bloodVesselsTips_radioButton->setEnabled(true);
     ui->select_ref_point_radioButton->setEnabled(true);
     ui->color_pushButton->setEnabled(true);
-    //ui->color_comboBox->setEnabled(true);
     ui->tip_size_spinBox->setEnabled(true);
 
     ui->manual_checkBox->setEnabled(true);
     ui->automated_checkBox->setEnabled(true);
+    ui->tips_checkBox->setEnabled(true);
+    ui->length_checkBox->setEnabled(true);
     ui->imageBG_checkBox->setEnabled(true);
     ui->blackBG_checkBox->setEnabled(true);
     
@@ -346,10 +354,13 @@ void MainWindow::on_actionSave_triggered()
     } // error
 
     // save image to either jpg or png formats
-    imagePath = QFileDialog::getSaveFileName(this, tr("Save File"), "",
+    QString savePath = QFileDialog::getSaveFileName(this, tr("Save File"), "",
                                                      tr("JPEG (*.jpg *.jpeg);;PNG (*.png)"));
-    *imageObject = image.toImage();
-    imageObject->save(imagePath);
+
+    if (!savePath.isEmpty()) {
+        *imageObject = image.toImage();
+        imageObject->save(savePath);
+    }
 
 } // save image
 
@@ -428,7 +439,7 @@ void MainWindow::on_actionUndo_Manual_Detect_triggered()
 
             // update current image ond display to reflect undoing
             int tips_size = ui->tip_size_spinBox->value();
-            dst = bloodVesselObject->displayTips(src, imagePath.toStdString(), tips_size, tips_color);
+            dst = bloodVesselObject->displayTips(src, imagePath.toStdString(), tips_size, tips_color, refPtPixel, lengthEnabled, tipsEnabled);
             updateView(dst);
         }
     }
@@ -731,7 +742,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
             // display the tips in real time
             int tips_size = ui->tip_size_spinBox->value();
-            dst = bloodVesselObject->identifyTip(src, (float) x_coord, (float) y_coord, tips_size, tips_color);
+            dst = bloodVesselObject->identifyTip(src, (float) x_coord, (float) y_coord, tips_size, tips_color, refPtPixel);
             updateView(dst);
         }
         else if (refPointEnabled && !mouseEnabled) {
@@ -753,6 +764,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             reply = QMessageBox::question(this, "Reference Point", ref,
                                           QMessageBox::Yes|QMessageBox::No);
             if (reply == QMessageBox::Yes) {
+                refPtPixel = img_coord_pt;
                 ref_point.setX(adjusted_x);
                 ref_point.setY(adjusted_y);
                 QString rx = QString::number((double)ref_point.x(), 'g', 3);
@@ -766,6 +778,10 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                     mouseEnabled = true;
                     revert = false;
                 }
+
+                src = imread(imagePath.toStdString());
+                updateView(src);
+                bloodVesselObject->deleteAllTipPoints("");
                 ui->tipsXcoord_textEdit->clear();
                 ui->tipsYcoord_textEdit->clear();
                 ui->length_textEdit->clear();
@@ -834,6 +850,26 @@ void MainWindow::on_select_ref_point_radioButton_clicked()
 
 } // select reference point
 
+void MainWindow::on_tips_checkBox_clicked(bool checked)
+{
+    if (checked) {
+        tipsEnabled = true;
+    }
+    else {
+        tipsEnabled = false;
+    }
+}
+
+void MainWindow::on_length_checkBox_clicked(bool checked)
+{
+    if (checked) {
+        lengthEnabled = true;
+    }
+    else {
+        lengthEnabled = false;
+    }
+}
+
 void MainWindow::on_displayTips_pushButton_clicked()
 {
     if (!check_imageOpened()) {
@@ -848,7 +884,7 @@ void MainWindow::on_displayTips_pushButton_clicked()
         ui->actionUndo_Manual_Detect->setEnabled(true);
         src = imread(imagePath.toStdString());
         int tips_size = ui->tip_size_spinBox->value();
-        dst = bloodVesselObject->displayTips(src, imagePath.toStdString(), tips_size, tips_color);
+        dst = bloodVesselObject->displayTips(src, imagePath.toStdString(), tips_size, tips_color, refPtPixel, lengthEnabled, tipsEnabled);
         displayTipsDetailsOnTextBoxes();
         updateView(dst);
     }

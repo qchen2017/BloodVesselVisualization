@@ -106,7 +106,10 @@ bool BloodVessels::thisImageTipsIsEmpty(string imgpath)
 void BloodVessels::saveTipPoint(string imgpath, qreal x, qreal y)
 {
     // update map
-    QVector<QVector2D> temp = bv_tips_map[imgpath];
+    QVector<QVector2D> temp;
+    if (bv_tips_map.find(imgpath) != bv_tips_map.end()) {
+        temp = bv_tips_map[imgpath];
+    }
     temp.push_back(QVector2D(x, y));
     bv_tips_map[imgpath] = temp;
 }
@@ -127,10 +130,16 @@ void BloodVessels::deleteTipPoint(string imgpath)
 
 void BloodVessels::deleteAllTipPoints(string imgpath)
 {
-    bv_tips_map.erase(imgpath);
+    if (!imgpath.empty()) {
+        bv_tips_map.erase(imgpath);
+    }
+    else {
+        unordered_map<string, QVector<QVector2D> > bv_tips_map_cleared;
+        bv_tips_map = bv_tips_map_cleared;
+    }
 }
 
-Mat BloodVessels::identifyTip(Mat src, float x, float y, int tips_size, QColor tips_color)
+Mat BloodVessels::identifyTip(Mat src, float x, float y, int tips_size, QColor tips_color, QPointF refPtPixel)
 {
     Point dot = Point(x, y);
     int thickness = -1;
@@ -140,16 +149,22 @@ Mat BloodVessels::identifyTip(Mat src, float x, float y, int tips_size, QColor t
     int blue = tips_color.blue();
 
     circle(src, dot, (float)tips_size, Scalar(blue, green, red), thickness, lineType);
+    int ref_x = refPtPixel.x();
+    int ref_y = refPtPixel.y();
+    rectangle(src, Point(ref_x-tips_size, ref_y-tips_size), Point(ref_x+tips_size, ref_y+tips_size), Scalar(red, green, blue), thickness, lineType);
 
     return src;
 }
 
-Mat BloodVessels::displayTips(Mat src, string imName, int tips_size, QColor tips_color)
+Mat BloodVessels::displayTips(Mat src, string imName, int tips_size, QColor tips_color, QPointF refPtPixel, bool lengthEnabled, bool tipsEnabled)
 {
     Mat imageOut = src;
     int red = tips_color.red();
     int green = tips_color.green();
     int blue = tips_color.blue();
+
+    int ref_x = refPtPixel.x();
+    int ref_y = refPtPixel.y();
 
     QVector<QVector2D> bloodVesselsTips;
     if (bv_tips_map.find(imName) != bv_tips_map.end()) {
@@ -159,9 +174,16 @@ Mat BloodVessels::displayTips(Mat src, string imName, int tips_size, QColor tips
             float x = (float) bloodVesselsTips[i].x();
             float y = (float) bloodVesselsTips[i].y();
             Point dot = Point(x, y);
-            circle(src, dot, (float)tips_size, Scalar(blue, green, red), -1, 8);
+            if (tipsEnabled) {
+                circle(imageOut, dot, (float)tips_size, Scalar(blue, green, red), -1, 8);
+            }
+            if (lengthEnabled) {
+                line(imageOut, Point(ref_x, ref_y), dot, Scalar(blue, green, red), 5, 8);
+            }
         }
     }
+
+    rectangle(imageOut, Point(ref_x-tips_size, ref_y-tips_size), Point(ref_x+tips_size, ref_y+tips_size), Scalar(red, green, blue), -1, 8);
 
     return imageOut;
 }
