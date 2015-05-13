@@ -38,12 +38,13 @@ private slots:
     void on_actionZoom_In__triggered();
     void on_actionZoom_Out_triggered();
     void on_actionUndo_Manual_Detect_triggered();
+    void on_actionReset_triggered();
     void on_actionView_Documentation_triggered();
 
     /* Main User Interface Functionalities */
     void close_opencv_window(string window_name);
     void on_closeImage_toolButton_clicked();
-    void on_save_pushButton_clicked();
+    void on_revertAllChanges_pushButton_clicked();
     void on_imageFiles_listWidget_itemClicked(QListWidgetItem *item);
     void on_displayOrigImage_pushButton_clicked();
     void on_threshold_horizontalSlider_valueChanged(int value);
@@ -51,10 +52,10 @@ private slots:
     
     /* Functions for Manual Tips Detection */
     void on_bloodVesselsTips_radioButton_toggled(bool checked);
+    void on_color_pushButton_clicked();
     void on_select_ref_point_radioButton_clicked();
-    void on_tip_checkBox_clicked(bool checked);
     void on_length_checkBox_clicked(bool checked);
-    void on_angle_checkBox_clicked(bool checked);
+    void on_tips_checkBox_clicked(bool checked);
     void on_displayTips_pushButton_clicked();
     void on_clearTips_pushButton_clicked();
 
@@ -66,8 +67,8 @@ private slots:
     /* Slideshow Funtions */
     void on_animate_pushButton_clicked();
     void on_tipsAnimation_pushButton_clicked();
-    
-
+    void on_blackBG_checkBox_clicked(bool checked);
+    void on_imageBG_checkBox_clicked(bool checked);
 
 private:
     
@@ -88,16 +89,18 @@ private:
     cv::Mat src, src_resize, dst, contourOut, edgeOut;
     
     float scaleFactor;
+    float zoomMax;
     bool mouseEnabled;
     int imageListPtr;
     QVector2D ref_point;
+    QPointF refPtPixel;
+    QColor tips_color;
 
     // control flags
     bool dummyImgOn;
-    bool tipsEnabled;
-    bool lengthEnabled;
-    bool angleEnabled;
     bool refPointEnabled;
+    bool lengthEnabled;
+    bool tipsEnabled;
     bool selected_ref;
     bool revert;
     bool manualSelected;
@@ -115,6 +118,7 @@ private:
     bool imageAlreadyLoaded(QString imp);
     void updateView(cv::Mat imageOut);
 
+    void displayTipsDetailsOnTextBoxes();
     void writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips_map);
     void findAllTips(bool threshold_default, unordered_map<string, QVector<QVector2D> > &tips_map_temp);
     void promptForTipsAnimation(unordered_map<string, QVector<QVector2D> > &tips_map_temp);
