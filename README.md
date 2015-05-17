@@ -1,16 +1,9 @@
 Notes:
 
-- Re-added tips and length checkboxes so user can choose which ones to display when "Display Tips" is pressed
+- Changed manual/automated coordinates to pixel coordinates:
+    - (0, 0) at the center, between -(image width/height) to +(image width/height)
 
-- Added option to switch between black BG and image BG when doing Tips Animation
+- Added "Reset Reference Point" in Menu Bar --> Action for setting the reference point back to (0, 0) (center of image)
 
-- Added "Revert All Changes" button for undoing all changes in threshold or display mode
-
-- Added "Reset" in Menu Bar --> Action for resetting/deleting all manually detected tips
-
-- Changed the tips color option to a color dialog box
-
-- Fixed bug when selecting reference point - if user selects reference point midway, the tips that have been saved prior
-to changing the reference point will be cleared (to keep all numerical data consistent under one reference point)
-
+- Disabled "Save" for Automated Tips Animation
 

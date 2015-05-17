@@ -850,6 +850,7 @@
     </property>
     <addaction name="actionUndo_Manual_Detect"/>
     <addaction name="actionReset"/>
+    <addaction name="actionReset_Reference_Point"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuView"/>
@@ -962,6 +963,17 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actionReset_Reference_Point">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Reset Reference Point</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
    </property>
   </action>
  </widget>

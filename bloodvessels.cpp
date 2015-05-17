@@ -50,8 +50,8 @@ void BloodVessels::tipsAnimation(unordered_map<string, QVector<QVector2D> > tips
            x = pt.x();
            y = pt.y();
            Point dot = Point(x, y);
-           circle(img, dot, 20.0, Scalar(255, 255, 255), -1, 8);
-           circle(img_orig_bg, dot, 20.0, Scalar(0, 0, 0), -1, 8);
+           circle(img, dot, 20.0, Scalar(105, 105, 105), -1, 8);
+           circle(img_orig_bg, dot, 20.0, Scalar(105, 105, 105), -1, 8);
 
         }
         cv::resize(img, img, cv::Size2i(img.cols/3, img.rows/3));
