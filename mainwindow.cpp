@@ -723,7 +723,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
         imagePath = imagePaths.at(index);
         ui->exportManual_pushButton->setEnabled(true);
 
-        if (mouseEnabled) {
+        if (mouseEnabled) { // based on default ref point
             ui->actionReset->setEnabled(true);
             QPoint  local_pt = ui->graphicsView->mapFromGlobal(event->globalPos());
             QPointF img_coord_pt = ui->graphicsView->mapToScene(local_pt);
@@ -740,11 +740,16 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             qreal selected_x = x_coord - src.cols/2;
             qreal selected_y = src.rows/2 - y_coord;
 
+            // qDebug() << "selected_x = " << selected_x << ", selected_y = " << selected_y;
+            // qDebug() << "ref_point.x = " << ref_point.x() << ", ref_point.y = " << ref_point.y();
+
+
             qreal x2_x1 = selected_x - ref_point.x();
             qreal y2_y1 = selected_y - ref_point.y();
 
             qreal length = 0, angle = 0;
-            length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
+            length = sqrt((x2_x1 * x2_x1) + (y2_y1 * y2_y1));
+            // qDebug() << "length = " << length;
 
             //atan2 returns positive angle for positive Y position, and vice versa
             angle = atan2(y2_y1, x2_x1) * 180 / PI;
@@ -753,8 +758,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             }
 
             // each (x, y) point is displayed in their appropriate text edits
-            QString x = QString::number((double) x2_x1, 'g', 6);
-            QString y = QString::number((double) y2_y1, 'g', 6);
+            QString x = QString::number((double) selected_x, 'g', 6);
+            QString y = QString::number((double) selected_y, 'g', 6);
             QString l = QString::number((double) length, 'g', 6); //length
             QString a = QString::number((double) angle, 'g', 6); //angle
 
@@ -773,51 +778,60 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             dst = bloodVesselObject->identifyTip(src, (float) x_coord, (float) y_coord, tips_size, tips_color, refPtPixel);
             updateView(dst);
         }
-        else if (refPointEnabled && !mouseEnabled) {
+        else if (refPointEnabled && !mouseEnabled) {// select ref point
 
             QPoint  local_pt = ui->graphicsView->mapFromGlobal(event->globalPos());
             QPointF img_coord_pt = ui->graphicsView->mapToScene(local_pt);
 
-            // adjusted based on reference point
-            // qreal adjusted_x = (qreal)(img_coord_pt.x() - src.cols/2)/(qreal)(src.cols/2);
-            // qreal adjusted_y = (qreal)(src.rows/2 - img_coord_pt.y())/(qreal)(src.rows/2);
 
             // new coordinates - units in pixels
-            qreal adjusted_x = img_coord_pt.x() - src.cols/2;
-            qreal adjusted_y = src.rows/2 - img_coord_pt.y();
+            // qreal adjusted_x = img_coord_pt.x() - src.cols/2;
+            // qreal adjusted_y = src.rows/2 - img_coord_pt.y();
 
-            // each (x, y) point is displayed in their appropriate text edits
-            // (0, 0) is at the center of the image
-            QString x = QString::number((double) adjusted_x, 'g', 6);
-            QString y = QString::number((double) adjusted_y, 'g', 6);
-            QString ref = "Keep (" + x + ", " + y + ") as reference point?";
+            qreal selected_x = img_coord_pt.x() - src.cols/2;
+            qreal selected_y = src.rows/2 - img_coord_pt.y();
 
-            QMessageBox::StandardButton reply;
-            reply = QMessageBox::question(this, "Reference Point", ref,
-                                          QMessageBox::Yes|QMessageBox::No);
-            if (reply == QMessageBox::Yes) {
-                refPtPixel = img_coord_pt;
-                ref_point.setX(adjusted_x);
-                ref_point.setY(adjusted_y);
-                QString rx = QString::number((double)ref_point.x(), 'g', 6);
-                QString ry = QString::number((double)ref_point.y(), 'g', 6);
+            if (selected_x >= -(src.cols/2) && selected_x <= (src.cols/2) && selected_y >= -(src.rows/2) && selected_y <= (src.rows/2)) {
 
-                QString r = rx + ", " + ry;
-                ui->refpoint_lineEdit->setText(r);
-                refPointEnabled = false;
-                selected_ref = true;
-                if (revert) {
-                    mouseEnabled = true;
-                    revert = false;
+                // each (x, y) point is displayed in their appropriate text edits
+                // (0, 0) is at the center of the image
+                QString x = QString::number((double) selected_x, 'g', 6);
+                QString y = QString::number((double) selected_y, 'g', 6);
+                QString ref = "Keep (" + x + ", " + y + ") as reference point?";
+
+                QMessageBox::StandardButton reply;
+                reply = QMessageBox::question(this, "Reference Point", ref,
+                                              QMessageBox::Yes|QMessageBox::No);
+                if (reply == QMessageBox::Yes) {
+                    refPtPixel = img_coord_pt;
+                    qDebug() << "refPtPixel = " << refPtPixel;
+
+
+                    ref_point.setX(selected_x);
+                    ref_point.setY(selected_y);
+
+                    qDebug() << "ref_point = " << ref_point;
+
+                    QString rx = QString::number((double)ref_point.x(), 'g', 6);
+                    QString ry = QString::number((double)ref_point.y(), 'g', 6);
+
+                    QString r = rx + ", " + ry;
+                    ui->refpoint_lineEdit->setText(r);
+                    refPointEnabled = false;
+                    selected_ref = true;
+                    if (revert) {
+                        mouseEnabled = true;
+                        revert = false;
+                    }
+
+                    src = imread(imagePath.toStdString());
+                    updateView(src);
+                    bloodVesselObject->deleteAllTipPoints("");
+                    ui->tipsXcoord_textEdit->clear();
+                    ui->tipsYcoord_textEdit->clear();
+                    ui->length_textEdit->clear();
+                    ui->angle_textEdit->clear();
                 }
-
-                src = imread(imagePath.toStdString());
-                updateView(src);
-                bloodVesselObject->deleteAllTipPoints("");
-                ui->tipsXcoord_textEdit->clear();
-                ui->tipsYcoord_textEdit->clear();
-                ui->length_textEdit->clear();
-                ui->angle_textEdit->clear();
             }
         }
 
@@ -877,7 +891,7 @@ void MainWindow::on_select_ref_point_radioButton_clicked()
     
     if (mouseEnabled) {
         mouseEnabled = false;
-        revert = true;
+        revert = true; // used to change back in mousePressEvent
     }
 
 } // select reference point
