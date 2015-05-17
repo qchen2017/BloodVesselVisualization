@@ -461,6 +461,37 @@ void MainWindow::on_actionReset_triggered()
 
 }
 
+void MainWindow::on_actionReset_Reference_Point_triggered()
+{
+
+    src = imread(imagePath.toStdString());
+    updateView(src);
+
+    refPtPixel.setX(src.cols/2);
+    refPtPixel.setY(src.rows/2);
+
+    ref_point.setX(0);
+    ref_point.setY(0);
+
+    QString rx = QString::number((double)ref_point.x(), 'g', 6);
+    QString ry = QString::number((double)ref_point.y(), 'g', 6);
+
+    QString r = rx + ", " + ry;
+    ui->refpoint_lineEdit->setText(r);
+    refPointEnabled = false;
+    selected_ref = true;
+    if (revert) {
+        mouseEnabled = true;
+        revert = false;
+    }
+
+    bloodVesselObject->deleteAllTipPoints("");
+    ui->tipsXcoord_textEdit->clear();
+    ui->tipsYcoord_textEdit->clear();
+    ui->length_textEdit->clear();
+    ui->angle_textEdit->clear();
+}
+
 void MainWindow::on_actionView_Documentation_triggered()
 {
     helpWin->show();
@@ -1351,36 +1382,4 @@ void MainWindow::on_imageBG_checkBox_clicked(bool checked)
     else {
         ui->blackBG_checkBox->setChecked(true);
     }
-}
-
-void MainWindow::on_actionReset_Reference_Point_triggered()
-{
-
-    src = imread(imagePath.toStdString());
-    updateView(src);
-
-    refPtPixel.setX(src.cols/2);
-    refPtPixel.setY(src.rows/2);
-
-    ref_point.setX(0);
-    ref_point.setY(0);
-
-    QString rx = QString::number((double)ref_point.x(), 'g', 6);
-    QString ry = QString::number((double)ref_point.y(), 'g', 6);
-
-    QString r = rx + ", " + ry;
-    ui->refpoint_lineEdit->setText(r);
-    refPointEnabled = false;
-    selected_ref = true;
-    if (revert) {
-        mouseEnabled = true;
-        revert = false;
-    }
-
-
-    bloodVesselObject->deleteAllTipPoints("");
-    ui->tipsXcoord_textEdit->clear();
-    ui->tipsYcoord_textEdit->clear();
-    ui->length_textEdit->clear();
-    ui->angle_textEdit->clear();
 }
