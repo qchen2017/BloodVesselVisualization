@@ -76,25 +76,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     /************************************* MAIN WINDOW UI ***************************************/
 
-//    // setup color combo box
-//    QPixmap px(15,15);
-//    px.fill(QColor(Qt::red));
-//    QIcon icon(px);
-//    ui->color_comboBox->addItem(icon, "Red");
-//    px.fill(QColor(Qt::blue));
-//    icon.addPixmap(px);
-//    ui->color_comboBox->addItem(icon,"Blue");
-//    px.fill(QColor(Qt::green));
-//    icon.addPixmap(px);
-//    ui->color_comboBox->addItem(icon,"Green");
-
     // other initial states
     ui->threshold_lineEdit->setText("0");
     ui->actionUndo_Manual_Detect->setEnabled(false);
 
     // tool tips for each of the UI components
     ui->imageFiles_listWidget->setToolTip("Loaded images.");
-    //ui->graphicsView->setToolTip("Current image on display.");
     ui->closeImage_toolButton->setToolTip("Closes current image on display.");
 
     ui->displayOrigImage_pushButton->setToolTip("Displays original image in a new window.");
@@ -107,7 +94,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->select_ref_point_radioButton->setToolTip("Manually select reference point using mouse control.");
     ui->bloodVesselsTips_radioButton->setToolTip("Manually select tips using mouse control.");
     ui->color_pushButton->setToolTip("Select color of tip dot for manual tips detection.");
-    //ui->color_comboBox->setToolTip("Select color of tip dot for manual tips detection.");
     ui->tip_size_spinBox->setToolTip("Select size of tip dot for manual tips detection.");
 
     ui->tipDetect_pushButton->setToolTip("Export the (x, y) coordinates of the blood vessel tips (automated) of all the images to a file.");
@@ -317,6 +303,7 @@ void MainWindow::on_actionOpen_triggered()
     ui->actionFit_to_Window->setEnabled(true);
     ui->actionZoom_In_->setEnabled(true);
     ui->actionZoom_Out->setEnabled(true);
+    ui->actionReset_Reference_Point->setEnabled(true);
 
     ui->threshold_horizontalSlider->setEnabled(true);
     ui->imageMode_comboBox->setEnabled(true);
@@ -328,6 +315,10 @@ void MainWindow::on_actionOpen_triggered()
 
     ui->bloodVesselsTips_radioButton->setEnabled(true);
     ui->select_ref_point_radioButton->setEnabled(true);
+    QString rx = QString::number((double)ref_point.x(), 'g', 6);
+    QString ry = QString::number((double)ref_point.y(), 'g', 6);
+    QString r = rx + ", " + ry;
+    ui->refpoint_lineEdit->setText(r);
     ui->color_pushButton->setEnabled(true);
     ui->tip_size_spinBox->setEnabled(true);
 
@@ -711,8 +702,13 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             bloodVesselObject->saveTipPoint(imagePath.toStdString(), x_coord, y_coord);
 
             // adjusted based on reference point
-            qreal selected_x = (qreal)(img_coord_pt.x() - src.cols/2)/(qreal)(src.cols/2);
-            qreal selected_y = (qreal)(src.rows/2 - img_coord_pt.y())/(qreal)(src.rows/2);
+            // qreal selected_x = (qreal)(img_coord_pt.x() - src.cols/2)/(qreal)(src.cols/2);
+            // qreal selected_y = (qreal)(src.rows/2 - img_coord_pt.y())/(qreal)(src.rows/2);
+
+            // new coordinates - units in pixels
+            qreal selected_x = x_coord - src.cols/2;
+            qreal selected_y = src.rows/2 - y_coord;
+
             qreal x2_x1 = selected_x - ref_point.x();
             qreal y2_y1 = selected_y - ref_point.y();
 
@@ -726,13 +722,14 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             }
 
             // each (x, y) point is displayed in their appropriate text edits
-            QString x = QString::number((double) x2_x1, 'g', 3);
-            QString y = QString::number((double) y2_y1, 'g', 3);
-            QString l = QString::number((double) length, 'g', 3); //length
-            QString a = QString::number((double) angle, 'g', 3); //angle
+            QString x = QString::number((double) x2_x1, 'g', 6);
+            QString y = QString::number((double) y2_y1, 'g', 6);
+            QString l = QString::number((double) length, 'g', 6); //length
+            QString a = QString::number((double) angle, 'g', 6); //angle
 
-            //disregard clicks that were pressed outside of the image
-            if (selected_x >= -1 && selected_x <= 1 && selected_y >= -1 && selected_y <= 1) {
+            // disregard clicks that were pressed outside of the image
+            // if (selected_x >= -1 && selected_x <= 1 && selected_y >= -1 && selected_y <= 1) {
+            if (selected_x >= -(src.cols/2) && selected_x <= (src.cols/2) && selected_y >= -(src.rows/2) && selected_y <= (src.rows/2)) {
                 ui->actionUndo_Manual_Detect->setEnabled(true);
                 ui->tipsXcoord_textEdit->append(x);
                 ui->tipsYcoord_textEdit->append(y);
@@ -751,13 +748,17 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             QPointF img_coord_pt = ui->graphicsView->mapToScene(local_pt);
 
             // adjusted based on reference point
-            qreal adjusted_x = (qreal)(img_coord_pt.x() - src.cols/2)/(qreal)(src.cols/2);
-            qreal adjusted_y = (qreal)(src.rows/2 - img_coord_pt.y())/(qreal)(src.rows/2);
+            // qreal adjusted_x = (qreal)(img_coord_pt.x() - src.cols/2)/(qreal)(src.cols/2);
+            // qreal adjusted_y = (qreal)(src.rows/2 - img_coord_pt.y())/(qreal)(src.rows/2);
+
+            // new coordinates - units in pixels
+            qreal adjusted_x = img_coord_pt.x() - src.cols/2;
+            qreal adjusted_y = src.rows/2 - img_coord_pt.y();
 
             // each (x, y) point is displayed in their appropriate text edits
             // (0, 0) is at the center of the image
-            QString x = QString::number((double) adjusted_x, 'g', 3);
-            QString y = QString::number((double) adjusted_y, 'g', 3);
+            QString x = QString::number((double) adjusted_x, 'g', 6);
+            QString y = QString::number((double) adjusted_y, 'g', 6);
             QString ref = "Keep (" + x + ", " + y + ") as reference point?";
 
             QMessageBox::StandardButton reply;
@@ -767,8 +768,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                 refPtPixel = img_coord_pt;
                 ref_point.setX(adjusted_x);
                 ref_point.setY(adjusted_y);
-                QString rx = QString::number((double)ref_point.x(), 'g', 3);
-                QString ry = QString::number((double)ref_point.y(), 'g', 3);
+                QString rx = QString::number((double)ref_point.x(), 'g', 6);
+                QString ry = QString::number((double)ref_point.y(), 'g', 6);
 
                 QString r = rx + ", " + ry;
                 ui->refpoint_lineEdit->setText(r);
@@ -909,8 +910,13 @@ void MainWindow::displayTipsDetailsOnTextBoxes()
     for (int i = 0; i < pts.size(); i++) {
         QVector2D pt = pts.at(i);
 
-        qreal selected_x = (qreal)(pt.x() - src.cols/2)/(qreal)(src.cols/2);
-        qreal selected_y = (qreal)(src.rows/2 - pt.y())/(qreal)(src.rows/2);
+        // qreal selected_x = (qreal)(pt.x() - src.cols/2)/(qreal)(src.cols/2);
+        // qreal selected_y = (qreal)(src.rows/2 - pt.y())/(qreal)(src.rows/2);
+
+        // new coordinates - units in pixels
+        qreal selected_x = pt.x() - src.cols/2;
+        qreal selected_y = src.rows/2 - pt.y();
+
         qreal x2_x1 = selected_x - ref_point.x();
         qreal y2_y1 = selected_y - ref_point.y();
         qreal length = 0.0, angle = 0.0;
@@ -921,10 +927,10 @@ void MainWindow::displayTipsDetailsOnTextBoxes()
             angle = 360 + angle;
         }
 
-        QString x = QString::number((double) x2_x1, 'g', 3);
-        QString y = QString::number((double) y2_y1, 'g', 3);
-        QString l = QString::number((double) length, 'g', 3); //length
-        QString a = QString::number((double) angle, 'g', 3); //angle
+        QString x = QString::number((double) x2_x1, 'g', 6);
+        QString y = QString::number((double) y2_y1, 'g', 6);
+        QString l = QString::number((double) length, 'g', 6); //length
+        QString a = QString::number((double) angle, 'g', 6); //angle
 
         ui->tipsXcoord_textEdit->append(x);
         ui->tipsYcoord_textEdit->append(y);
@@ -1038,7 +1044,7 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
                 QString imgname = QString::fromStdString(temp);
                 stream << imgname << endl; // write image path name
 
-                //set up column names
+                // set up column names
                 stream << "X,Y";
                 stream << ",Length";
                 stream << ",Angle";
@@ -1048,14 +1054,19 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
                 for (int i = 0; i < pts.size(); i++) {
                     QVector2D pt = pts.at(i);
 
-                    //in automatic detection, below two values will already be in range [-1,1]
+                    // in automatic detection, below two values will already be in range [-1,1]
                     x2_x1 = pt.x() - ref_point.x();
                     y2_y1 = pt.y() - ref_point.y();
 
-                    //if manual selection is true, must convert tip points into range [-1,1]
+                    // if manual selection is true, must convert tip points into range [-1,1]
                     if (manualSelected == true) {
-                        qreal selected_x = (qreal)(pt.x() - src.cols/2)/(qreal)(src.cols/2);
-                        qreal selected_y = (qreal)(src.rows/2 - pt.y())/(qreal)(src.rows/2);
+                        // qreal selected_x = (qreal)(pt.x() - src.cols/2)/(qreal)(src.cols/2);
+                        // qreal selected_y = (qreal)(src.rows/2 - pt.y())/(qreal)(src.rows/2);
+
+                        // new coordinates - units in pixels
+                        qreal selected_x = pt.x() - src.cols/2;
+                        qreal selected_y = src.rows/2 - pt.y();
+
                         x2_x1 = selected_x - ref_point.x();
                         y2_y1 = selected_y - ref_point.y();
                     }
@@ -1340,4 +1351,36 @@ void MainWindow::on_imageBG_checkBox_clicked(bool checked)
     else {
         ui->blackBG_checkBox->setChecked(true);
     }
+}
+
+void MainWindow::on_actionReset_Reference_Point_triggered()
+{
+
+    src = imread(imagePath.toStdString());
+    updateView(src);
+
+    refPtPixel.setX(src.cols/2);
+    refPtPixel.setY(src.rows/2);
+
+    ref_point.setX(0);
+    ref_point.setY(0);
+
+    QString rx = QString::number((double)ref_point.x(), 'g', 6);
+    QString ry = QString::number((double)ref_point.y(), 'g', 6);
+
+    QString r = rx + ", " + ry;
+    ui->refpoint_lineEdit->setText(r);
+    refPointEnabled = false;
+    selected_ref = true;
+    if (revert) {
+        mouseEnabled = true;
+        revert = false;
+    }
+
+
+    bloodVesselObject->deleteAllTipPoints("");
+    ui->tipsXcoord_textEdit->clear();
+    ui->tipsYcoord_textEdit->clear();
+    ui->length_textEdit->clear();
+    ui->angle_textEdit->clear();
 }

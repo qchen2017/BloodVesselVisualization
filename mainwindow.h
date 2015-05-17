@@ -70,6 +70,8 @@ private slots:
     void on_blackBG_checkBox_clicked(bool checked);
     void on_imageBG_checkBox_clicked(bool checked);
 
+    void on_actionReset_Reference_Point_triggered();
+
 private:
     
     Ui::MainWindow *ui;

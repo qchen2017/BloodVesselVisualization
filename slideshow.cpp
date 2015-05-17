@@ -1,7 +1,9 @@
 #include "slideshow.h"
 #include "ui_slideshow.h"
+#include <QMessageBox>
 #include <QCloseEvent>
 #include <iostream>
+#include <QDebug>
 
 using namespace cv;
 using namespace std;
@@ -17,6 +19,7 @@ Slideshow::Slideshow(QWidget *parent) :
     currentSlide = 0;
     tipsFlag = false;
     forAutomatedTips = false;
+    ui->actionSave->setDisabled(true);
 
     ui->imageSlider->setValue(0); //set slider at beginning
     ui->speedSlider->setMaximum(3000); //set max speed to 3 seconds
@@ -32,6 +35,7 @@ Slideshow::~Slideshow()
 
 void Slideshow::nextSlide()
 {
+    //qDebug() << tipsFlag;
     if (!tipsFlag) {
         imageName = imageList.at(currentSlide);
         src = imread(imageName.toStdString());
@@ -76,9 +80,11 @@ void Slideshow::tipsSlideshow(QVector<Mat> images, bool autoTipsFlag)
 {
     tips_mats = images;
     if (autoTipsFlag) {
+        ui->actionSave->setDisabled(true);
         forAutomatedTips = true;
     }
     else {
+        ui->actionSave->setEnabled(true); // only allow saving for manual tips animation
         forAutomatedTips = false;
     }
     //imshow("Slideshow test", tips_mats.at(0));
@@ -169,6 +175,70 @@ void Slideshow::on_playButton_clicked()
     interSlideTimer.start(slideInterval, this);
     nextSlide();
 
+}
+
+void Slideshow::on_actionSave_triggered()
+{
+    // manually select a location to save the .avi
+    QString savePath = QFileDialog::getSaveFileName(this, tr("Save File"), "",tr("AVI (*.avi)"));
+
+    if (!tipsFlag) {
+        //find framesize
+        QString frameName = imageList.at(0);
+        Mat frame = imread(frameName.toStdString());
+        Size s = frame.size();
+        double height = s.height;
+        double width = s.width;
+
+        Size frameSize(static_cast<int>(width), static_cast<int>(height));
+        VideoWriter outVideoFile (savePath.toStdString(), 0, 2, frameSize, true);
+
+        for(int i = 0 ; i < imageList.size(); i++) { //display images/frames to MyVideo, and create output video
+            frameName = imageList.at(i);
+            frame = imread(frameName.toStdString());
+
+            if (!frame.data) { // Check for invalid input
+                cout <<  "Could not open or find the image at " << i << endl ;
+                return;
+            }
+
+            outVideoFile << (frame); //write the frame into the file
+        }
+    }
+    else {
+        Mat frame = tips_mats.at(0);
+        Size s = frame.size();
+        double height = s.height;
+        double width = s.width;
+
+        Size frameSize(static_cast<int>(width), static_cast<int>(height));
+
+        //initialize videowriter
+        //constructor format: Location & name of output file, fourcc codec, framerate (# frames/sec), framesize, isColor
+        VideoWriter outVideoFile (savePath.toStdString(), 0, 2, frameSize, true);
+
+        if (!outVideoFile.isOpened()) { // check if the fourcc is allowed
+            QMessageBox::information(this, "ERROR!", "ERROR: Failed to write the video");
+            // cout << "ERROR: Failed to write the video" << endl;
+            return;
+        }
+
+        for (int i = 0; i < tips_mats.size(); i++) {
+            frame = tips_mats.at(i);
+
+            if (!frame.data) { // check for invalid input
+                QString error = "Could not open or find the image at ";
+                QString num; num.setNum(i);
+                error.append(num);
+                QMessageBox::information(this, "ERROR!", error);
+                // cout <<  "Could not open or find the image at " << i << endl ;
+                return;
+            }
+
+            outVideoFile << (frame);
+            waitKey(100);
+        }
+    }
 }
 
 void Slideshow::on_pauseButton_clicked()

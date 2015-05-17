@@ -414,8 +414,13 @@ void Edge::getTipsCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> >
         for (int y = 0; y < imageIn.rows; y++) {
             int color = imageIn.at<unsigned short>(Point(x,y)); // get pixel color
             if (color != 0) {
-                pt.setX((float)((x*2) - imageIn.cols/2)/(float)(imageIn.cols/2));
-                pt.setY((float)(imageIn.rows/2 - y)/(float)(imageIn.rows/2));
+                // pt.setX((float)((x*2) - imageIn.cols/2)/(float)(imageIn.cols/2));
+                // pt.setY((float)(imageIn.rows/2 - y)/(float)(imageIn.rows/2));
+
+                // new coordinates - units in pixels
+                pt.setX((x*2) - imageIn.cols/2);
+                pt.setY(imageIn.rows/2 - y);
+
                 pts.push_back(pt);
                 pts_temp.push_back(QVector2D(x, y));
             }
@@ -442,8 +447,13 @@ void Edge::convertToPixelCoords(Mat imageIn, unordered_map<string, QVector<QVect
     QVector<QVector2D> pts = tips_map[imgName];
     for (int i = 0; i < pts.size(); i++) {
         QVector2D pt = pts.at(i);
-        int x = (pt.x() * imageIn.cols/2) + (imageIn.cols/2);
-        int y = (imageIn.rows/2) - (pt.y() * imageIn.rows/2);
+        // int x = (pt.x() * imageIn.cols/2) + (imageIn.cols/2);
+        // int y = (imageIn.rows/2) - (pt.y() * imageIn.rows/2);
+
+        // new coordinates
+        int x = (pt.x() + imageIn.cols/2)/2;
+        int y = (imageIn.rows/2 - pt.y());
+
         pt.setX(x);
         pt.setY(y);
         pts[i] = pt;
