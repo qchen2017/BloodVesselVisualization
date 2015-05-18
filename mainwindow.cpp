@@ -731,7 +731,6 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
             qreal x_coord = img_coord_pt.x();
             qreal y_coord = img_coord_pt.y();
-            bloodVesselObject->saveTipPoint(imagePath.toStdString(), x_coord, y_coord);
 
             // adjusted based on reference point
             // qreal selected_x = (qreal)(img_coord_pt.x() - src.cols/2)/(qreal)(src.cols/2);
@@ -772,6 +771,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                 ui->tipsYcoord_textEdit->append(y);
                 ui->length_textEdit->append(l);
                 ui->angle_textEdit->append(a);
+                bloodVesselObject->saveTipPoint(imagePath.toStdString(), x_coord, y_coord);
             }
 
             // display the tips in real time
