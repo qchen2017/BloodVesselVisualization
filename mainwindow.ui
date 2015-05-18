@@ -132,6 +132,9 @@
       <property name="elideMode">
        <enum>Qt::ElideMiddle</enum>
       </property>
+      <property name="usesScrollButtons">
+       <bool>false</bool>
+      </property>
       <widget class="QWidget" name="main_image_control">
        <attribute name="title">
         <string>Main</string>
@@ -808,7 +811,7 @@
      <x>0</x>
      <y>0</y>
      <width>1374</width>
-     <height>22</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -817,6 +820,7 @@
     </property>
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
+    <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="enabled">
@@ -974,6 +978,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
    </property>
   </action>
  </widget>

@@ -9,3 +9,7 @@ Notes:
 
 - Length was right, didn't need to fix, just used the wrong variable when putting into text box. fixed that
 - included the bound check for ref point
+
+NEW:
+    - fixed memory: included delete scene at the beginning of updateView
+    - included exit shortcut

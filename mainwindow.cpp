@@ -692,6 +692,7 @@ void MainWindow::on_imageMode_comboBox_activated(const QString &arg1)
 
 void MainWindow::updateView(Mat imageOut)
 {
+    delete scene;
     // convert Mat to QImage display on graphicsView
     if (ui->imageMode_comboBox->currentText() != "Edge") {
         cv::cvtColor(imageOut, imageOut, cv::COLOR_BGR2RGB);
@@ -1396,4 +1397,9 @@ void MainWindow::on_imageBG_checkBox_clicked(bool checked)
     else {
         ui->blackBG_checkBox->setChecked(true);
     }
+}
+
+void MainWindow::on_actionExit_triggered()
+{
+    exit(1);
 }

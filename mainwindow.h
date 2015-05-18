@@ -71,6 +71,8 @@ private slots:
     void on_blackBG_checkBox_clicked(bool checked);
     void on_imageBG_checkBox_clicked(bool checked);
 
+    void on_actionExit_triggered();
+
 private:
     
     Ui::MainWindow *ui;
@@ -81,6 +83,8 @@ private:
     QPixmap image;
     QImage *imageObject;
     QGraphicsScene *scene;
+
+//    QPainter
 
     Image *imagePtr;
     BloodVessels *bloodVesselObject;
