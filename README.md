@@ -13,3 +13,7 @@ Notes:
 NEW:
     - fixed memory: included delete scene at the beginning of updateView
     - included exit shortcut
+
+NEW:
+    - fixed: detect mouse click outside the image
+        -originally, tip points are being save eventhough it is outside the image
