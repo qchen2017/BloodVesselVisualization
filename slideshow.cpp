@@ -215,7 +215,7 @@ void Slideshow::on_actionSave_triggered()
 
         //initialize videowriter
         //constructor format: Location & name of output file, fourcc codec, framerate (# frames/sec), framesize, isColor
-        VideoWriter outVideoFile (savePath.toStdString(), 0, 2, frameSize, true);
+        VideoWriter outVideoFile (savePath.toStdString(), -1, 2, frameSize, true);
 
         if (!outVideoFile.isOpened()) { // check if the fourcc is allowed
             QMessageBox::information(this, "ERROR!", "ERROR: Failed to write the video");
