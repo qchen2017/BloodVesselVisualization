@@ -255,9 +255,6 @@
           </item>
          </layout>
         </item>
-        <item row="3" column="1">
-         <widget class="QLineEdit" name="threshold_input"/>
-        </item>
         <item row="8" column="0" rowspan="2" colspan="3">
          <layout class="QGridLayout" name="gridLayout">
           <item row="1" column="0">
@@ -314,22 +311,6 @@
           </item>
          </layout>
         </item>
-        <item row="5" column="1" colspan="2">
-         <widget class="QLineEdit" name="threshold_lineEdit">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-          </property>
-         </widget>
-        </item>
         <item row="2" column="0" colspan="2">
          <spacer name="verticalSpacer_3">
           <property name="orientation">
@@ -353,15 +334,24 @@
           </property>
          </widget>
         </item>
+        <item row="5" column="1">
+         <widget class="QSpinBox" name="threshold_spinBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="maximum">
+           <number>255</number>
+          </property>
+         </widget>
+        </item>
        </layout>
        <zorder>threshold_label</zorder>
        <zorder>threshold_horizontalSlider</zorder>
        <zorder>verticalSpacer</zorder>
        <zorder>label</zorder>
-       <zorder>threshold_lineEdit</zorder>
        <zorder>line_2</zorder>
        <zorder>verticalSpacer_3</zorder>
-       <zorder>threshold_input</zorder>
+       <zorder>threshold_spinBox</zorder>
       </widget>
       <widget class="QWidget" name="tab">
        <attribute name="title">

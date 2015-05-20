@@ -18,4 +18,4 @@ NEW:
     - fixed: detect mouse click outside the image
         -originally, tip points are being save eventhough it is outside the image
 
-- added threshold input; only accepts 0-255
+- changed threshold_lineedit to a spinbox; will adjust slider accordingly
