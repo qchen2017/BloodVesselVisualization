@@ -50,6 +50,7 @@ private slots:
     void on_imageFiles_listWidget_itemClicked(QListWidgetItem *item);
     void on_displayOrigImage_pushButton_clicked();
     void on_threshold_horizontalSlider_valueChanged(int value);
+    void on_threshold_spinBox_valueChanged(int value);
     void on_imageMode_comboBox_activated(const QString &arg1);
     
     /* Functions for Manual Tips Detection */
@@ -74,10 +75,6 @@ private slots:
 
 
 
-
-
-    void on_threshold_input_returnPressed();
-
 private:
     
     Ui::MainWindow *ui;
@@ -88,8 +85,6 @@ private:
     QPixmap image;
     QImage *imageObject;
     QGraphicsScene *scene;
-
-//    QPainter
 
     Image *imagePtr;
     BloodVessels *bloodVesselObject;
