@@ -4,12 +4,16 @@
 #include <QMainWindow>
 #include <QBasicTimer>
 #include <QGraphicsView>
+#include <QFileDialog>
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/core/core.hpp"
 
 using namespace std;
+<<<<<<< HEAD
 //using namespace cv;
+=======
+>>>>>>> origin/master
 
 namespace Ui {
 class Slideshow;
@@ -33,6 +37,11 @@ public:
 public slots:
     void on_playButton_clicked();
     void on_pauseButton_clicked();
+    void on_actionSave_triggered();
+
+private slots:
+    void on_imageSlider_sliderMoved(int value);
+    void on_speedSlider_sliderMoved(int value);
 
 private slots:
     void on_imageSlider_sliderMoved(int value);

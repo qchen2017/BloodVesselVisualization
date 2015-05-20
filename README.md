@@ -1,11 +1,21 @@
-Notes: 
+Notes:
 
-1. Codes are now commented and cleaned up.
+- Changed manual/automated coordinates to pixel coordinates:
+    - (0, 0) at the center, between -(image width/height)/2 to +(image width/height)/2
 
-2. We should have different directories like src for source codes, exe for the .exe file, etc.
+- Added "Reset Reference Point" in Menu Bar --> Action for setting the reference point back to (0, 0) (center of image)
 
-Tips detection - coordinates have been fixed; does not work well for images with low contrast.
+- Disabled "Save" for Automated Tips Animation
 
-Animation sequence - need additional UI controls.
+- Length was right, didn't need to fix, just used the wrong variable when putting into text box. fixed that
+- included the bound check for ref point
 
-Branch graph (brute force) - need more efficient and accurate approach.
+NEW:
+    - fixed memory: included delete scene at the beginning of updateView
+    - included exit shortcut
+
+NEW:
+    - fixed: detect mouse click outside the image
+        -originally, tip points are being save eventhough it is outside the image
+
+- changed threshold_lineedit to a spinbox; will adjust slider accordingly

@@ -3,6 +3,7 @@
 #include <QVector2D>
 #include <QVector3D>
 #include <QDebug>
+#include <iostream>
 
 using namespace cv;
 using namespace std;
@@ -47,19 +48,22 @@ void Edge::changeEvent(QEvent *e)
 void Edge::setImageView(Mat imageIn)
 {
     this->src = imageIn;
-    Mat imageOut = setEdge();
+    Mat imageOut = setEdge(src, 0);
     updateView(imageOut);
 
 } // set image View
 
-Mat Edge::setEdge()
+Mat Edge::setEdge(Mat imageIn, int thresh_val)
 {
     Mat edge;
+    Mat imageIn_resize;
 
     //gray scale
-    cvtColor(src, src_gray, cv::COLOR_BGR2GRAY);
+    cv::resize(imageIn, imageIn_resize, cv::Size2i(imageIn.cols/3, imageIn.rows/3));
+    cvtColor(imageIn_resize, src_gray, cv::COLOR_BGR2GRAY);
     blur(src_gray, edge, Size(3,3));
-    Canny(edge, edge, thresh, thresh*3, 3);
+    Canny(edge, edge, thresh_val, thresh_val*3, 3);
+    cv::resize(edge, edge, cv::Size2i(edge.cols*3, edge.rows*3));
     return edge;
 
 } // edge detection function
@@ -85,7 +89,7 @@ void Edge::on_varySlider_valueChanged(int value)
 {
     thresh = value;
     ui->vary_lineEdit->setText(QString::number(value));
-    Mat imageOut = setEdge();
+    Mat imageOut = setEdge(src, value);
     updateView(imageOut);
 } // vary slider
 
@@ -94,7 +98,7 @@ void Edge::on_varySlider_valueChanged(int value)
 /************************************ BLOOD VESSELS' TIPS DETECTION **********************************/
 /*****************************************************************************************************/
 
-Mat Edge::detectTips(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName)
+Mat Edge::detectTips(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName, int thresh_val)
 {
     this->src = imageIn;
 
@@ -102,7 +106,7 @@ Mat Edge::detectTips(Mat imageIn, unordered_map<string, QVector<QVector2D> > &ti
     Mat edge;
     cvtColor(src, src_gray, cv::COLOR_BGR2GRAY);
     blur(src_gray, edge, Size(3,3));
-    Canny(edge, edge, 135, 135*3, 3);
+    Canny(edge, edge, thresh_val, thresh_val*3, 3);
 
     // determine endpoints after thinning
     endp(edge, dst, tips_map, imgName);
@@ -391,26 +395,86 @@ void Edge::endp(Mat &imageIn, Mat &imageOut, unordered_map<string, QVector<QVect
     applylut_1(imageOut,imageOut);
     imageOut = imageOut*255;
 
-    // imshow("Blood Vessel Tips", imageOut); // display tips in a separate window
+    //imshow("Blood Vessel Tips", imageOut); // display tips in a separate window
+    //automated_tips_images.push_back(imageOut);
     getTipsCoords(imageOut, tips_map, imgName);
 }
 
 void Edge::getTipsCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName)
 {
+    QVector<QVector2D> pts_temp;
+    Mat img = imageIn;
+    Mat img_orig_bg = imread(imgName);
+    cvtColor(img_orig_bg, img_orig_bg, cv::COLOR_BGR2GRAY);
+    cv::resize(img_orig_bg, img_orig_bg, cv::Size2i(imageIn.cols, imageIn.rows));
+
     QVector2D pt;
     QVector<QVector2D> pts;
-    for (int x = 0; x < imageIn.cols; x++) {
+    for (int x = 0; x < imageIn.cols/2; x++) {
         for (int y = 0; y < imageIn.rows; y++) {
-            int color = imageIn.at<int>(Point(x,y)); // get pixel color
-            // if pixel is white, then it is a tip
-            if (color == 255) {
-                // transforms coordinates to image coordinates (between -1 and 1, origin at the center)
-                pt.setX((float)(x - imageIn.cols/2)/(float)(imageIn.cols));
-                pt.setY((float)(imageIn.rows/2 - y)/(float)(imageIn.rows));
+            int color = imageIn.at<unsigned short>(Point(x,y)); // get pixel color
+            if (color != 0) {
+                // pt.setX((float)((x*2) - imageIn.cols/2)/(float)(imageIn.cols/2));
+                // pt.setY((float)(imageIn.rows/2 - y)/(float)(imageIn.rows/2));
+
+                // new coordinates - units in pixels
+                pt.setX((x*2) - imageIn.cols/2);
+                pt.setY(imageIn.rows/2 - y);
+
                 pts.push_back(pt);
+                pts_temp.push_back(QVector2D(x, y));
             }
         }
     }
+    tips_map[imgName] = pts;
+
+    for (int i = 0; i < pts_temp.size(); i++) {
+        QVector2D pt = pts_temp.at(i);
+        int a = pt.x();
+        int b = pt.y();
+        Point dot = Point(a*2, b);
+        circle(img, dot, 4.0, Scalar(255, 255, 255), -1, 8);
+        circle(img_orig_bg, dot, 4.0, Scalar(0, 0, 0), -1, 8);
+    }
+
+    automated_tips_images.push_back(img);
+    automated_tips_images_origBG.push_back(img_orig_bg);
+
+}
+
+void Edge::convertToPixelCoords(Mat imageIn, unordered_map<string, QVector<QVector2D> > &tips_map, string imgName)
+{
+    QVector<QVector2D> pts = tips_map[imgName];
+    for (int i = 0; i < pts.size(); i++) {
+        QVector2D pt = pts.at(i);
+        // int x = (pt.x() * imageIn.cols/2) + (imageIn.cols/2);
+        // int y = (imageIn.rows/2) - (pt.y() * imageIn.rows/2);
+
+        // new coordinates
+        int x = (pt.x() + imageIn.cols/2)/2;
+        int y = (imageIn.rows/2 - pt.y());
+
+        pt.setX(x);
+        pt.setY(y);
+        pts[i] = pt;
+    }
 
     tips_map[imgName] = pts;
+
+}
+
+void Edge::getAutoTipsImages(QVector<Mat> &auto_tips_images)
+{
+    auto_tips_images = automated_tips_images;
+}
+
+void Edge::getAutoTipsImagesWithOrigBG(QVector<Mat> &auto_tips_images_origBG)
+{
+    auto_tips_images_origBG = automated_tips_images_origBG;
+}
+
+void Edge::clearImageVectors()
+{
+    automated_tips_images.clear();
+    automated_tips_images_origBG.clear();
 }

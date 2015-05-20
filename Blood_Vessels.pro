@@ -12,27 +12,34 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = Blood_Vessels
 TEMPLATE = app
 
-INCLUDEPATH += /usr/local/include
-LIBS += -L/usr/local/lib \
-         -lopencv_calib3d -lopencv_core -lopencv_features2d -lopencv_flann -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc -lopencv_ml -lopencv_objdetect -lopencv_photo -lopencv_shape -lopencv_stitching -lopencv_superres -lopencv_ts -lopencv_video -lopencv_videoio -lopencv_videostab
+INCLUDEPATH += C:\\OpenCV3.1\\myopencv\\install\\include
+LIBS += -LC:\\OpenCV3.1\\myopencv\\install\\x64\\mingw\\bin \
+        -lopencv_core300 \
+        -lopencv_highgui300 \
+        -lopencv_imgcodecs300 \
+        -lopencv_imgproc300 \
+        -lopencv_videoio300
 
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    bloodvessels.cpp \
     image.cpp \
     edge.cpp \
-	slideshow.cpp
+    bloodvessels.cpp \
+    slideshow.cpp
 
 HEADERS  += mainwindow.h \
-    bloodvessels.h \
     image.h \
-    edge.h \ 
-	slideshow.h
+    edge.h \
+    bloodvessels.h \
+    slideshow.h
 
 FORMS    += mainwindow.ui \
     edge.ui \
-	slideshow.ui
+    bloodvessels.ui \
+    slideshow.ui
 
 DISTFILES += \
-    README.md
+    README.md \
+    TEST CASES.md \
+    TEST CASES.md
