@@ -19,14 +19,6 @@
 using namespace cv;
 using namespace std;
 
-// global variables for slide show
-int trackbarNum, timeDelay, slideNum;
-bool slidePause;
-Mat imageRead;
-QStringList pathlists;
-QString pathname;
-char keyPressed;
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -1067,6 +1059,8 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
 {
     qreal x2_x1;
     qreal y2_y1;
+    unordered_map<string, QVector<QVector2D> >::const_iterator it;
+    QString pathName;
 
     // prompt user for file name and location
     //QString outfile = QFileDialog::getSaveFileName(this, "Save");
@@ -1083,8 +1077,12 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
         if (file.open(QIODevice::WriteOnly)) {
             QTextStream stream(&file);
 
-            // iterate through tips_map to get the tips' coordinates for each image
-            for (auto it = tips_map.begin(); it != tips_map.end(); ++it) {
+            // iterate through tips_map to get the tips' coordinates for each image            
+            for(int i = 0; i < imagePaths.size(); i++) {
+                pathName = imagePaths.at(i);
+
+                it = tips_map.find(pathName.toStdString());
+
                 string temp = it->first; // image path name
 
                 QString imgname = QString::fromStdString(temp);
