@@ -58,14 +58,17 @@ void Slideshow::nextSlide()
     }
 
     else {
-        src = tips_mats.at(currentSlide);
+        //tips_mats has the imagelist images in reverse order, so subtract from # of images
+        int position = numSlides - 1 - currentSlide;
+        src = tips_mats.at(position);
+
         ui->imageSlider->setValue(currentSlide);
 
         //update slide number on line edit
         ui->slideNum_LineEdit->setText(QString::number(currentSlide+1) + "/" + QString::number(numSlides));
 
         //replay slideshow if last image is played
-        if(currentSlide == (tips_mats.size()-1)) {
+        if( position == 0 ) {
             currentSlide = 0;
         }
         else {
@@ -191,7 +194,7 @@ void Slideshow::on_actionSave_triggered()
         double width = s.width;
 
         Size frameSize(static_cast<int>(width), static_cast<int>(height));
-        VideoWriter outVideoFile (savePath.toStdString(), -1, 1, frameSize, true);
+        VideoWriter outVideoFile (savePath.toStdString(), 0, 2, frameSize, true);
 
         for(int i = 0 ; i < imageList.size(); i++) { //display images/frames to MyVideo, and create output video
             frameName = imageList.at(i);
@@ -215,11 +218,7 @@ void Slideshow::on_actionSave_triggered()
 
         //initialize videowriter
         //constructor format: Location & name of output file, fourcc codec, framerate (# frames/sec), framesize, isColor
-
-//        VideoWriter outVideoFile (savePath.toStdString(), -1, 1, frameSize, true);
-
         VideoWriter outVideoFile (savePath.toStdString(), -1, 2, frameSize, true);
-
 
         if (!outVideoFile.isOpened()) { // check if the fourcc is allowed
             QMessageBox::information(this, "ERROR!", "ERROR: Failed to write the video");
@@ -227,7 +226,7 @@ void Slideshow::on_actionSave_triggered()
             return;
         }
 
-        for (int i = 0; i < tips_mats.size(); i++) {
+        for (int i = tips_mats.size()-1; i >= 0; i--) {
             frame = tips_mats.at(i);
 
             if (!frame.data) { // check for invalid input
