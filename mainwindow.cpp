@@ -79,6 +79,10 @@ MainWindow::MainWindow(QWidget *parent) :
     // other initial states
     ui->threshold_lineEdit->setText("0");
     ui->actionUndo_Manual_Detect->setEnabled(false);
+    ui->threshold_input->setValidator(new QIntValidator(0, 255, this));
+    ui->threshold_input->setEnabled(false);
+    ui->threshold_input->setText(QString::number(0));
+
 
     // tool tips for each of the UI components
     ui->imageFiles_listWidget->setToolTip("Loaded images.");
@@ -110,6 +114,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->displayTips_pushButton->setToolTip("Displays the manually selected tips for image currently on display.");
     ui->exportManual_pushButton->setToolTip("Export the manually detected tips of all the images to a file.");
+
+
+
 
     // initialize help window
     static QLabel helpInfo;
@@ -306,6 +313,7 @@ void MainWindow::on_actionOpen_triggered()
     ui->actionReset_Reference_Point->setEnabled(true);
 
     ui->threshold_horizontalSlider->setEnabled(true);
+    ui->threshold_input->setEnabled(true);
     ui->imageMode_comboBox->setEnabled(true);
     ui->displayOrigImage_pushButton->setEnabled(true);
     ui->branchGraph->setEnabled(true);
@@ -497,6 +505,10 @@ void MainWindow::on_actionView_Documentation_triggered()
     helpWin->show();
 }
 
+void MainWindow::on_actionExit_triggered()
+{
+    exit(1);
+}
 /**********************************************************************************/
 /*********************** Main User Interface Functionalities **********************/
 /**********************************************************************************/
@@ -580,7 +592,9 @@ void MainWindow::on_imageFiles_listWidget_itemClicked(QListWidgetItem *item)
     imagePath = imagePaths.at(index); // absolute path of the selected image
     src = imread(imagePath.toStdString());
     int t = thresholds[imagePath.toStdString()];
-    ui->threshold_horizontalSlider->setValue(t);
+
+//    ui->threshold_horizontalSlider->setValue(t);
+    ui->threshold_input->setText(QString::number(t));
     ui->tipsXcoord_textEdit->clear();
     ui->tipsYcoord_textEdit->clear();
     ui->length_textEdit->clear();
@@ -628,10 +642,46 @@ void MainWindow::on_displayOrigImage_pushButton_clicked()
 
 void MainWindow::on_threshold_horizontalSlider_valueChanged(int value)
 {
+//    if (!check_imageOpened()) {
+//        errorMsg();
+//        return;
+//    } // error
+
+//    int index = ui->imageFiles_listWidget->currentRow();
+//    imagePath = imagePaths.at(index);
+
+//    ui->threshold_lineEdit->setText(QString::number(value));
+
+//    thresholds[imagePath.toStdString()] = value; // map threshold to corresponding image
+
+//    // update view depending on mode
+//    Mat img;
+//    if (ui->imageMode_comboBox->currentText() == "Contour") {
+//        contourOut = imagePtr->setImageView(src, value, "contour");
+//        updateView(contourOut);
+//    }
+//    else if (ui->imageMode_comboBox->currentText() == "Edge") {
+//        dst = edgeWin->setEdge(src, value);
+//        updateView(dst);
+//    }
+//    else {
+//        src = imread(imagePath.toStdString());
+//        cv::threshold(src, img, value, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
+//        updateView(img);
+//    }
+}
+
+void MainWindow::on_threshold_input_returnPressed()
+{
     if (!check_imageOpened()) {
         errorMsg();
         return;
     } // error
+
+    QString text = ui->threshold_input->text();
+//    qDebug() << text;
+    int value = text.toDouble();
+//    qDebug() << value;
 
     int index = ui->imageFiles_listWidget->currentRow();
     imagePath = imagePaths.at(index);
@@ -655,7 +705,9 @@ void MainWindow::on_threshold_horizontalSlider_valueChanged(int value)
         cv::threshold(src, img, value, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
         updateView(img);
     }
+
 }
+
 
 void MainWindow::on_imageMode_comboBox_activated(const QString &arg1)
 {
@@ -1399,7 +1451,5 @@ void MainWindow::on_imageBG_checkBox_clicked(bool checked)
     }
 }
 
-void MainWindow::on_actionExit_triggered()
-{
-    exit(1);
-}
+
+

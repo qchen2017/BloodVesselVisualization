@@ -41,6 +41,7 @@ private slots:
     void on_actionReset_triggered();
     void on_actionReset_Reference_Point_triggered();
     void on_actionView_Documentation_triggered();
+    void on_actionExit_triggered();
 
     /* Main User Interface Functionalities */
     void close_opencv_window(string window_name);
@@ -71,7 +72,11 @@ private slots:
     void on_blackBG_checkBox_clicked(bool checked);
     void on_imageBG_checkBox_clicked(bool checked);
 
-    void on_actionExit_triggered();
+
+
+
+
+    void on_threshold_input_returnPressed();
 
 private:
     
