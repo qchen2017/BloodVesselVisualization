@@ -91,6 +91,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->displayOrigImage_pushButton->setToolTip("Displays original image in a new window.");
     ui->imageMode_comboBox->setToolTip("Select between different image modes to display in main window.");
     ui->threshold_horizontalSlider->setToolTip("Adjusts the current image's threshold value.");
+    ui->threshold_input->setToolTip("Adjusts the current image's threshold value (0-255).");
     ui->revertAllChanges_pushButton->setToolTip("Reverts the image to its original state.");
     ui->branchGraph->setToolTip("Displays graph of the blood vessel branches of all the images in a separate window.");
     ui->animate_pushButton->setToolTip("Plays the images in sequence on a separate window.");
