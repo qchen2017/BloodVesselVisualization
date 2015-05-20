@@ -226,7 +226,7 @@ void Slideshow::on_actionSave_triggered()
             return;
         }
 
-        for (int i = tips_mats.size()-1; i >= 0; i--) {
+        for (int i = tips_mats.size()-1; i > -1; i--) {
             frame = tips_mats.at(i);
 
             if (!frame.data) { // check for invalid input

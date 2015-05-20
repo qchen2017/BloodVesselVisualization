@@ -1,1 +1,2 @@
- - Fixed order of printed manual selected data in CSV files - no longer in reverse order
+ - Bug in .avi file - wasn't saving the last two images in the image list
+	- now fixed
