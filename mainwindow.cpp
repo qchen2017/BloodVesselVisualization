@@ -69,7 +69,6 @@ MainWindow::MainWindow(QWidget *parent) :
     /************************************* MAIN WINDOW UI ***************************************/
 
     // other initial states
-    ui->threshold_lineEdit->setText("0");
     ui->actionUndo_Manual_Detect->setEnabled(false);
 
     // tool tips for each of the UI components
@@ -79,6 +78,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->displayOrigImage_pushButton->setToolTip("Displays original image in a new window.");
     ui->imageMode_comboBox->setToolTip("Select between different image modes to display in main window.");
     ui->threshold_horizontalSlider->setToolTip("Adjusts the current image's threshold value.");
+    ui->threshold_spinBox->setToolTip("Change threshold with values 0-255.");
     ui->revertAllChanges_pushButton->setToolTip("Reverts the image to its original state.");
     ui->branchGraph->setToolTip("Displays graph of the blood vessel branches of all the images in a separate window.");
     ui->animate_pushButton->setToolTip("Plays the images in sequence on a separate window.");
@@ -102,6 +102,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->displayTips_pushButton->setToolTip("Displays the manually selected tips for image currently on display.");
     ui->exportManual_pushButton->setToolTip("Export the manually detected tips of all the images to a file.");
+
+
+
 
     // initialize help window
     static QLabel helpInfo;
@@ -298,6 +301,7 @@ void MainWindow::on_actionOpen_triggered()
     ui->actionReset_Reference_Point->setEnabled(true);
 
     ui->threshold_horizontalSlider->setEnabled(true);
+    ui->threshold_spinBox->setEnabled(true);
     ui->imageMode_comboBox->setEnabled(true);
     ui->displayOrigImage_pushButton->setEnabled(true);
     ui->branchGraph->setEnabled(true);
@@ -489,6 +493,10 @@ void MainWindow::on_actionView_Documentation_triggered()
     helpWin->show();
 }
 
+void MainWindow::on_actionExit_triggered()
+{
+    exit(1);
+}
 /**********************************************************************************/
 /*********************** Main User Interface Functionalities **********************/
 /**********************************************************************************/
@@ -572,7 +580,10 @@ void MainWindow::on_imageFiles_listWidget_itemClicked(QListWidgetItem *item)
     imagePath = imagePaths.at(index); // absolute path of the selected image
     src = imread(imagePath.toStdString());
     int t = thresholds[imagePath.toStdString()];
+
     ui->threshold_horizontalSlider->setValue(t);
+    ui->threshold_spinBox->setValue(t);
+
     ui->tipsXcoord_textEdit->clear();
     ui->tipsYcoord_textEdit->clear();
     ui->length_textEdit->clear();
@@ -628,7 +639,7 @@ void MainWindow::on_threshold_horizontalSlider_valueChanged(int value)
     int index = ui->imageFiles_listWidget->currentRow();
     imagePath = imagePaths.at(index);
 
-    ui->threshold_lineEdit->setText(QString::number(value));
+    ui->threshold_spinBox->setValue(value);
 
     thresholds[imagePath.toStdString()] = value; // map threshold to corresponding image
 
@@ -647,6 +658,7 @@ void MainWindow::on_threshold_horizontalSlider_valueChanged(int value)
         cv::threshold(src, img, value, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
         updateView(img);
     }
+
 }
 
 void MainWindow::on_imageMode_comboBox_activated(const QString &arg1)
@@ -1397,7 +1409,32 @@ void MainWindow::on_imageBG_checkBox_clicked(bool checked)
     }
 }
 
-void MainWindow::on_actionExit_triggered()
+void MainWindow::on_threshold_spinBox_valueChanged(int value)
 {
-    exit(1);
+
+    if (!check_imageOpened()) {
+        errorMsg();
+        return;
+    } // error
+
+    int index = ui->imageFiles_listWidget->currentRow();
+    imagePath = imagePaths.at(index);
+
+    thresholds[imagePath.toStdString()] = value; // map threshold to corresponding image
+    ui->threshold_horizontalSlider->setValue(value);
+    // update view depending on mode
+    Mat img;
+    if (ui->imageMode_comboBox->currentText() == "Contour") {
+        contourOut = imagePtr->setImageView(src, value, "contour");
+        updateView(contourOut);
+    }
+    else if (ui->imageMode_comboBox->currentText() == "Edge") {
+        dst = edgeWin->setEdge(src, value);
+        updateView(dst);
+    }
+    else {
+        src = imread(imagePath.toStdString());
+        cv::threshold(src, img, value, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
+        updateView(img);
+    }
 }
