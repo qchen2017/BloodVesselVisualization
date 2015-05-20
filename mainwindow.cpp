@@ -19,13 +19,6 @@
 using namespace cv;
 using namespace std;
 
-// global variables for slide show
-int trackbarNum, timeDelay, slideNum;
-bool slidePause;
-Mat imageRead;
-QStringList pathlists;
-QString pathname;
-char keyPressed;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -119,11 +112,11 @@ MainWindow::MainWindow(QWidget *parent) :
     QString info("Documentations: ");
     QString designDoc("<a style=\"text-decoration: none;\" href=\"https://docs.google.com/a/ucdavis.edu/document/d/1MzFV0zI-LZV6j7tqBh1H0ese6fr5gMz8w4HmYBFGPOk/\"> Design Document</a>");
     QString testDoc("<a style=\"text-decoration: none;\" href=\"https://docs.google.com/a/ucdavis.edu/document/d/1hkfqfILpR68mZEYMrsZXgx0fQEmJTdX65G3fDLlw8MY/\"> Testing Document</a>");
-    
+
     helpInfo.setText("<b>" + info + "</b><br><br>" + designDoc + "<br>" + testDoc);
     helpInfo.setOpenExternalLinks(true);
     helpInfo.setAlignment(Qt::AlignCenter);
- 
+
     QVBoxLayout *vbl = new QVBoxLayout(helpWin);
     vbl->addWidget(&helpInfo);
 
@@ -244,7 +237,7 @@ void MainWindow::on_actionOpen_triggered()
         imagePath = imagePaths.at(i);
 
         // alert user if there's an error with one or more of the images
-        if (imagePath == NULL) { 
+        if (imagePath == NULL) {
             QMessageBox::about(this, tr("Error!"), tr("Error loading file."));
             imagePaths.removeAt(i);
             i--;
@@ -259,7 +252,7 @@ void MainWindow::on_actionOpen_triggered()
                 }
                 src_images.push_back(img);
                 thresholds[imagePath.toStdString()] = 0;
-            }            
+            }
             else {
                 // check if the name of the image hasn't been used as a rename
                 if (renames.find(imagePath) != renames.end()) {
@@ -332,7 +325,7 @@ void MainWindow::on_actionOpen_triggered()
     ui->length_checkBox->setEnabled(true);
     ui->imageBG_checkBox->setEnabled(true);
     ui->blackBG_checkBox->setEnabled(true);
-    
+
     ui->tipsAnimation_pushButton->setEnabled(true);
     ui->exportManual_pushButton->setEnabled(true);
     ui->displayTips_pushButton->setEnabled(true);
@@ -544,7 +537,7 @@ void MainWindow::on_closeImage_toolButton_clicked()
     } // error
 
     int index = 0;
-    
+
     // if there are more than one images currently loaded, display either the image before or after the one that was closed
     if (imagePaths.size() > 1) {
         index = ui->imageFiles_listWidget->currentRow();
@@ -901,7 +894,7 @@ void MainWindow::on_select_ref_point_radioButton_clicked()
     } // error
 
     refPointEnabled = true;
-    
+
     if (mouseEnabled) {
         mouseEnabled = false;
         revert = true; // used to change back in mousePressEvent
@@ -1079,6 +1072,8 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
 {
     qreal x2_x1;
     qreal y2_y1;
+    unordered_map<string, QVector<QVector2D> >::const_iterator it;
+    QString pathName;
 
     // prompt user for file name and location
     //QString outfile = QFileDialog::getSaveFileName(this, "Save");
@@ -1096,7 +1091,11 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
             QTextStream stream(&file);
 
             // iterate through tips_map to get the tips' coordinates for each image
-            for (auto it = tips_map.begin(); it != tips_map.end(); ++it) {
+            for(int i = 0; i < imagePaths.size(); i++) {
+                pathName = imagePaths.at(i);
+
+                it = tips_map.find(pathName.toStdString());
+
                 string temp = it->first; // image path name
 
                 QString imgname = QString::fromStdString(temp);
