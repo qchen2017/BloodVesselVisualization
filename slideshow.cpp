@@ -191,7 +191,7 @@ void Slideshow::on_actionSave_triggered()
         double width = s.width;
 
         Size frameSize(static_cast<int>(width), static_cast<int>(height));
-        VideoWriter outVideoFile (savePath.toStdString(), 0, 2, frameSize, true);
+        VideoWriter outVideoFile (savePath.toStdString(), -1, 1, frameSize, true);
 
         for(int i = 0 ; i < imageList.size(); i++) { //display images/frames to MyVideo, and create output video
             frameName = imageList.at(i);
@@ -215,7 +215,11 @@ void Slideshow::on_actionSave_triggered()
 
         //initialize videowriter
         //constructor format: Location & name of output file, fourcc codec, framerate (# frames/sec), framesize, isColor
+
+//        VideoWriter outVideoFile (savePath.toStdString(), -1, 1, frameSize, true);
+
         VideoWriter outVideoFile (savePath.toStdString(), -1, 2, frameSize, true);
+
 
         if (!outVideoFile.isOpened()) { // check if the fourcc is allowed
             QMessageBox::information(this, "ERROR!", "ERROR: Failed to write the video");
