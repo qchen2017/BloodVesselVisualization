@@ -1,2 +1,1 @@
- - Bug in .avi file - wasn't saving the last two images in the image list
-	- now fixed
+ - [FIXED] After closing images, old images would still appear in the slideshow and cause the slides to be out of order

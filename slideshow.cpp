@@ -59,7 +59,8 @@ void Slideshow::nextSlide()
 
     else {
         //tips_mats has the imagelist images in reverse order, so subtract from # of images
-        int position = numSlides - 1 - currentSlide;
+        int position =  numSlides - 1 - currentSlide;
+
         src = tips_mats.at(position);
 
         ui->imageSlider->setValue(currentSlide);
@@ -82,6 +83,7 @@ void Slideshow::nextSlide()
 void Slideshow::tipsSlideshow(QVector<Mat> images, bool autoTipsFlag)
 {
     tips_mats = images;
+
     if (autoTipsFlag) {
         ui->actionSave->setDisabled(true);
         forAutomatedTips = true;
@@ -122,6 +124,8 @@ void Slideshow::timerEvent(QTimerEvent* event)
 //update view screen in widget
 void Slideshow::updateView(Mat imageOut)
 {
+    delete scene;
+
     if (forAutomatedTips) {
         QImage img((uchar*)imageOut.data, imageOut.cols, imageOut.rows, QImage::Format_Indexed8);
         image = QPixmap::fromImage(img);
@@ -156,6 +160,8 @@ void Slideshow::closeEvent(QCloseEvent *event) {
     tips_mats.clear();
     ui->speedSlider->setValue(1000);
     ui->slideSpeed_LineEdit->setText(QString::number(1000/1000) + " sec");
+
+    outVideoFile.release();
 
     close(); //closes this widget
     event->accept();
@@ -194,7 +200,7 @@ void Slideshow::on_actionSave_triggered()
         double width = s.width;
 
         Size frameSize(static_cast<int>(width), static_cast<int>(height));
-        VideoWriter outVideoFile (savePath.toStdString(), 0, 2, frameSize, true);
+        /*VideoWriter*/ outVideoFile.open(savePath.toStdString(), 0, 2, frameSize, true);
 
         for(int i = 0 ; i < imageList.size(); i++) { //display images/frames to MyVideo, and create output video
             frameName = imageList.at(i);
@@ -225,6 +231,7 @@ void Slideshow::on_actionSave_triggered()
             // cout << "ERROR: Failed to write the video" << endl;
             return;
         }
+
 
         for (int i = tips_mats.size()-1; i > -1; i--) {
             frame = tips_mats.at(i);

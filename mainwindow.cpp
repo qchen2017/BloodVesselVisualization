@@ -563,9 +563,14 @@ void MainWindow::on_closeImage_toolButton_clicked()
     }
 
     // update the containers and other variables related to image files handling
-    if (imageListPtr > 0) {
-        imageListPtr--;
-        src_images.remove(index);
+    if (imageListPtr > 0) {                
+        imageListPtr--;        
+        src_images.remove(index);        
+
+        QString imgname = imagePaths.at(index);
+        //qDebug() << "removing points on " << imgname;
+        bloodVesselObject->deleteAllTipPoints(imgname.toStdString());
+
         imagePaths.removeAt(index);
         tips_map.erase(imagePath.toStdString());
         thresholds.erase(imagePath.toStdString());
@@ -1351,6 +1356,7 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
             bloodVesselObject->tipsAnimation(tips_map_temp);
             QVector<Mat> ims = bloodVesselObject->getTipsImages();
             QVector<Mat> ims2 = bloodVesselObject->getTipsImagesWithOrigBG();
+            qDebug() << ims.size() << ims2.size();
             if (ui->imageBG_checkBox->isChecked()) {
                 ssWin->tipsSlideshow(ims2, false);
             }
@@ -1358,7 +1364,7 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
                 ssWin->tipsSlideshow(ims, false);
             }
             ssWin->setImageList(imagePaths, true);
-            ssWin->show();
+            ssWin->show();            
         }
         else {
             QMessageBox::information(this, tr("Visualization of Directional Blood Vessels"), tr("No points have been selected. Nothing to show here.") );
