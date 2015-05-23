@@ -107,10 +107,14 @@ void BloodVessels::saveTipPoint(string imgpath, qreal x, qreal y)
 {
     // update map
     QVector<QVector2D> temp;
-    if (bv_tips_map.find(imgpath) != bv_tips_map.end()) {
+    if (bv_tips_map.find(imgpath) != bv_tips_map.end()) { // search until the end
+        qDebug() << " find != end";
+        qDebug() << bv_tips_map[imgpath];
         temp = bv_tips_map[imgpath];
+        qDebug() << "temp = " << temp;
     }
     temp.push_back(QVector2D(x, y));
+//    qDebug() << "temp = " << temp;
     bv_tips_map[imgpath] = temp;
 }
 

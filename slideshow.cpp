@@ -35,9 +35,12 @@ Slideshow::~Slideshow()
 
 void Slideshow::nextSlide()
 {
-    //qDebug() << tipsFlag;
+    qDebug() << tipsFlag;
     if (!tipsFlag) {
         imageName = imageList.at(currentSlide);
+        qDebug() << "currentSlide: " << currentSlide;
+        qDebug() << "imageList.at(" << currentSlide << "): " << imageList.at(currentSlide);
+
         src = imread(imageName.toStdString());
 
         //update slider position
@@ -56,16 +59,25 @@ void Slideshow::nextSlide()
 
         updateView(src);
     }
-
     else {
+        // use to display current image
+        qDebug() << "currentSlide: " << currentSlide;
+        qDebug() << "imageList.at(" << currentSlide << "): " << imageList.at(currentSlide);
+        QStringList parts = imageList.at(currentSlide).split("/");
+        int size = parts.size();
+        qDebug() << parts[size-1];
+
         //tips_mats has the imagelist images in reverse order, so subtract from # of images
+
         int position = numSlides - 1 - currentSlide;
+
         src = tips_mats.at(position);
 
         ui->imageSlider->setValue(currentSlide);
 
         //update slide number on line edit
         ui->slideNum_LineEdit->setText(QString::number(currentSlide+1) + "/" + QString::number(numSlides));
+        ui->imageName_lineEdit->setText(parts[size-1]);
 
         //replay slideshow if last image is played
         if( position == 0 ) {
@@ -98,6 +110,11 @@ void Slideshow::setImageList(QStringList in, bool forTips)
 {
 
     imageList = in;
+
+//    for(int i = 0; i < in.size(); i++){
+//        qDebug() << in.at(i);
+//    }
+
     numSlides = imageList.size();
     ui->imageSlider->setMaximum(numSlides); //set max value of slider bar to # of images
     ui->slideNum_LineEdit->setText(QString::number(currentSlide) + "/" + QString::number(numSlides) );
@@ -122,6 +139,7 @@ void Slideshow::timerEvent(QTimerEvent* event)
 //update view screen in widget
 void Slideshow::updateView(Mat imageOut)
 {
+    //delete scene;
     if (forAutomatedTips) {
         QImage img((uchar*)imageOut.data, imageOut.cols, imageOut.rows, QImage::Format_Indexed8);
         image = QPixmap::fromImage(img);
@@ -141,6 +159,7 @@ void Slideshow::updateView(Mat imageOut)
     ui->graphicsView->fitInView(scene->itemsBoundingRect(), Qt::KeepAspectRatioByExpanding);
     ui->graphicsView->setAlignment(Qt::AlignCenter);
     ui->graphicsView->setScene(scene);
+//    delete scene;
 }
 
 //stop slideshow timer when the window is closed
@@ -169,6 +188,7 @@ void Slideshow::on_imageSlider_sliderMoved(int value)
 {
     paused = true;
     currentSlide = value;
+    qDebug() << "value on slider: " << value;
     nextSlide();
 }
 

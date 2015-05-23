@@ -154,7 +154,9 @@ bool MainWindow::imageAlreadyLoaded(QString imp)
         return true;
     }
     return false;
-} // check if an image was already loaded before
+}// check if an image was already loaded before
+
+
 
 /**********************************************************************************/
 /**************************** Main Menu Bar Functions *****************************/
@@ -245,6 +247,7 @@ void MainWindow::on_actionOpen_triggered()
         else {
             // check if image hasn't been loaded before
             if (!imageAlreadyLoaded(imagePath)) {
+
                 ui->imageFiles_listWidget->insertItem(i, imagePath);
                 Mat img = imread(imagePath.toStdString());
                 if (i == 0) {
@@ -736,6 +739,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
             qreal x_coord = img_coord_pt.x();
             qreal y_coord = img_coord_pt.y();
+//            qDebug() << "x_coord = " << x_coord << ", y_coord = " << y_coord;
+
 
             // adjusted based on reference point
             // qreal selected_x = (qreal)(img_coord_pt.x() - src.cols/2)/(qreal)(src.cols/2);
@@ -840,9 +845,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                 }
             }
         }
-
     }
-
 }
 
 void MainWindow::on_bloodVesselsTips_radioButton_toggled(bool checked)

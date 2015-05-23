@@ -78,7 +78,7 @@
       <x>670</x>
       <y>620</y>
       <width>101</width>
-      <height>31</height>
+      <height>21</height>
      </rect>
     </property>
    </widget>
@@ -102,9 +102,9 @@
     <property name="geometry">
      <rect>
       <x>670</x>
-      <y>650</y>
+      <y>640</y>
       <width>101</width>
-      <height>31</height>
+      <height>21</height>
      </rect>
     </property>
    </widget>
@@ -130,6 +130,19 @@
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
+   <widget class="QLineEdit" name="imageName_lineEdit">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>670</x>
+      <y>660</y>
+      <width>101</width>
+      <height>21</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -137,7 +150,7 @@
      <x>0</x>
      <y>0</y>
      <width>796</width>
-     <height>31</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFIle">
