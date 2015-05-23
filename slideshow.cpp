@@ -101,7 +101,7 @@ void Slideshow::setImageList(QStringList in, bool forTips)
 
     imageList = in;
     numSlides = imageList.size();
-    ui->imageSlider->setMaximum(numSlides); //set max value of slider bar to # of images
+    ui->imageSlider->setMaximum(numSlides-1); //set max value of slider bar to # of images
     ui->slideNum_LineEdit->setText(QString::number(currentSlide) + "/" + QString::number(numSlides) );
 
     if (forTips) {

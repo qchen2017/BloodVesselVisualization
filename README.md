@@ -1,1 +1,2 @@
  - [FIXED] After closing images, old images would still appear in the slideshow and cause the slides to be out of order
+ - [FIXED] Slideshow's slidebar maximum value was off by one
