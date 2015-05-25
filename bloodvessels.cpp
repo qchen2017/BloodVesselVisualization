@@ -2,6 +2,7 @@
 #include "ui_bloodvessels.h"
 #include <QVector3D>
 #include <QDebug>
+#include <list>
 
 using namespace cv;
 using namespace std;
@@ -39,8 +40,15 @@ void BloodVessels::tipsAnimation(unordered_map<string, QVector<QVector2D> > tips
     QVector2D pt;
     int x, y;
 
-    for(auto it = tips_map.begin(); it != tips_map.end(); ++it) {
+    list<string> ordered_keys;
+    for (auto it = tips_map.begin(); it != tips_map.end(); ++it) {
         string temp = it->first; // image path name
+        ordered_keys.push_back(temp);
+    }
+    ordered_keys.sort();
+
+    for (list<string>::const_iterator iterator = ordered_keys.begin(), end = ordered_keys.end(); iterator != end; ++iterator) {
+        string temp = *iterator;
         QVector<QVector2D> pts = tips_map[temp]; // coordinates associated with image
         img = imread(temp);
         img_orig_bg = imread(temp); // orig image as background
@@ -57,6 +65,8 @@ void BloodVessels::tipsAnimation(unordered_map<string, QVector<QVector2D> > tips
         cv::resize(img, img, cv::Size2i(img.cols/3, img.rows/3));
         tips_images.push_back(img);
         tips_images_orig_bg.push_back(img_orig_bg);
+        QString imgpath = QString::fromStdString(temp);
+        tips_images_paths.append(imgpath);
     }
 }
 
@@ -68,6 +78,11 @@ QVector<Mat> BloodVessels::getTipsImages()
 QVector<Mat> BloodVessels::getTipsImagesWithOrigBG()
 {
     return tips_images_orig_bg;
+}
+
+QStringList BloodVessels::getTipsImagesPaths()
+{
+    return tips_images_paths;
 }
 
 void BloodVessels::clearImageVectors()
@@ -198,4 +213,5 @@ void BloodVessels::updateView(Mat imageOut)
     scene->addPixmap(image);
     scene->setSceneRect(0, 0, image.width(), image.height());
     ui->graphicsView->setScene(scene);
+
 } // update graphic view

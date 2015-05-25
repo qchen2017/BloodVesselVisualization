@@ -34,11 +34,13 @@ private slots:
     /* Menu Bar Functions */
     void on_actionOpen_triggered();
     void on_actionSave_triggered();
+    void on_actionExit_triggered();
     void on_actionFit_to_Window_triggered();
     void on_actionZoom_In__triggered();
     void on_actionZoom_Out_triggered();
     void on_actionUndo_Manual_Detect_triggered();
     void on_actionReset_triggered();
+    void on_actionReset_Reference_Point_triggered();
     void on_actionView_Documentation_triggered();
 
     /* Main User Interface Functionalities */
@@ -48,6 +50,7 @@ private slots:
     void on_imageFiles_listWidget_itemClicked(QListWidgetItem *item);
     void on_displayOrigImage_pushButton_clicked();
     void on_threshold_horizontalSlider_valueChanged(int value);
+    void on_threshold_spinBox_valueChanged(int value);
     void on_imageMode_comboBox_activated(const QString &arg1);
     
     /* Functions for Manual Tips Detection */
@@ -69,8 +72,6 @@ private slots:
     void on_tipsAnimation_pushButton_clicked();
     void on_blackBG_checkBox_clicked(bool checked);
     void on_imageBG_checkBox_clicked(bool checked);
-
-    void on_actionReset_Reference_Point_triggered();
 
 private:
     

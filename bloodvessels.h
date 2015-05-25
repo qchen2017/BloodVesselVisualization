@@ -37,6 +37,7 @@ public:
     void tipsAnimation(unordered_map<string, QVector<QVector2D> > tips_map);
     QVector<cv::Mat> getTipsImages();  
     QVector<cv::Mat> getTipsImagesWithOrigBG();
+    QStringList getTipsImagesPaths();
     void clearImageVectors();
 
 protected:
@@ -55,6 +56,7 @@ private:
     unordered_map<string, QVector<QVector2D> > bv_tips_map; // maps selected tips to image
     QVector<cv::Mat> tips_images;
     QVector<cv::Mat> tips_images_orig_bg;
+    QStringList tips_images_paths;
 
 };
 
