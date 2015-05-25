@@ -161,8 +161,6 @@ void Slideshow::closeEvent(QCloseEvent *event) {
     ui->speedSlider->setValue(1000);
     ui->slideSpeed_LineEdit->setText(QString::number(1000/1000) + " sec");
 
-    outVideoFile.release();
-
     close(); //closes this widget
     event->accept();
 }
@@ -200,7 +198,7 @@ void Slideshow::on_actionSave_triggered()
         double width = s.width;
 
         Size frameSize(static_cast<int>(width), static_cast<int>(height));
-        /*VideoWriter*/ outVideoFile.open(savePath.toStdString(), 0, 2, frameSize, true);
+        VideoWriter outVideoFile (savePath.toStdString(), -1, 2, frameSize, true);
 
         for(int i = 0 ; i < imageList.size(); i++) { //display images/frames to MyVideo, and create output video
             frameName = imageList.at(i);
