@@ -561,20 +561,13 @@ void MainWindow::on_closeImage_toolButton_clicked()
     // update the containers and other variables related to image files handling
     if (imageListPtr > 0) {
         imageListPtr--;
-
-
-        src_images.remove(index);
-
-
         QString imgname = imagePaths.at(index);
-        //qDebug() << "removing points on " << imgname;
         bloodVesselObject->deleteAllTipPoints(imgname.toStdString());
-
-        imagePaths.removeAt(index);
-        bloodVesselObject->deleteAllTipPoints(imagePath.toStdString());
-        tips_map.erase(imagePath.toStdString());
-        thresholds.erase(imagePath.toStdString());
+        tips_map.erase(imgname.toStdString());
+        thresholds.erase(imgname.toStdString());
         ui->imageFiles_listWidget->takeItem(index);
+        imagePaths.removeAt(index);
+        src_images.remove(index);
     }
 
 } // close current image on display
@@ -1098,8 +1091,7 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
 {
     qreal x2_x1;
     qreal y2_y1;
-    unordered_map<string, QVector<QVector2D> >::const_iterator it;
-    QString pathName;
+
 
     // prompt user for file name and location
     //QString outfile = QFileDialog::getSaveFileName(this, "Save");
@@ -1116,12 +1108,17 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
         if (file.open(QIODevice::WriteOnly)) {
             QTextStream stream(&file);
 
-            // iterate through tips_map to get the tips' coordinates for each image
-            for (int i = 0; i < imagePaths.size(); i++) {
-                pathName = imagePaths.at(i);
-                it = tips_map.find(pathName.toStdString());
+            // sort keys
+            list<string> ordered_keys;
+            for (auto it = tips_map.begin(); it != tips_map.end(); ++it) {
                 string temp = it->first; // image path name
+                ordered_keys.push_back(temp);
+            }
+            ordered_keys.sort();
 
+            // iterate through tips_map to get the tips' coordinates for each image
+            for (list<string>::const_iterator iterator = ordered_keys.begin(), end = ordered_keys.end(); iterator != end; ++iterator) {
+                string temp = *iterator;
                 QString imgname = QString::fromStdString(temp);
                 stream << imgname << endl; // write image path name
 

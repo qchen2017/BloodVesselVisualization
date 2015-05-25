@@ -40,6 +40,7 @@ void BloodVessels::tipsAnimation(unordered_map<string, QVector<QVector2D> > tips
     QVector2D pt;
     int x, y;
 
+    // sort keys
     list<string> ordered_keys;
     for (auto it = tips_map.begin(); it != tips_map.end(); ++it) {
         string temp = it->first; // image path name
