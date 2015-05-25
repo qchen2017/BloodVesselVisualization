@@ -56,8 +56,6 @@ private:
     QPixmap image;
     QGraphicsScene *scene;
 
-    cv::VideoWriter outVideoFile;
-
 };
 
 #endif // SLIDESHOW_H
