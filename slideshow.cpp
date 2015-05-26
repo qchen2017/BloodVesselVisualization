@@ -120,6 +120,7 @@ void Slideshow::timerEvent(QTimerEvent* event)
 void Slideshow::updateView(Mat imageOut)
 {
     delete scene;
+//    Mat dst;
     if (forAutomatedTips) {
         QImage img((uchar*)imageOut.data, imageOut.cols, imageOut.rows, QImage::Format_Indexed8);
         image = QPixmap::fromImage(img);
@@ -127,9 +128,10 @@ void Slideshow::updateView(Mat imageOut)
     else {
         cvtColor(imageOut, imageOut_gray, cv::COLOR_BGR2GRAY);
         blur(imageOut_gray, imageOut_gray, Size(3,3));
-        QImage img((uchar*)imageOut_gray.data, imageOut_gray.cols, imageOut_gray.rows, QImage::Format_Indexed8);
-        image = QPixmap::fromImage(img);
+//        cv::resize(imageOut_gray, dst, cv::Size2i(imageOut_gray.cols/3, imageOut_gray.rows/3));
 
+        QImage img((uchar*)imageOut_gray.data, imageOut_gray.cols, imageOut_gray.rows, QImage::Format_Indexed8);     
+        image = QPixmap::fromImage(img);
     }
 
     scene = new QGraphicsScene(this);
@@ -137,9 +139,10 @@ void Slideshow::updateView(Mat imageOut)
     scene->setSceneRect(0, 0, image.width(), image.height());
 
     //fit image to screen and display
+    ui->graphicsView->setScene(scene);
     ui->graphicsView->fitInView(scene->itemsBoundingRect(), Qt::KeepAspectRatioByExpanding);
     ui->graphicsView->setAlignment(Qt::AlignCenter);
-    ui->graphicsView->setScene(scene);
+
 }
 
 //stop slideshow timer when the window is closed
