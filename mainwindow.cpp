@@ -104,7 +104,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->displayTips_pushButton->setToolTip("Displays the manually selected tips for image currently on display.");
     ui->exportManual_pushButton->setToolTip("Export the manually detected tips of all the images to a file.");
 
-
+    ui->currentImage->setMaximumWidth(200);
 
 
     // initialize help window

@@ -26,6 +26,9 @@ Slideshow::Slideshow(QWidget *parent) :
     ui->speedSlider->setMinimum(1);
     ui->speedSlider->setValue(slideInterval); //initialize slider at position 1000
     ui->slideSpeed_LineEdit->setText(QString::number(slideInterval/1000) + " sec"); //set speed line edit
+    ui->pauseButton->setEnabled(false);
+    ui->imageSlider->setEnabled(false);
+    ui->speedSlider->setEnabled(false);
 }
 
 Slideshow::~Slideshow()
@@ -126,6 +129,7 @@ void Slideshow::updateView(Mat imageOut)
         blur(imageOut_gray, imageOut_gray, Size(3,3));
         QImage img((uchar*)imageOut_gray.data, imageOut_gray.cols, imageOut_gray.rows, QImage::Format_Indexed8);
         image = QPixmap::fromImage(img);
+
     }
 
     scene = new QGraphicsScene(this);
@@ -171,8 +175,10 @@ void Slideshow::on_playButton_clicked()
 {
     paused = false;
     interSlideTimer.start(slideInterval, this);
+    ui->pauseButton->setEnabled(true);
+    ui->imageSlider->setEnabled(true);
+    ui->speedSlider->setEnabled(true);
     nextSlide();
-
 }
 
 void Slideshow::on_actionSave_triggered()
