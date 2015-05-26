@@ -5,6 +5,7 @@
 #include <QBasicTimer>
 #include <QGraphicsView>
 #include <QFileDialog>
+#include <unordered_map>
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/core/core.hpp"
@@ -25,6 +26,7 @@ public:
 
     void nextSlide();
     void setImageList(QStringList in, bool forTips);
+//    void setTipsMap(unordered_map<string, QVector<QVector2D> > tipsMap);
     void timerEvent(QTimerEvent* event);
     void updateView(cv::Mat imageOut);
     void closeEvent(QCloseEvent* event);
@@ -49,6 +51,10 @@ private:
     bool tipsFlag;
     bool forAutomatedTips;
     QVector<cv::Mat> tips_mats;
+
+    unordered_map<string, QVector<QVector2D> > tips_map;
+
+
 
     QStringList imageList;
     QString imageName;
