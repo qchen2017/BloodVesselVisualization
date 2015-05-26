@@ -51,10 +51,6 @@ private:
     bool forAutomatedTips;
     QVector<cv::Mat> tips_mats;
 
-    unordered_map<string, QVector<QVector2D> > tips_map;
-
-
-
     QStringList imageList;
     QString imageName;
     cv::Mat imageOut_gray;

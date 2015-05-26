@@ -1170,7 +1170,7 @@ void MainWindow::on_exportManual_pushButton_clicked() {
     } // error
 
     manualSelected = true;
-    unordered_map<string, QVector<QVector2D> > tips_map;
+//    unordered_map<string, QVector<QVector2D> > tips_map;
     bloodVesselObject->getManuallySelectedTips(tips_map);
     writeTipsToFile(tips_map);
 } // export the manually detected tips
@@ -1354,14 +1354,12 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
         automatedTipsAnimation(automatedTipsMats, tips_map_temp);
         ssWin->tipsSlideshow(automatedTipsMats, true);
         ssWin->setImageList(imagePaths, true);
-//        ssWin->setTipsMap(tips_map_temp);
         ssWin->show();
     }
     // only manual is checked
     else if (ui->manual_checkBox->isChecked() && !ui->automated_checkBox->isChecked()) {
         if (!bloodVesselObject->isEmpty()) {
             bloodVesselObject->getManuallySelectedTips(tips_map_temp);
-//            bloodVesselObject->tipsAnimation(tips_map_temp);
             bloodVesselObject->tipsAnimation(tips_map_temp, imagePaths);
             QVector<Mat> ims = bloodVesselObject->getTipsImages();
             QVector<Mat> ims2 = bloodVesselObject->getTipsImagesWithOrigBG();
@@ -1401,8 +1399,7 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
         }
         ssWin->tipsSlideshow(automatedTipsMats, true);
         ssWin->setImageList(imagePaths, true);
-//        ssWin->setTipsMap(tips_map_temp);
-        qDebug() << "mainwindow imagePaths = " << imagePaths << endl;
+//        qDebug() << "mainwindow imagePaths = " << imagePaths << endl;
 
 
         ssWin->show();

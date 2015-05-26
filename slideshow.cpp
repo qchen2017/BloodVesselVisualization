@@ -26,7 +26,6 @@ Slideshow::Slideshow(QWidget *parent) :
     ui->speedSlider->setMinimum(1);
     ui->speedSlider->setValue(slideInterval); //initialize slider at position 1000
     ui->slideSpeed_LineEdit->setText(QString::number(slideInterval/1000) + " sec"); //set speed line edit
-    ui->currentImage_lineEdit->clear();
 }
 
 Slideshow::~Slideshow()
@@ -36,7 +35,7 @@ Slideshow::~Slideshow()
 
 void Slideshow::nextSlide()
 {
-    qDebug() << tipsFlag;
+
     if (!tipsFlag) {
         imageName = imageList.at(currentSlide);
         src = imread(imageName.toStdString());
@@ -46,10 +45,6 @@ void Slideshow::nextSlide()
 
         //update slide number on line edit
         ui->slideNum_LineEdit->setText(QString::number(currentSlide+1) + "/" + QString::number(numSlides));
-        QStringList parts = imageList.at(currentSlide).split("/");
-        int size = parts.size();
-        ui->currentImage_lineEdit->setText(parts[size-1]);
-        //replay slideshow if last image is played
         if(currentSlide == (imageList.size()-1)) {
             currentSlide = 0;
         }
@@ -60,24 +55,13 @@ void Slideshow::nextSlide()
         updateView(src);
     }
     else {
-        // use to display current image
-        qDebug() << "currentSlide: " << currentSlide;
-        qDebug() << "imageList.at(" << currentSlide << "): " << imageList.at(currentSlide);
-
-        //tips_mats has the imagelist images in reverse order, so subtract from # of images
-
         src = tips_mats.at(currentSlide);
         ui->imageSlider->setValue(currentSlide);
 
         //update slide number on line edit
         ui->slideNum_LineEdit->setText(QString::number(currentSlide+1) + "/" + QString::number(numSlides));
 
-        // shows the current image's name only (not absolute path)
-        QStringList parts = imageList.at(currentSlide).split("/");
-        int size = parts.size();
-        ui->currentImage_lineEdit->setText(parts[size-1]);
-
-        if(currentSlide == imageList.size() - 1){
+        if(currentSlide == tips_mats.size() - 1){
             currentSlide = 0;
         }
         else{
@@ -107,7 +91,7 @@ void Slideshow::setImageList(QStringList in, bool forTips)
 {
 
     imageList = in;
-    numSlides = imageList.size();
+    numSlides = tips_mats.size();
     ui->imageSlider->setMaximum(numSlides-1); //set max value of slider bar to # of images
 
     ui->slideNum_LineEdit->setText(QString::number(currentSlide) + "/" + QString::number(numSlides) );
@@ -132,7 +116,7 @@ void Slideshow::timerEvent(QTimerEvent* event)
 //update view screen in widget
 void Slideshow::updateView(Mat imageOut)
 {
-    //delete scene;
+    delete scene;
     if (forAutomatedTips) {
         QImage img((uchar*)imageOut.data, imageOut.cols, imageOut.rows, QImage::Format_Indexed8);
         image = QPixmap::fromImage(img);
@@ -152,7 +136,6 @@ void Slideshow::updateView(Mat imageOut)
     ui->graphicsView->fitInView(scene->itemsBoundingRect(), Qt::KeepAspectRatioByExpanding);
     ui->graphicsView->setAlignment(Qt::AlignCenter);
     ui->graphicsView->setScene(scene);
-//    delete scene;
 }
 
 //stop slideshow timer when the window is closed
@@ -168,7 +151,6 @@ void Slideshow::closeEvent(QCloseEvent *event) {
     tips_mats.clear();
     ui->speedSlider->setValue(1000);
     ui->slideSpeed_LineEdit->setText(QString::number(1000/1000) + " sec");
-    ui->currentImage_lineEdit->clear();
 
     close(); //closes this widget
     event->accept();
@@ -182,7 +164,6 @@ void Slideshow::on_imageSlider_sliderMoved(int value)
 {
     paused = true;
     currentSlide = value;
-    qDebug() << "value on slider: " << value;
     nextSlide();
 }
 
