@@ -39,12 +39,6 @@ void Slideshow::nextSlide()
     qDebug() << tipsFlag;
     if (!tipsFlag) {
         imageName = imageList.at(currentSlide);
-<<<<<<< HEAD
-        qDebug() << "currentSlide: " << currentSlide;
-        qDebug() << "imageList.at(" << currentSlide << "): " << imageList.at(currentSlide);
-=======
->>>>>>> origin/master
-
         src = imread(imageName.toStdString());
 
         //update slider position
@@ -69,25 +63,14 @@ void Slideshow::nextSlide()
         // use to display current image
         qDebug() << "currentSlide: " << currentSlide;
         qDebug() << "imageList.at(" << currentSlide << "): " << imageList.at(currentSlide);
-        QStringList parts = imageList.at(currentSlide).split("/");
-        int size = parts.size();
-        qDebug() << parts[size-1];
 
         //tips_mats has the imagelist images in reverse order, so subtract from # of images
-<<<<<<< HEAD
 
-        int position = numSlides - 1 - currentSlide;
-
-        src = tips_mats.at(position);
-
-=======
         src = tips_mats.at(currentSlide);
->>>>>>> origin/master
         ui->imageSlider->setValue(currentSlide);
 
         //update slide number on line edit
         ui->slideNum_LineEdit->setText(QString::number(currentSlide+1) + "/" + QString::number(numSlides));
-        ui->imageName_lineEdit->setText(parts[size-1]);
 
         // shows the current image's name only (not absolute path)
         QStringList parts = imageList.at(currentSlide).split("/");
