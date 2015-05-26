@@ -293,6 +293,10 @@ void MainWindow::on_actionOpen_triggered()
     // set highlighted item in image files list to be the first item on the list
     ui->imageFiles_listWidget->setCurrentItem(ui->imageFiles_listWidget->item(0));
 
+    QStringList parts = imagePaths.at(0).split("/");
+    int parts_size = parts.size();
+    ui->currentImage->setText(parts[parts_size - 1]);
+
     dummyImgOn = false;
     refPtPixel.setX(src.cols/2);
     refPtPixel.setY(src.rows/2);
@@ -582,6 +586,11 @@ void MainWindow::on_imageFiles_listWidget_itemClicked(QListWidgetItem *item)
     item->setSelected(true); // the selected image from the list
     int index = ui->imageFiles_listWidget->currentRow(); // index of the selected image
     imagePath = imagePaths.at(index); // absolute path of the selected image
+
+    QStringList parts = imagePaths.at(index).split("/");
+    int parts_size = parts.size();
+    ui->currentImage->setText(parts[parts_size - 1]);
+
     src = imread(imagePath.toStdString());
     int t = thresholds[imagePath.toStdString()];
 
@@ -815,13 +824,13 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                                               QMessageBox::Yes|QMessageBox::No);
                 if (reply == QMessageBox::Yes) {
                     refPtPixel = img_coord_pt;
-                    qDebug() << "refPtPixel = " << refPtPixel;
+//                    qDebug() << "refPtPixel = " << refPtPixel;
 
 
                     ref_point.setX(selected_x);
                     ref_point.setY(selected_y);
 
-                    qDebug() << "ref_point = " << ref_point;
+//                    qDebug() << "ref_point = " << ref_point;
 
                     QString rx = QString::number((double)ref_point.x(), 'g', 6);
                     QString ry = QString::number((double)ref_point.y(), 'g', 6);
@@ -1345,15 +1354,18 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
         automatedTipsAnimation(automatedTipsMats, tips_map_temp);
         ssWin->tipsSlideshow(automatedTipsMats, true);
         ssWin->setImageList(imagePaths, true);
+//        ssWin->setTipsMap(tips_map_temp);
         ssWin->show();
     }
     // only manual is checked
     else if (ui->manual_checkBox->isChecked() && !ui->automated_checkBox->isChecked()) {
         if (!bloodVesselObject->isEmpty()) {
             bloodVesselObject->getManuallySelectedTips(tips_map_temp);
-            bloodVesselObject->tipsAnimation(tips_map_temp);
+//            bloodVesselObject->tipsAnimation(tips_map_temp);
+            bloodVesselObject->tipsAnimation(tips_map_temp, imagePaths);
             QVector<Mat> ims = bloodVesselObject->getTipsImages();
             QVector<Mat> ims2 = bloodVesselObject->getTipsImagesWithOrigBG();
+
             if (ui->imageBG_checkBox->isChecked()) {
                 ssWin->tipsSlideshow(ims2, false);
             }
@@ -1361,7 +1373,7 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
                 ssWin->tipsSlideshow(ims, false);
             }
             ssWin->setImageList(imagePaths, true);
-            ssWin->show();
+            ssWin->show();            
         }
         else {
             QMessageBox::information(this, tr("Visualization of Directional Blood Vessels"), tr("No points have been selected. Nothing to show here.") );
@@ -1389,6 +1401,10 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
         }
         ssWin->tipsSlideshow(automatedTipsMats, true);
         ssWin->setImageList(imagePaths, true);
+//        ssWin->setTipsMap(tips_map_temp);
+        qDebug() << "mainwindow imagePaths = " << imagePaths << endl;
+
+
         ssWin->show();
     }
 } // tips animation

@@ -130,7 +130,7 @@
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
-   <widget class="QLineEdit" name="imageName_lineEdit">
+   <widget class="QLineEdit" name="currentImage_lineEdit">
     <property name="enabled">
      <bool>true</bool>
     </property>

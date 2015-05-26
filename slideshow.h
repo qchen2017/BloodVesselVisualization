@@ -5,6 +5,7 @@
 #include <QBasicTimer>
 #include <QGraphicsView>
 #include <QFileDialog>
+#include <unordered_map>
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/core/core.hpp"
@@ -49,6 +50,10 @@ private:
     bool tipsFlag;
     bool forAutomatedTips;
     QVector<cv::Mat> tips_mats;
+
+    unordered_map<string, QVector<QVector2D> > tips_map;
+
+
 
     QStringList imageList;
     QString imageName;

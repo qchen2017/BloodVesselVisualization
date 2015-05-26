@@ -2,6 +2,7 @@
 #include "ui_bloodvessels.h"
 #include <QVector3D>
 #include <QDebug>
+#include <iostream>
 
 using namespace cv;
 using namespace std;
@@ -32,31 +33,38 @@ void BloodVessels::changeEvent(QEvent *e)
     }
 }
 
-void BloodVessels::tipsAnimation(unordered_map<string, QVector<QVector2D> > tips_map)
+void BloodVessels::tipsAnimation(unordered_map<string, QVector<QVector2D> > tips_map, QStringList imagePaths)
 {
 
     Mat img, img_orig_bg;
     QVector2D pt;
     int x, y;
 
-    for(auto it = tips_map.begin(); it != tips_map.end(); ++it) {
-        string temp = it->first; // image path name
-        QVector<QVector2D> pts = tips_map[temp]; // coordinates associated with image
-        img = imread(temp);
-        img_orig_bg = imread(temp); // orig image as background
-        img.setTo(cv::Scalar(0, 0, 0)); // fill image with black
-        for (int i = 0; i < pts.size(); i++) {
-           pt = pts.at(i);
-           x = pt.x();
-           y = pt.y();
-           Point dot = Point(x, y);
-           circle(img, dot, 20.0, Scalar(105, 105, 105), -1, 8);
-           circle(img_orig_bg, dot, 20.0, Scalar(105, 105, 105), -1, 8);
+    for(int i = 0; i < imagePaths.size(); i++){
+        //qDebug() << imagePaths[i];
 
+        string temp = imagePaths[i].toStdString();
+//        cout << "image = " << temp << endl;
+        if (tips_map.find(temp) != tips_map.end()){ // only store if tips are selected
+             QVector<QVector2D> pts = tips_map[temp];
+             img = imread(temp);
+             img_orig_bg = imread(temp); // orig image as background
+             img.setTo(cv::Scalar(0, 0, 0)); // fill image with black
+             for (int i = 0; i < pts.size(); i++) {
+                 pt = pts.at(i);
+                 x = pt.x();
+                 y = pt.y();
+                 Point dot = Point(x, y);
+                 cout << "tipsAnimation dot = " << dot << endl;
+                 circle(img, dot, 20.0, Scalar(105, 105, 105), -1, 8);
+                 circle(img_orig_bg, dot, 20.0, Scalar(105, 105, 105), -1, 8);
+
+             }
+             cv::resize(img, img, cv::Size2i(img.cols/3, img.rows/3));
+             tips_images.push_back(img);
+             tips_images_orig_bg.push_back(img_orig_bg);
         }
-        cv::resize(img, img, cv::Size2i(img.cols/3, img.rows/3));
-        tips_images.push_back(img);
-        tips_images_orig_bg.push_back(img_orig_bg);
+
     }
 }
 
@@ -107,11 +115,18 @@ void BloodVessels::saveTipPoint(string imgpath, qreal x, qreal y)
 {
     // update map
     QVector<QVector2D> temp;
+<<<<<<< HEAD
     if (bv_tips_map.find(imgpath) != bv_tips_map.end()) { // search until the end
         qDebug() << " find != end";
         qDebug() << bv_tips_map[imgpath];
         temp = bv_tips_map[imgpath];
         qDebug() << "temp = " << temp;
+=======
+
+    if (bv_tips_map.find(imgpath) != bv_tips_map.end()) {
+        temp = bv_tips_map[imgpath];
+
+>>>>>>> origin/master
     }
     temp.push_back(QVector2D(x, y));
 //    qDebug() << "temp = " << temp;
@@ -139,7 +154,8 @@ void BloodVessels::deleteAllTipPoints(string imgpath)
     }
     else {
         unordered_map<string, QVector<QVector2D> > bv_tips_map_cleared;
-        bv_tips_map = bv_tips_map_cleared;
+        //bv_tips_map = bv_tips_map_cleared;
+        bv_tips_map.clear();
     }
 }
 
