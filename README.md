@@ -1,6 +1,8 @@
 Notes:
 
-- Lexicographical order for exporting data and tips animation
+- Able to resize window
+
+- Fixed order (by insertion order) for exporting data and tips animation
 
 - Added line edit that displays the image path to slideshow ui
 

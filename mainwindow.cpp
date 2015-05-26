@@ -1108,60 +1108,54 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
         if (file.open(QIODevice::WriteOnly)) {
             QTextStream stream(&file);
 
-            // sort keys
-            list<string> ordered_keys;
-            for (auto it = tips_map.begin(); it != tips_map.end(); ++it) {
-                string temp = it->first; // image path name
-                ordered_keys.push_back(temp);
-            }
-            ordered_keys.sort();
+           for (int i = 0; i < imagePaths.size(); i++) {
 
-            // iterate through tips_map to get the tips' coordinates for each image
-            for (list<string>::const_iterator iterator = ordered_keys.begin(), end = ordered_keys.end(); iterator != end; ++iterator) {
-                string temp = *iterator;
-                QString imgname = QString::fromStdString(temp);
-                stream << imgname << endl; // write image path name
+                QString imgname = imagePaths.at(i);
+                string temp = imgname.toStdString();
+                if (tips_map.find(temp) != tips_map.end()) {
+                    stream << imgname << endl; // write image path name
 
-                // set up column names
-                stream << "X,Y";
-                stream << ",Length";
-                stream << ",Angle";
-                stream << endl;
-
-                QVector<QVector2D> pts = tips_map[temp]; // coordinates associated with image
-                for (int i = 0; i < pts.size(); i++) {
-                    QVector2D pt = pts.at(i);
-
-                    // in automatic detection, below two values will already be in range [-1,1]
-                    x2_x1 = pt.x() - ref_point.x();
-                    y2_y1 = pt.y() - ref_point.y();
-
-                    // if manual selection is true, must convert tip points into range [-1,1]
-                    if (manualSelected == true) {
-                        // qreal selected_x = (qreal)(pt.x() - src.cols/2)/(qreal)(src.cols/2);
-                        // qreal selected_y = (qreal)(src.rows/2 - pt.y())/(qreal)(src.rows/2);
-
-                        // new coordinates - units in pixels
-                        qreal selected_x = pt.x() - src.cols/2;
-                        qreal selected_y = src.rows/2 - pt.y();
-
-                        x2_x1 = selected_x - ref_point.x();
-                        y2_y1 = selected_y - ref_point.y();
-                    }
-
-                    stream << x2_x1 << "," << y2_y1; // write all X, Y coordinates to file
-
-                    qreal length = 0.0, angle = 0.0;
-                    length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
-                    stream << "," << length; //append length vaue to current row
-
-                    angle = atan2(y2_y1, x2_x1) * 180 / PI;
-                    if (angle < 0) {
-                        angle = 360 + angle;
-                    }
-                    stream << "," << angle; //append angle value to current row
+                    // set up column names
+                    stream << "X,Y";
+                    stream << ",Length";
+                    stream << ",Angle";
                     stream << endl;
-                } // end inner for loop
+
+                    QVector<QVector2D> pts = tips_map[temp]; // coordinates associated with image
+                    for (int i = 0; i < pts.size(); i++) {
+                        QVector2D pt = pts.at(i);
+
+                        // in automatic detection, below two values will already be in range [-1,1]
+                        x2_x1 = pt.x() - ref_point.x();
+                        y2_y1 = pt.y() - ref_point.y();
+
+                        // if manual selection is true, must convert tip points into range [-1,1]
+                        if (manualSelected == true) {
+                            // qreal selected_x = (qreal)(pt.x() - src.cols/2)/(qreal)(src.cols/2);
+                            // qreal selected_y = (qreal)(src.rows/2 - pt.y())/(qreal)(src.rows/2);
+
+                            // new coordinates - units in pixels
+                            qreal selected_x = pt.x() - src.cols/2;
+                            qreal selected_y = src.rows/2 - pt.y();
+
+                            x2_x1 = selected_x - ref_point.x();
+                            y2_y1 = selected_y - ref_point.y();
+                        }
+
+                        stream << x2_x1 << "," << y2_y1; // write all X, Y coordinates to file
+
+                        qreal length = 0.0, angle = 0.0;
+                        length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
+                        stream << "," << length; //append length vaue to current row
+
+                        angle = atan2(y2_y1, x2_x1) * 180 / PI;
+                        if (angle < 0) {
+                            angle = 360 + angle;
+                        }
+                        stream << "," << angle; //append angle value to current row
+                        stream << endl;
+                    } // end inner for loop
+                } // end if tips_map.find()
             } // end outer for loop
         } // if file.open()
         file.close();
@@ -1369,7 +1363,7 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
     else if (ui->manual_checkBox->isChecked() && !ui->automated_checkBox->isChecked()) {
         if (!bloodVesselObject->isEmpty()) {
             bloodVesselObject->getManuallySelectedTips(tips_map_temp);
-            bloodVesselObject->tipsAnimation(tips_map_temp);
+            bloodVesselObject->tipsAnimation(tips_map_temp, imagePaths);
             QVector<Mat> ims = bloodVesselObject->getTipsImages();
             QVector<Mat> ims2 = bloodVesselObject->getTipsImagesWithOrigBG();
             if (ui->imageBG_checkBox->isChecked()) {

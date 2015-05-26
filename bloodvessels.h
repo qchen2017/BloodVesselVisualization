@@ -34,7 +34,7 @@ public:
     cv::Mat identifyTip(cv::Mat src,float x, float y, int tips_size, QColor tips_color, QPointF refPtPixel);
     cv::Mat displayTips(cv::Mat src, string imName, int tips_size, QColor tips_color, QPointF refPtPixel, bool lengthEnabled, bool tipsEnabled);
     void getManuallySelectedTips(unordered_map<string, QVector<QVector2D> > &tips);
-    void tipsAnimation(unordered_map<string, QVector<QVector2D> > tips_map);
+    void tipsAnimation(unordered_map<string, QVector<QVector2D> > tips_map, QStringList imagePaths);
     QVector<cv::Mat> getTipsImages();  
     QVector<cv::Mat> getTipsImagesWithOrigBG();
     QStringList getTipsImagesPaths();

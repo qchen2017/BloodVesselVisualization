@@ -33,41 +33,35 @@ void BloodVessels::changeEvent(QEvent *e)
     }
 }
 
-void BloodVessels::tipsAnimation(unordered_map<string, QVector<QVector2D> > tips_map)
+void BloodVessels::tipsAnimation(unordered_map<string, QVector<QVector2D> > tips_map, QStringList imagePaths)
 {
 
     Mat img, img_orig_bg;
     QVector2D pt;
     int x, y;
 
-    // sort keys
-    list<string> ordered_keys;
-    for (auto it = tips_map.begin(); it != tips_map.end(); ++it) {
-        string temp = it->first; // image path name
-        ordered_keys.push_back(temp);
-    }
-    ordered_keys.sort();
+    for (int i = 0; i < imagePaths.size(); i++) {
+        QString imgname = imagePaths.at(i);
+        string temp = imgname.toStdString();
+        if (tips_map.find(temp) != tips_map.end()) {
+            QVector<QVector2D> pts = tips_map[temp]; // coordinates associated with image
+            img = imread(temp);
+            img_orig_bg = imread(temp); // orig image as background
+            img.setTo(cv::Scalar(0, 0, 0)); // fill image with black
+            for (int i = 0; i < pts.size(); i++) {
+               pt = pts.at(i);
+               x = pt.x();
+               y = pt.y();
+               Point dot = Point(x, y);
+               circle(img, dot, 20.0, Scalar(105, 105, 105), -1, 8);
+               circle(img_orig_bg, dot, 20.0, Scalar(105, 105, 105), -1, 8);
 
-    for (list<string>::const_iterator iterator = ordered_keys.begin(), end = ordered_keys.end(); iterator != end; ++iterator) {
-        string temp = *iterator;
-        QVector<QVector2D> pts = tips_map[temp]; // coordinates associated with image
-        img = imread(temp);
-        img_orig_bg = imread(temp); // orig image as background
-        img.setTo(cv::Scalar(0, 0, 0)); // fill image with black
-        for (int i = 0; i < pts.size(); i++) {
-           pt = pts.at(i);
-           x = pt.x();
-           y = pt.y();
-           Point dot = Point(x, y);
-           circle(img, dot, 20.0, Scalar(105, 105, 105), -1, 8);
-           circle(img_orig_bg, dot, 20.0, Scalar(105, 105, 105), -1, 8);
-
+            }
+            cv::resize(img, img, cv::Size2i(img.cols/3, img.rows/3));
+            tips_images.push_back(img);
+            tips_images_orig_bg.push_back(img_orig_bg);
+            tips_images_paths.append(imgname);
         }
-        cv::resize(img, img, cv::Size2i(img.cols/3, img.rows/3));
-        tips_images.push_back(img);
-        tips_images_orig_bg.push_back(img_orig_bg);
-        QString imgpath = QString::fromStdString(temp);
-        tips_images_paths.append(imgpath);
     }
 }
 
@@ -90,6 +84,8 @@ void BloodVessels::clearImageVectors()
 {
     tips_images.clear();
     tips_images_orig_bg.clear();
+    tips_images_paths.clear();
+
 }
 
 void BloodVessels::getManuallySelectedTips(unordered_map<string, QVector<QVector2D> > &tips)
