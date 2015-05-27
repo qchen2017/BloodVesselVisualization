@@ -794,12 +794,12 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                 ui->length_textEdit->append(l);
                 ui->angle_textEdit->append(a);
                 bloodVesselObject->saveTipPoint(imagePath.toStdString(), x_coord, y_coord);
-            }
 
-            // display the tips in real time
-            int tips_size = ui->tip_size_spinBox->value();
-            dst = bloodVesselObject->identifyTip(src, (float) x_coord, (float) y_coord, tips_size, tips_color, refPtPixel);
-            updateView(dst);
+                // display the tips in real time
+                int tips_size = ui->tip_size_spinBox->value();
+                dst = bloodVesselObject->identifyTip(src, (float) x_coord, (float) y_coord, tips_size, tips_color, refPtPixel);
+                updateView(dst);
+            }
         }
         else if (refPointEnabled && !mouseEnabled) {// select ref point
 

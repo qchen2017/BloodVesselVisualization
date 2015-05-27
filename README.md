@@ -10,3 +10,8 @@ Notes:
 
 - fixed memory for slideshow
 
+Fixed:
+
+- Now it wouldn't update the graphicsView if click outside the image
+
+- Changed mainwindows ui
