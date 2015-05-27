@@ -2,11 +2,7 @@
 #include "ui_bloodvessels.h"
 #include <QVector3D>
 #include <QDebug>
-<<<<<<< HEAD
 #include <iostream>
-=======
-#include <list>
->>>>>>> origin/mybranch
 
 using namespace cv;
 using namespace std;
@@ -44,7 +40,6 @@ void BloodVessels::tipsAnimation(unordered_map<string, QVector<QVector2D> > tips
     QVector2D pt;
     int x, y;
 
-<<<<<<< HEAD
     for(int i = 0; i < imagePaths.size(); i++){
         //qDebug() << imagePaths[i];
 
@@ -69,30 +64,6 @@ void BloodVessels::tipsAnimation(unordered_map<string, QVector<QVector2D> > tips
              tips_images_orig_bg.push_back(img_orig_bg);
         }
 
-=======
-    for (int i = 0; i < imagePaths.size(); i++) {
-        QString imgname = imagePaths.at(i);
-        string temp = imgname.toStdString();
-        if (tips_map.find(temp) != tips_map.end()) {
-            QVector<QVector2D> pts = tips_map[temp]; // coordinates associated with image
-            img = imread(temp);
-            img_orig_bg = imread(temp); // orig image as background
-            img.setTo(cv::Scalar(0, 0, 0)); // fill image with black
-            for (int i = 0; i < pts.size(); i++) {
-               pt = pts.at(i);
-               x = pt.x();
-               y = pt.y();
-               Point dot = Point(x, y);
-               circle(img, dot, 20.0, Scalar(105, 105, 105), -1, 8);
-               circle(img_orig_bg, dot, 20.0, Scalar(105, 105, 105), -1, 8);
-
-            }
-            cv::resize(img, img, cv::Size2i(img.cols/3, img.rows/3));
-            tips_images.push_back(img);
-            tips_images_orig_bg.push_back(img_orig_bg);
-            tips_images_paths.append(imgname);
-        }
->>>>>>> origin/mybranch
     }
 }
 
@@ -106,17 +77,10 @@ QVector<Mat> BloodVessels::getTipsImagesWithOrigBG()
     return tips_images_orig_bg;
 }
 
-QStringList BloodVessels::getTipsImagesPaths()
-{
-    return tips_images_paths;
-}
-
 void BloodVessels::clearImageVectors()
 {
     tips_images.clear();
     tips_images_orig_bg.clear();
-    tips_images_paths.clear();
-
 }
 
 void BloodVessels::getManuallySelectedTips(unordered_map<string, QVector<QVector2D> > &tips)
@@ -244,5 +208,4 @@ void BloodVessels::updateView(Mat imageOut)
     scene->addPixmap(image);
     scene->setSceneRect(0, 0, image.width(), image.height());
     ui->graphicsView->setScene(scene);
-
 } // update graphic view

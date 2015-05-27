@@ -34,7 +34,6 @@ private slots:
     /* Menu Bar Functions */
     void on_actionOpen_triggered();
     void on_actionSave_triggered();
-    void on_actionExit_triggered();
     void on_actionFit_to_Window_triggered();
     void on_actionZoom_In__triggered();
     void on_actionZoom_Out_triggered();
@@ -42,6 +41,7 @@ private slots:
     void on_actionReset_triggered();
     void on_actionReset_Reference_Point_triggered();
     void on_actionView_Documentation_triggered();
+    void on_actionExit_triggered();
 
     /* Main User Interface Functionalities */
     void close_opencv_window(string window_name);
@@ -72,6 +72,8 @@ private slots:
     void on_tipsAnimation_pushButton_clicked();
     void on_blackBG_checkBox_clicked(bool checked);
     void on_imageBG_checkBox_clicked(bool checked);
+
+
 
 private:
     
