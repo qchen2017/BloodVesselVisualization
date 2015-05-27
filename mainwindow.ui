@@ -6,8 +6,13 @@
    <rect>
     <x>0</x>
     <y>0</y>
+<<<<<<< HEAD
     <width>1383</width>
     <height>948</height>
+=======
+    <width>1559</width>
+    <height>946</height>
+>>>>>>> origin/mybranch
    </rect>
   </property>
   <property name="sizePolicy">
@@ -27,10 +32,17 @@
     </sizepolicy>
    </property>
    <layout class="QGridLayout" name="gridLayout_3">
+<<<<<<< HEAD
     <item row="1" column="2">
      <widget class="QTabWidget" name="image_tabs">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+=======
+    <item row="0" column="1">
+     <widget class="QTabWidget" name="image_tabs">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+>>>>>>> origin/mybranch
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
@@ -70,6 +82,114 @@
         <string>Main</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_5">
+        <item row="8" column="0" rowspan="2" colspan="3">
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="1" column="0">
+           <widget class="QPushButton" name="displayOrigImage_pushButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="cursor">
+             <cursorShape>ArrowCursor</cursorShape>
+            </property>
+            <property name="toolTip">
+             <string/>
+            </property>
+            <property name="toolTipDuration">
+             <number>-1</number>
+            </property>
+            <property name="whatsThis">
+             <string/>
+            </property>
+            <property name="text">
+             <string>Display Original Image</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPushButton" name="branchGraph">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Branch Graph</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPushButton" name="revertAllChanges_pushButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Revert All Changes</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPushButton" name="animate_pushButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Play Sequence</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="5" column="1">
+         <widget class="QSpinBox" name="threshold_spinBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="maximum">
+           <number>255</number>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="threshold_label">
+          <property name="text">
+           <string>Threshold:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="2">
+         <spacer name="verticalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="5" column="0">
+         <widget class="QSlider" name="threshold_horizontalSlider">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximum">
+           <number>255</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
         <item row="1" column="0" colspan="3">
          <widget class="QLabel" name="label">
           <property name="sizePolicy">
@@ -114,6 +234,7 @@
           </property>
          </spacer>
         </item>
+<<<<<<< HEAD
         <item row="5" column="0">
          <widget class="QSlider" name="threshold_horizontalSlider">
           <property name="enabled">
@@ -140,6 +261,8 @@
           </property>
          </widget>
         </item>
+=======
+>>>>>>> origin/mybranch
         <item row="7" column="0" colspan="3">
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
@@ -185,6 +308,7 @@
           </item>
          </layout>
         </item>
+<<<<<<< HEAD
         <item row="8" column="0" rowspan="2" colspan="3">
          <layout class="QGridLayout" name="gridLayout">
           <item row="1" column="0">
@@ -274,6 +398,8 @@
           </property>
          </widget>
         </item>
+=======
+>>>>>>> origin/mybranch
        </layout>
        <zorder>threshold_label</zorder>
        <zorder>threshold_horizontalSlider</zorder>
@@ -727,29 +853,59 @@
       </widget>
      </widget>
     </item>
+<<<<<<< HEAD
     <item row="2" column="2">
      <widget class="QGroupBox" name="image_file">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+=======
+    <item row="1" column="1">
+     <widget class="QGroupBox" name="image_file">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+>>>>>>> origin/mybranch
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
       <property name="minimumSize">
        <size>
+<<<<<<< HEAD
         <width>0</width>
+=======
+        <width>670</width>
+>>>>>>> origin/mybranch
         <height>0</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
+<<<<<<< HEAD
         <width>16777215</width>
+=======
+        <width>670</width>
+>>>>>>> origin/mybranch
         <height>200</height>
        </size>
       </property>
       <layout class="QGridLayout" name="gridLayout_4">
        <item row="3" column="0">
         <widget class="QListWidget" name="imageFiles_listWidget">
+<<<<<<< HEAD
+=======
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>670</width>
+           <height>16777215</height>
+          </size>
+         </property>
+>>>>>>> origin/mybranch
          <property name="verticalScrollBarPolicy">
           <enum>Qt::ScrollBarAsNeeded</enum>
          </property>
@@ -758,6 +914,7 @@
          </property>
         </widget>
        </item>
+<<<<<<< HEAD
        <item row="1" column="0">
         <widget class="QLabel" name="imageFiles_label">
          <property name="text">
@@ -768,6 +925,8 @@
          </property>
         </widget>
        </item>
+=======
+>>>>>>> origin/mybranch
        <item row="2" column="0">
         <widget class="QToolButton" name="closeImage_toolButton">
          <property name="enabled">
@@ -778,6 +937,7 @@
          </property>
         </widget>
        </item>
+<<<<<<< HEAD
       </layout>
      </widget>
     </item>
@@ -787,6 +947,27 @@
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>1</horstretch>
         <verstretch>1</verstretch>
+=======
+       <item row="1" column="0">
+        <widget class="QLabel" name="imageFiles_label">
+         <property name="text">
+          <string>Image Files</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="0" rowspan="2">
+     <widget class="QGraphicsView" name="graphicsView">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+>>>>>>> origin/mybranch
        </sizepolicy>
       </property>
       <property name="minimumSize">
@@ -795,18 +976,22 @@
         <height>0</height>
        </size>
       </property>
+<<<<<<< HEAD
       <property name="maximumSize">
        <size>
         <width>16777215</width>
         <height>16777215</height>
        </size>
       </property>
+=======
+>>>>>>> origin/mybranch
       <property name="mouseTracking">
        <bool>true</bool>
       </property>
       <property name="sizeAdjustPolicy">
        <enum>QAbstractScrollArea::AdjustToContentsOnFirstShow</enum>
       </property>
+<<<<<<< HEAD
      </widget>
     </item>
     <item row="0" column="0" colspan="2" alignment="Qt::AlignRight">
@@ -825,6 +1010,10 @@
       </property>
       <property name="readOnly">
        <bool>true</bool>
+=======
+      <property name="viewportUpdateMode">
+       <enum>QGraphicsView::SmartViewportUpdate</enum>
+>>>>>>> origin/mybranch
       </property>
      </widget>
     </item>
@@ -835,7 +1024,11 @@
     <rect>
      <x>0</x>
      <y>0</y>
+<<<<<<< HEAD
      <width>1383</width>
+=======
+     <width>1559</width>
+>>>>>>> origin/mybranch
      <height>31</height>
     </rect>
    </property>

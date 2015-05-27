@@ -19,7 +19,10 @@
 using namespace cv;
 using namespace std;
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/mybranch
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -104,9 +107,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->displayTips_pushButton->setToolTip("Displays the manually selected tips for image currently on display.");
     ui->exportManual_pushButton->setToolTip("Export the manually detected tips of all the images to a file.");
 
+<<<<<<< HEAD
     ui->currentImage->setMaximumWidth(200);
 
 
+=======
+>>>>>>> origin/mybranch
     // initialize help window
     static QLabel helpInfo;
     QString info("Documentations: ");
@@ -306,7 +312,6 @@ void MainWindow::on_actionOpen_triggered()
     ui->actionFit_to_Window->setEnabled(true);
     ui->actionZoom_In_->setEnabled(true);
     ui->actionZoom_Out->setEnabled(true);
-    ui->actionReset_Reference_Point->setEnabled(true);
 
     ui->threshold_horizontalSlider->setEnabled(true);
     ui->threshold_spinBox->setEnabled(true);
@@ -358,6 +363,11 @@ void MainWindow::on_actionSave_triggered()
     }
 
 } // save image
+
+void MainWindow::on_actionExit_triggered()
+{
+    exit(1);
+} // exit application
 
 void MainWindow::on_actionFit_to_Window_triggered()
 {
@@ -438,7 +448,7 @@ void MainWindow::on_actionUndo_Manual_Detect_triggered()
             updateView(dst);
         }
     }
-}
+} // undo manual tip detect
 
 void MainWindow::on_actionReset_triggered()
 {
@@ -453,17 +463,14 @@ void MainWindow::on_actionReset_triggered()
     bloodVesselObject->deleteAllTipPoints(imagePath.toStdString());
     src = imread(imagePath.toStdString());
 
-    ui->exportManual_pushButton->setDisabled(true);
     ui->tipsXcoord_textEdit->clear();
     ui->tipsYcoord_textEdit->clear();
     ui->length_textEdit->clear();
     ui->angle_textEdit->clear();
-    ui->actionReset->setDisabled(true);
-    ui->actionUndo_Manual_Detect->setDisabled(true);
 
     updateView(src);
 
-}
+} // reset manual tip detect
 
 void MainWindow::on_actionReset_Reference_Point_triggered()
 {
@@ -494,17 +501,16 @@ void MainWindow::on_actionReset_Reference_Point_triggered()
     ui->tipsYcoord_textEdit->clear();
     ui->length_textEdit->clear();
     ui->angle_textEdit->clear();
-}
+
+    ui->actionReset_Reference_Point->setDisabled(true);
+
+} // reset reference point
 
 void MainWindow::on_actionView_Documentation_triggered()
 {
     helpWin->show();
-}
+} // view documentation
 
-void MainWindow::on_actionExit_triggered()
-{
-    exit(1);
-}
 /**********************************************************************************/
 /*********************** Main User Interface Functionalities **********************/
 /**********************************************************************************/
@@ -534,7 +540,7 @@ void MainWindow::on_revertAllChanges_pushButton_clicked()
     ui->imageMode_comboBox->setCurrentIndex(0);
     updateView(src);
 
-}
+} // revert all changes
 
 void MainWindow::on_closeImage_toolButton_clicked()
 {
@@ -572,11 +578,13 @@ void MainWindow::on_closeImage_toolButton_clicked()
     // update the containers and other variables related to image files handling
     if (imageListPtr > 0) {
         imageListPtr--;
-        src_images.remove(index);
-        imagePaths.removeAt(index);
-        tips_map.erase(imagePath.toStdString());
-        thresholds.erase(imagePath.toStdString());
+        QString imgname = imagePaths.at(index);
+        bloodVesselObject->deleteAllTipPoints(imgname.toStdString());
+        tips_map.erase(imgname.toStdString());
+        thresholds.erase(imgname.toStdString());
         ui->imageFiles_listWidget->takeItem(index);
+        imagePaths.removeAt(index);
+        src_images.remove(index);
     }
 
 } // close current image on display
@@ -593,10 +601,8 @@ void MainWindow::on_imageFiles_listWidget_itemClicked(QListWidgetItem *item)
 
     src = imread(imagePath.toStdString());
     int t = thresholds[imagePath.toStdString()];
-
     ui->threshold_horizontalSlider->setValue(t);
     ui->threshold_spinBox->setValue(t);
-
     ui->tipsXcoord_textEdit->clear();
     ui->tipsYcoord_textEdit->clear();
     ui->length_textEdit->clear();
@@ -640,7 +646,8 @@ void MainWindow::on_displayOrigImage_pushButton_clicked()
     namedWindow(imagePath.toStdString(), WINDOW_NORMAL);
     imshow(imagePath.toStdString(), src);
     close_opencv_window(imagePath.toStdString());
-}
+
+} // display original image
 
 void MainWindow::on_threshold_horizontalSlider_valueChanged(int value)
 {
@@ -671,7 +678,33 @@ void MainWindow::on_threshold_horizontalSlider_valueChanged(int value)
         cv::threshold(src, img, value, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
         updateView(img);
     }
+}
 
+void MainWindow::on_threshold_spinBox_valueChanged(int value)
+{
+    if (!check_imageOpened()) {
+        errorMsg();
+        return;
+    } // error
+    int index = ui->imageFiles_listWidget->currentRow();
+    imagePath = imagePaths.at(index);
+    thresholds[imagePath.toStdString()] = value; // map threshold to corresponding image
+    ui->threshold_horizontalSlider->setValue(value);
+    // update view depending on mode
+    Mat img;
+    if (ui->imageMode_comboBox->currentText() == "Contour") {
+        contourOut = imagePtr->setImageView(src, value, "contour");
+        updateView(contourOut);
+    }
+    else if (ui->imageMode_comboBox->currentText() == "Edge") {
+        dst = edgeWin->setEdge(src, value);
+        updateView(dst);
+    }
+    else {
+        src = imread(imagePath.toStdString());
+        cv::threshold(src, img, value, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
+        updateView(img);
+    }
 }
 
 void MainWindow::on_imageMode_comboBox_activated(const QString &arg1)
@@ -741,7 +774,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
         imagePath = imagePaths.at(index);
         ui->exportManual_pushButton->setEnabled(true);
 
-        if (mouseEnabled) { // based on default ref point
+        if (mouseEnabled) {
             ui->actionReset->setEnabled(true);
             QPoint  local_pt = ui->graphicsView->mapFromGlobal(event->globalPos());
             QPointF img_coord_pt = ui->graphicsView->mapToScene(local_pt);
@@ -759,16 +792,11 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             qreal selected_x = x_coord - src.cols/2;
             qreal selected_y = src.rows/2 - y_coord;
 
-            // qDebug() << "selected_x = " << selected_x << ", selected_y = " << selected_y;
-            // qDebug() << "ref_point.x = " << ref_point.x() << ", ref_point.y = " << ref_point.y();
-
-
             qreal x2_x1 = selected_x - ref_point.x();
             qreal y2_y1 = selected_y - ref_point.y();
 
             qreal length = 0, angle = 0;
             length = sqrt((x2_x1 * x2_x1) + (y2_y1 * y2_y1));
-            // qDebug() << "length = " << length;
 
             //atan2 returns positive angle for positive Y position, and vice versa
             angle = atan2(y2_y1, x2_x1) * 180 / PI;
@@ -776,15 +804,14 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                 angle = 360 + angle;
             }
 
-            // each (x, y) point is displayed in their appropriate text edits
-            QString x = QString::number((double) selected_x, 'g', 6);
-            QString y = QString::number((double) selected_y, 'g', 6);
-            QString l = QString::number((double) length, 'g', 6); //length
-            QString a = QString::number((double) angle, 'g', 6); //angle
-
             // disregard clicks that were pressed outside of the image
             // if (selected_x >= -1 && selected_x <= 1 && selected_y >= -1 && selected_y <= 1) {
             if (selected_x >= -(src.cols/2) && selected_x <= (src.cols/2) && selected_y >= -(src.rows/2) && selected_y <= (src.rows/2)) {
+                // each (x, y) point is displayed in their appropriate text edits
+                QString x = QString::number((double) selected_x, 'g', 6);
+                QString y = QString::number((double) selected_y, 'g', 6);
+                QString l = QString::number((double) length, 'g', 6); //length
+                QString a = QString::number((double) angle, 'g', 6); //angle
                 ui->actionUndo_Manual_Detect->setEnabled(true);
                 ui->tipsXcoord_textEdit->append(x);
                 ui->tipsYcoord_textEdit->append(y);
@@ -839,6 +866,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                     ui->refpoint_lineEdit->setText(r);
                     refPointEnabled = false;
                     selected_ref = true;
+
                     if (revert) {
                         mouseEnabled = true;
                         revert = false;
@@ -851,11 +879,22 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                     ui->tipsYcoord_textEdit->clear();
                     ui->length_textEdit->clear();
                     ui->angle_textEdit->clear();
+<<<<<<< HEAD
                 }
             }
         }
     }
 }
+=======
+
+                    ui->actionReset_Reference_Point->setEnabled(true);
+                } // end if reply == yes
+            } // end bound checks for ref point
+        } // end else-if
+    } // end first if
+
+} // end mousePressEvent
+>>>>>>> origin/mybranch
 
 void MainWindow::on_bloodVesselsTips_radioButton_toggled(bool checked)
 {
@@ -887,7 +926,7 @@ void MainWindow::on_color_pushButton_clicked()
 {
     QColorDialog *qcd = new QColorDialog(QColor::fromRgb(0, 0, 0, 255), this);
     QColor color = qcd->getColor();
-    if(color.isValid()) {
+    if (color.isValid()) {
         QString qss = QString("background-color: %1").arg(color.name());
         ui->color_pushButton->setStyleSheet(qss);
         ui->color_pushButton->setAutoFillBackground(true);
@@ -909,7 +948,7 @@ void MainWindow::on_select_ref_point_radioButton_clicked()
 
     if (mouseEnabled) {
         mouseEnabled = false;
-        revert = true; // used to change back in mousePressEvent
+        revert = true;
     }
 
 } // select reference point
@@ -1087,6 +1126,7 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
     unordered_map<string, QVector<QVector2D> >::const_iterator it;
     QString pathName;
 
+
     // prompt user for file name and location
     //QString outfile = QFileDialog::getSaveFileName(this, "Save");
     QString outfile = QFileDialog::getSaveFileName(this, "Save", "untitled.csv", tr("Comma Separated Values (CSV) (*.csv);;"
@@ -1102,6 +1142,7 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
         if (file.open(QIODevice::WriteOnly)) {
             QTextStream stream(&file);
 
+<<<<<<< HEAD
             // iterate through tips_map to get the tips' coordinates for each image
             for(int i = 0; i < imagePaths.size(); i++) {
                 pathName = imagePaths.at(i);
@@ -1109,50 +1150,56 @@ void MainWindow::writeTipsToFile(unordered_map<string, QVector<QVector2D> > tips
                 it = tips_map.find(pathName.toStdString());
 
                 string temp = it->first; // image path name
+=======
+           for (int i = 0; i < imagePaths.size(); i++) {
+>>>>>>> origin/mybranch
 
-                QString imgname = QString::fromStdString(temp);
-                stream << imgname << endl; // write image path name
+                QString imgname = imagePaths.at(i);
+                string temp = imgname.toStdString();
+                if (tips_map.find(temp) != tips_map.end()) {
+                    stream << imgname << endl; // write image path name
 
-                // set up column names
-                stream << "X,Y";
-                stream << ",Length";
-                stream << ",Angle";
-                stream << endl;
-
-                QVector<QVector2D> pts = tips_map[temp]; // coordinates associated with image
-                for (int i = 0; i < pts.size(); i++) {
-                    QVector2D pt = pts.at(i);
-
-                    // in automatic detection, below two values will already be in range [-1,1]
-                    x2_x1 = pt.x() - ref_point.x();
-                    y2_y1 = pt.y() - ref_point.y();
-
-                    // if manual selection is true, must convert tip points into range [-1,1]
-                    if (manualSelected == true) {
-                        // qreal selected_x = (qreal)(pt.x() - src.cols/2)/(qreal)(src.cols/2);
-                        // qreal selected_y = (qreal)(src.rows/2 - pt.y())/(qreal)(src.rows/2);
-
-                        // new coordinates - units in pixels
-                        qreal selected_x = pt.x() - src.cols/2;
-                        qreal selected_y = src.rows/2 - pt.y();
-
-                        x2_x1 = selected_x - ref_point.x();
-                        y2_y1 = selected_y - ref_point.y();
-                    }
-
-                    stream << x2_x1 << "," << y2_y1; // write all X, Y coordinates to file
-
-                    qreal length = 0.0, angle = 0.0;
-                    length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
-                    stream << "," << length; //append length vaue to current row
-
-                    angle = atan2(y2_y1, x2_x1) * 180 / PI;
-                    if (angle < 0) {
-                        angle = 360 + angle;
-                    }
-                    stream << "," << angle; //append angle value to current row
+                    // set up column names
+                    stream << "X,Y";
+                    stream << ",Length";
+                    stream << ",Angle";
                     stream << endl;
-                } // end inner for loop
+
+                    QVector<QVector2D> pts = tips_map[temp]; // coordinates associated with image
+                    for (int i = 0; i < pts.size(); i++) {
+                        QVector2D pt = pts.at(i);
+
+                        // in automatic detection, below two values will already be in range [-1,1]
+                        x2_x1 = pt.x() - ref_point.x();
+                        y2_y1 = pt.y() - ref_point.y();
+
+                        // if manual selection is true, must convert tip points into range [-1,1]
+                        if (manualSelected == true) {
+                            // qreal selected_x = (qreal)(pt.x() - src.cols/2)/(qreal)(src.cols/2);
+                            // qreal selected_y = (qreal)(src.rows/2 - pt.y())/(qreal)(src.rows/2);
+
+                            // new coordinates - units in pixels
+                            qreal selected_x = pt.x() - src.cols/2;
+                            qreal selected_y = src.rows/2 - pt.y();
+
+                            x2_x1 = selected_x - ref_point.x();
+                            y2_y1 = selected_y - ref_point.y();
+                        }
+
+                        stream << x2_x1 << "," << y2_y1; // write all X, Y coordinates to file
+
+                        qreal length = 0.0, angle = 0.0;
+                        length = sqrt(x2_x1 * x2_x1 + y2_y1 * y2_y1);
+                        stream << "," << length; //append length vaue to current row
+
+                        angle = atan2(y2_y1, x2_x1) * 180 / PI;
+                        if (angle < 0) {
+                            angle = 360 + angle;
+                        }
+                        stream << "," << angle; //append angle value to current row
+                        stream << endl;
+                    } // end inner for loop
+                } // end if tips_map.find()
             } // end outer for loop
         } // if file.open()
         file.close();
@@ -1370,8 +1417,14 @@ void MainWindow::on_tipsAnimation_pushButton_clicked()
             else if (ui->blackBG_checkBox->isChecked()) {
                 ssWin->tipsSlideshow(ims, false);
             }
+<<<<<<< HEAD
             ssWin->setImageList(imagePaths, true);
             ssWin->show();            
+=======
+            QStringList tipsImagesPaths = bloodVesselObject->getTipsImagesPaths();
+            ssWin->setImageList(tipsImagesPaths, true);
+            ssWin->show();
+>>>>>>> origin/mybranch
         }
         else {
             QMessageBox::information(this, tr("Visualization of Directional Blood Vessels"), tr("No points have been selected. Nothing to show here.") );
@@ -1426,32 +1479,3 @@ void MainWindow::on_imageBG_checkBox_clicked(bool checked)
     }
 }
 
-void MainWindow::on_threshold_spinBox_valueChanged(int value)
-{
-
-    if (!check_imageOpened()) {
-        errorMsg();
-        return;
-    } // error
-
-    int index = ui->imageFiles_listWidget->currentRow();
-    imagePath = imagePaths.at(index);
-
-    thresholds[imagePath.toStdString()] = value; // map threshold to corresponding image
-    ui->threshold_horizontalSlider->setValue(value);
-    // update view depending on mode
-    Mat img;
-    if (ui->imageMode_comboBox->currentText() == "Contour") {
-        contourOut = imagePtr->setImageView(src, value, "contour");
-        updateView(contourOut);
-    }
-    else if (ui->imageMode_comboBox->currentText() == "Edge") {
-        dst = edgeWin->setEdge(src, value);
-        updateView(dst);
-    }
-    else {
-        src = imread(imagePath.toStdString());
-        cv::threshold(src, img, value, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C);
-        updateView(img);
-    }
-}
