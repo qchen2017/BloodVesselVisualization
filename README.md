@@ -8,3 +8,5 @@ Notes:
 
 - Fixed bug on closing image - would sometimes clear the tips of the wrong image after closing
 
+- fixed memory for slideshow
+

@@ -125,6 +125,7 @@ void Slideshow::timerEvent(QTimerEvent* event)
 //update view screen in widget
 void Slideshow::updateView(Mat imageOut)
 {
+    delete scene;
     if (forAutomatedTips) {
         QImage img((uchar*)imageOut.data, imageOut.cols, imageOut.rows, QImage::Format_Indexed8);
         image = QPixmap::fromImage(img);
@@ -141,9 +142,10 @@ void Slideshow::updateView(Mat imageOut)
     scene->setSceneRect(0, 0, image.width(), image.height());
 
     //fit image to screen and display
+    ui->graphicsView->setScene(scene);
     ui->graphicsView->fitInView(scene->itemsBoundingRect(), Qt::KeepAspectRatioByExpanding);
     ui->graphicsView->setAlignment(Qt::AlignCenter);
-    ui->graphicsView->setScene(scene);
+
 }
 
 //stop slideshow timer when the window is closed
