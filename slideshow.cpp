@@ -26,9 +26,6 @@ Slideshow::Slideshow(QWidget *parent) :
     ui->speedSlider->setMinimum(1);
     ui->speedSlider->setValue(slideInterval); //initialize slider at position 1000
     ui->slideSpeed_LineEdit->setText(QString::number(slideInterval/1000) + " sec"); //set speed line edit
-    ui->pauseButton->setEnabled(false);
-    ui->imageSlider->setEnabled(false);
-    ui->speedSlider->setEnabled(false);
 }
 
 Slideshow::~Slideshow()
@@ -38,16 +35,18 @@ Slideshow::~Slideshow()
 
 void Slideshow::nextSlide()
 {
-
+    //qDebug() << tipsFlag;
     if (!tipsFlag) {
         imageName = imageList.at(currentSlide);
         src = imread(imageName.toStdString());
-
+        ui->imagePath_textEdit->setText(imageName);
         //update slider position
         ui->imageSlider->setValue(currentSlide);
 
         //update slide number on line edit
         ui->slideNum_LineEdit->setText(QString::number(currentSlide+1) + "/" + QString::number(numSlides));
+
+        //replay slideshow if last image is played
         if(currentSlide == (imageList.size()-1)) {
             currentSlide = 0;
         }
@@ -57,17 +56,19 @@ void Slideshow::nextSlide()
 
         updateView(src);
     }
+
     else {
         src = tips_mats.at(currentSlide);
         ui->imageSlider->setValue(currentSlide);
-
+        ui->imagePath_textEdit->setText(imageList.at(currentSlide));
         //update slide number on line edit
         ui->slideNum_LineEdit->setText(QString::number(currentSlide+1) + "/" + QString::number(numSlides));
 
-        if(currentSlide == tips_mats.size() - 1){
+        //replay slideshow if last image is played
+        if (currentSlide == (tips_mats.size()-1)) {
             currentSlide = 0;
         }
-        else{
+        else {
             ++currentSlide;
         }
 
@@ -78,6 +79,7 @@ void Slideshow::nextSlide()
 void Slideshow::tipsSlideshow(QVector<Mat> images, bool autoTipsFlag)
 {
     tips_mats = images;
+    numSlides = tips_mats.size();
     if (autoTipsFlag) {
         ui->actionSave->setDisabled(true);
         forAutomatedTips = true;
@@ -87,6 +89,7 @@ void Slideshow::tipsSlideshow(QVector<Mat> images, bool autoTipsFlag)
         forAutomatedTips = false;
     }
 
+    //imshow("Slideshow test", tips_mats.at(0));
 }
 
 //QStringList contains paths of opened images
@@ -94,17 +97,20 @@ void Slideshow::setImageList(QStringList in, bool forTips)
 {
 
     imageList = in;
-    numSlides = tips_mats.size();
-    ui->imageSlider->setMaximum(numSlides-1); //set max value of slider bar to # of images
-
-    ui->slideNum_LineEdit->setText(QString::number(currentSlide) + "/" + QString::number(numSlides) );
 
     if (forTips) {
         tipsFlag = true;
+        numSlides = tips_mats.size();
     }
     else {
         tipsFlag = false;
+        numSlides = imageList.size();
     }
+
+    ui->actionSave->setEnabled(true);
+    ui->imageSlider->setMaximum(numSlides-1); //set max value of slider bar to # of images
+    ui->slideNum_LineEdit->setText(QString::number(currentSlide) + "/" + QString::number(numSlides) );
+
 }
 
 //automatically called when timer goes off (ie. when slideInterval = 0)
@@ -119,8 +125,6 @@ void Slideshow::timerEvent(QTimerEvent* event)
 //update view screen in widget
 void Slideshow::updateView(Mat imageOut)
 {
-    delete scene;
-//    Mat dst;
     if (forAutomatedTips) {
         QImage img((uchar*)imageOut.data, imageOut.cols, imageOut.rows, QImage::Format_Indexed8);
         image = QPixmap::fromImage(img);
@@ -128,9 +132,7 @@ void Slideshow::updateView(Mat imageOut)
     else {
         cvtColor(imageOut, imageOut_gray, cv::COLOR_BGR2GRAY);
         blur(imageOut_gray, imageOut_gray, Size(3,3));
-//        cv::resize(imageOut_gray, dst, cv::Size2i(imageOut_gray.cols/3, imageOut_gray.rows/3));
-
-        QImage img((uchar*)imageOut_gray.data, imageOut_gray.cols, imageOut_gray.rows, QImage::Format_Indexed8);     
+        QImage img((uchar*)imageOut_gray.data, imageOut_gray.cols, imageOut_gray.rows, QImage::Format_Indexed8);
         image = QPixmap::fromImage(img);
     }
 
@@ -139,10 +141,9 @@ void Slideshow::updateView(Mat imageOut)
     scene->setSceneRect(0, 0, image.width(), image.height());
 
     //fit image to screen and display
-    ui->graphicsView->setScene(scene);
     ui->graphicsView->fitInView(scene->itemsBoundingRect(), Qt::KeepAspectRatioByExpanding);
     ui->graphicsView->setAlignment(Qt::AlignCenter);
-
+    ui->graphicsView->setScene(scene);
 }
 
 //stop slideshow timer when the window is closed
@@ -158,6 +159,7 @@ void Slideshow::closeEvent(QCloseEvent *event) {
     tips_mats.clear();
     ui->speedSlider->setValue(1000);
     ui->slideSpeed_LineEdit->setText(QString::number(1000/1000) + " sec");
+    ui->imagePath_textEdit->clear();
 
     close(); //closes this widget
     event->accept();
@@ -178,10 +180,8 @@ void Slideshow::on_playButton_clicked()
 {
     paused = false;
     interSlideTimer.start(slideInterval, this);
-    ui->pauseButton->setEnabled(true);
-    ui->imageSlider->setEnabled(true);
-    ui->speedSlider->setEnabled(true);
     nextSlide();
+
 }
 
 void Slideshow::on_actionSave_triggered()
@@ -198,7 +198,7 @@ void Slideshow::on_actionSave_triggered()
         double width = s.width;
 
         Size frameSize(static_cast<int>(width), static_cast<int>(height));
-        VideoWriter outVideoFile (savePath.toStdString(), 0, 2, frameSize, true);
+        VideoWriter outVideoFile (savePath.toStdString(), -1, 2, frameSize, true);
 
         for(int i = 0 ; i < imageList.size(); i++) { //display images/frames to MyVideo, and create output video
             frameName = imageList.at(i);
@@ -222,28 +222,30 @@ void Slideshow::on_actionSave_triggered()
 
         //initialize videowriter
         //constructor format: Location & name of output file, fourcc codec, framerate (# frames/sec), framesize, isColor
-        VideoWriter outVideoFile (savePath.toStdString(), -1, 2, frameSize, true);
+        VideoWriter outVideoFile (savePath.toStdString(), -1, 1, frameSize, true);
 
         if (!outVideoFile.isOpened()) { // check if the fourcc is allowed
             QMessageBox::information(this, "ERROR!", "ERROR: Failed to write the video");
-            // cout << "ERROR: Failed to write the video" << endl;
+            cout << "ERROR: Failed to write the video" << endl;
             return;
         }
 
-        for (int i = tips_mats.size()-1; i > -1; i--) {
+        for (int i = 0; i < tips_mats.size(); i++) {
+            //qDebug() << i;
             frame = tips_mats.at(i);
-
+            //qDebug() << frame.rows << frame.cols;
             if (!frame.data) { // check for invalid input
                 QString error = "Could not open or find the image at ";
                 QString num; num.setNum(i);
                 error.append(num);
                 QMessageBox::information(this, "ERROR!", error);
-                // cout <<  "Could not open or find the image at " << i << endl ;
+                cout <<  "Could not open or find the image at " << i << endl ;
                 return;
             }
 
+            //imshow("hi", frame);
             outVideoFile << (frame);
-            waitKey(100);
+            //waitKey(100);
         }
     }
 }
