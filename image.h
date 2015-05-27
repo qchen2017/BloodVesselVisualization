@@ -8,10 +8,6 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/core/core.hpp"
 
-<<<<<<< HEAD
-//using namespace cv;
-=======
->>>>>>> origin/master
 using namespace std;
 
 class Image
@@ -24,13 +20,6 @@ public:
 
 private:
     cv::Mat setContour(cv::Mat src, int thresh_val); // contour mode
-<<<<<<< HEAD
-
-    // skeleton mode - currently not implemented on the ui
-    void thinning(cv::Mat &im);
-    void thinningIteration(cv::Mat &im, int iter);
-=======
->>>>>>> origin/master
 
 };
 

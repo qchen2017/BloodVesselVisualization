@@ -39,7 +39,7 @@ void Slideshow::nextSlide()
     if (!tipsFlag) {
         imageName = imageList.at(currentSlide);
         src = imread(imageName.toStdString());
-
+        ui->imagePath_textEdit->setText(imageName);
         //update slider position
         ui->imageSlider->setValue(currentSlide);
 
@@ -58,17 +58,14 @@ void Slideshow::nextSlide()
     }
 
     else {
-        //tips_mats has the imagelist images in reverse order, so subtract from # of images
-        int position = numSlides - 1 - currentSlide;
-        src = tips_mats.at(position);
-
+        src = tips_mats.at(currentSlide);
         ui->imageSlider->setValue(currentSlide);
-
+        ui->imagePath_textEdit->setText(imageList.at(currentSlide));
         //update slide number on line edit
         ui->slideNum_LineEdit->setText(QString::number(currentSlide+1) + "/" + QString::number(numSlides));
 
         //replay slideshow if last image is played
-        if( position == 0 ) {
+        if (currentSlide == (tips_mats.size()-1)) {
             currentSlide = 0;
         }
         else {
@@ -82,6 +79,7 @@ void Slideshow::nextSlide()
 void Slideshow::tipsSlideshow(QVector<Mat> images, bool autoTipsFlag)
 {
     tips_mats = images;
+    numSlides = tips_mats.size();
     if (autoTipsFlag) {
         ui->actionSave->setDisabled(true);
         forAutomatedTips = true;
@@ -90,6 +88,7 @@ void Slideshow::tipsSlideshow(QVector<Mat> images, bool autoTipsFlag)
         ui->actionSave->setEnabled(true); // only allow saving for manual tips animation
         forAutomatedTips = false;
     }
+
     //imshow("Slideshow test", tips_mats.at(0));
 }
 
@@ -98,16 +97,20 @@ void Slideshow::setImageList(QStringList in, bool forTips)
 {
 
     imageList = in;
-    numSlides = imageList.size();
-    ui->imageSlider->setMaximum(numSlides); //set max value of slider bar to # of images
-    ui->slideNum_LineEdit->setText(QString::number(currentSlide) + "/" + QString::number(numSlides) );
 
     if (forTips) {
         tipsFlag = true;
+        numSlides = tips_mats.size();
     }
     else {
         tipsFlag = false;
+        numSlides = imageList.size();
     }
+
+    ui->actionSave->setEnabled(true);
+    ui->imageSlider->setMaximum(numSlides-1); //set max value of slider bar to # of images
+    ui->slideNum_LineEdit->setText(QString::number(currentSlide) + "/" + QString::number(numSlides) );
+
 }
 
 //automatically called when timer goes off (ie. when slideInterval = 0)
@@ -156,6 +159,7 @@ void Slideshow::closeEvent(QCloseEvent *event) {
     tips_mats.clear();
     ui->speedSlider->setValue(1000);
     ui->slideSpeed_LineEdit->setText(QString::number(1000/1000) + " sec");
+    ui->imagePath_textEdit->clear();
 
     close(); //closes this widget
     event->accept();
@@ -194,7 +198,7 @@ void Slideshow::on_actionSave_triggered()
         double width = s.width;
 
         Size frameSize(static_cast<int>(width), static_cast<int>(height));
-        VideoWriter outVideoFile (savePath.toStdString(), 0, 2, frameSize, true);
+        VideoWriter outVideoFile (savePath.toStdString(), -1, 2, frameSize, true);
 
         for(int i = 0 ; i < imageList.size(); i++) { //display images/frames to MyVideo, and create output video
             frameName = imageList.at(i);
@@ -218,28 +222,30 @@ void Slideshow::on_actionSave_triggered()
 
         //initialize videowriter
         //constructor format: Location & name of output file, fourcc codec, framerate (# frames/sec), framesize, isColor
-        VideoWriter outVideoFile (savePath.toStdString(), -1, 2, frameSize, true);
+        VideoWriter outVideoFile (savePath.toStdString(), -1, 1, frameSize, true);
 
         if (!outVideoFile.isOpened()) { // check if the fourcc is allowed
             QMessageBox::information(this, "ERROR!", "ERROR: Failed to write the video");
-            // cout << "ERROR: Failed to write the video" << endl;
+            cout << "ERROR: Failed to write the video" << endl;
             return;
         }
 
-        for (int i = tips_mats.size()-1; i >= 0; i--) {
+        for (int i = 0; i < tips_mats.size(); i++) {
+            //qDebug() << i;
             frame = tips_mats.at(i);
-
+            //qDebug() << frame.rows << frame.cols;
             if (!frame.data) { // check for invalid input
                 QString error = "Could not open or find the image at ";
                 QString num; num.setNum(i);
                 error.append(num);
                 QMessageBox::information(this, "ERROR!", error);
-                // cout <<  "Could not open or find the image at " << i << endl ;
+                cout <<  "Could not open or find the image at " << i << endl ;
                 return;
             }
 
+            //imshow("hi", frame);
             outVideoFile << (frame);
-            waitKey(100);
+            //waitKey(100);
         }
     }
 }
